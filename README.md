@@ -2,6 +2,8 @@
 
 wok-ui 是一个前端 UI 组件库，简洁易用，响应式设计，无第三方依赖，使用 Typescript 开发有完整的类型约束。
 
+[查看在线演示。](https://peaktai.github.io/wok-ui/)
+
 ## 优缺点
 
 优点：
