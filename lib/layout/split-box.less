@@ -1,0 +1,55 @@
+.wok-ui-v-split-box {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+
+  & > * {
+    overflow: hidden;
+  }
+
+  &.fix-top > * {
+    &:first-child {
+      flex-shrink: 0;
+    }
+    &:last-child {
+      flex-grow: 1;
+    }
+  }
+  &.fix-bottom > * {
+    &:first-child {
+      flex-grow: 1;
+    }
+    &:last-child {
+      flex-shrink: 0;
+    }
+  }
+}
+
+.wok-ui-h-split-box {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: nowrap;
+
+  & > * {
+    overflow: hidden;
+  }
+
+  &.fix-left > * {
+    &:first-child {
+      flex-shrink: 0;
+    }
+    &:last-child {
+      flex-grow: 1;
+    }
+  }
+  &.fix-right > * {
+    &:first-child {
+      flex-grow: 1;
+    }
+    &:last-child {
+      flex-shrink: 0;
+    }
+  }
+}

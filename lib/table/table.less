@@ -1,0 +1,42 @@
+.kk-table {
+  overflow-x: auto;
+  & > table {
+    min-width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0px;
+    & > thead {
+      vertical-align: bottom;
+      tr {
+        th {
+          border-collapse: collapse;
+          padding: 0.5rem;
+          border-bottom: 1px solid var(--color-border);
+          font-weight: bold;
+          text-align: left;
+        }
+      }
+    }
+    tbody {
+      vertical-align: middle;
+      tr {
+        td {
+          border-collapse: collapse;
+          padding: 0.5rem;
+          border-bottom: 1px solid var(--color-border);
+          text-align: left;
+          overflow: visible;
+        }
+        &:hover td {
+          background-color: #f8f9fd;
+        }
+      }
+    }
+  }
+  &.bordered > table {
+    border: 1px solid var(--color-border);
+    th,
+    td {
+      border: 1px solid var(--color-border);
+    }
+  }
+}

@@ -1,0 +1,91 @@
+.wok-ui-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1045;
+
+  & > .wok-ui-modal-dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1.5rem 1rem;
+    // 全屏
+    &.fullscreen {
+      padding: 0 !important;
+      .wok-ui-modal-content {
+        height: 100% !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+      }
+    }
+    // 内容居中
+    &.centered {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    // 内容，包含： header、body、footer
+    & > .wok-ui-modal-content {
+      max-height: 100%;
+      max-width: 100%;
+      overflow: hidden;
+      width: 500px;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      margin: 0 auto;
+      // 正常模式，不被替换的情况
+      &.normal {
+        background-color: white;
+        border-radius: var(--size-border-radius);
+      }
+      & > .wok-ui-modal-header {
+        flex-shrink: 0;
+        padding: 1rem;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        font-size: var(--size-text-lg);
+        font-weight: bold;
+        border-bottom: 1px solid var(--color-border);
+        line-height: 1;
+        & > .title {
+          flex-grow: 1;
+          overflow: hidden;
+          word-break: keep-all;
+          text-overflow: ellipsis;
+        }
+        & > .close {
+          font-size: 1.2em;
+          cursor: pointer;
+          user-select: none;
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+      }
+      & > .wok-ui-modal-body {
+        padding: 1rem;
+        flex-grow: 1;
+        overflow: auto;
+      }
+      & > .wok-ui-modal-footer {
+        flex-shrink: 0;
+        border-top: 1px solid var(--color-border);
+        padding: 1rem;
+        display: flex;
+        gap: 20px;
+        flex-direction: row-reverse;
+        // 按钮宽度优化，增加美观度
+        button {
+          min-width: 120px;
+        }
+      }
+    }
+  }
+}

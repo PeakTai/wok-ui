@@ -1,0 +1,46 @@
+.wok-ui-dialog-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1055;
+  color: var(--color-text);
+
+  & > .dialog-content {
+    border-radius: 1rem;
+    background-color: white;
+    line-height: 1.5;
+    & > .dialog-body {
+      width: 345px;
+      max-width: 100%;
+      min-width: 320px;
+      padding: 1rem;
+      text-align: center;
+    }
+    & > .dialog-footer {
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      flex-wrap: nowrap;
+      text-align: center;
+      & > div {
+        flex-grow: 1;
+        cursor: pointer;
+        padding: 1rem;
+        text-align: center;
+        border-right: 1px solid var(--color-border);
+        &:last-child {
+          border-right: none !important;
+        }
+        &:hover {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+// 按钮主题靠变量 --btn-color 控制
+button.wok-ui-btn {
+  display: inline-block;
+  vertical-align: middle;
+  user-select: none;
+  background-color: var(--btn-bg-color);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--btn-border-color);
+  color: var(--btn-color);
+  border-radius: var(--size-border-radius);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-size: var(--btn-font-size);
+  padding: 0.375em 1em;
+  line-height: 1.5;
+  cursor: pointer;
+  vertical-align: middle;
+
+  // 描边
+  &.outline {
+    background-color: transparent !important;
+    color: var(--btn-color) !important;
+  }
+  // 块
+  &.block {
+    display: block !important;
+    width: 100%;
+  }
+
+  // 状态
+  &:active {
+    transform: scale(1.2);
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
