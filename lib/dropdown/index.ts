@@ -24,11 +24,15 @@ export interface DropdownOpts {
   /**
    * 菜单，可以设置条目，也可以通过模块完全自定义内容
    */
-  menu: DropdownMenuItem[] | Module
+  menus: DropdownMenuItem[] | SubModulesOpt
   /**
    * 内容
    */
   content: SubModulesOpt
+  /**
+   * 菜单对齐方式，默认左对齐(left)
+   */
+  menusAlign?: 'left' | 'right'
 }
 /**
  * 下拉框
@@ -42,7 +46,7 @@ export class Dropdown extends DivModule {
     this.el.addEventListener('click', ev => {
       if (this.el.classList.contains('open')) {
         // 关闭
-        this.unbindClose()
+        this.close()
       } else {
         // 打开
         this.el.classList.add('open')
@@ -54,7 +58,7 @@ export class Dropdown extends DivModule {
             }
             // 关闭
             if (this.el.classList.contains('open')) {
-              this.unbindClose()
+              this.close()
             }
           }
           document.addEventListener('click', this.closeListener)
@@ -63,15 +67,16 @@ export class Dropdown extends DivModule {
     })
     // 内容
     this.addChild(...buildSubModules(opts.content))
+    const menusAlign = opts.menusAlign || 'left'
     // 菜单
-    if (Array.isArray(opts.menu)) {
+    if (Array.isArray(opts.menus)) {
       this.addChild(
         createDomModule({
-          classNames: ['wok-ui-dropdown-menu'],
+          classNames: ['wok-ui-dropdown-menu', menusAlign],
           onClick(ev) {
             ev.stopPropagation()
           },
-          children: opts.menu.map(item =>
+          children: opts.menus.map(item =>
             createDomModule({
               classNames: ['wok-ui-dropdown-item', item.disabled ? 'disabled' : ''],
               innerText: item.label,
@@ -79,7 +84,7 @@ export class Dropdown extends DivModule {
                 if (item.disabled) {
                   return
                 }
-                this.unbindClose()
+                this.close()
                 if (item.callback) item.callback()
               }
             })
@@ -89,19 +94,21 @@ export class Dropdown extends DivModule {
     } else {
       this.addChild(
         createDomModule({
-          classNames: ['wok-ui-dropdown-menu'],
+          classNames: ['wok-ui-dropdown-menu', menusAlign],
           onClick(ev) {
             ev.stopPropagation()
           },
-          children: [opts.menu]
+          children: opts.menus
         })
       )
     }
   }
 
-  private unbindClose() {
+  private close() {
     this.el.classList.remove('open')
-    if (this.closeListener) document.removeEventListener('click', this.closeListener)
+    if (this.closeListener) {
+      document.removeEventListener('click', this.closeListener)
+    }
   }
 
   destroy(): void {
