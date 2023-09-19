@@ -77,19 +77,29 @@ new Page().mount(document.body)
 
 组件库内置对中英文的支持，如果需要支持其它语言，需要自定义设置。
 
-调用 setI18nMessages 函数来设置新语言的信息.
+调用 getI18n 函数获取 i18n 对象，调用 setMsgs 方法可以设置一种语言的消息模板。
 
 ```ts
-setI18nMessages('Tibt', {
+getI18n().setMsgs('Tibt', {
   confirm: 'གཏན་འཁེལ་',
-  cancel: 'ཕྱིར་འབུད་བྱ་ཡུལ།'
+  cancel: 'ཕྱིར་འབུད་བྱ་ཡུལ།',
+  'form-err-required': 'འདེམས་ཚན་ངེས་པར་དུ་འབྲི་དགོས།',
+  'form-err-must-check': 'འདི་འདེམས་རོགས་།',
+  'form-err-number': 'ཨང་ཀིས་ནང་འཇུག་རོགས།',
+  'form-err-min': '{}ལས་ཆུང་མི་ཆོག',
+  'form-err-max': '{}ལས་ཆེ་མི་རུང་།',
+  'form-err-min-select': 'མ་ཐར་ཡང་འདེམས་ཁ{}འདེམས་རོགས།',
+  'form-err-max-select': 'གདམ་ག་མང་ཤོས་{}གདམ་ག་བྱས་ཆོག་།',
+  'form-err-min-length': 'ཉུང་མཐར་ཡང་{}ཡི་ཡིག་རྟགས་ནང་འཇུག་རོགས་།',
+  'form-err-max-length': 'ཆེས་མང་སྲིད་པའི་ཚད་{}ཡིག་རྟགས། '
 })
 ```
 
-调用 setLang 函数可以强制切换语言。默认的情况下，调用 navigator.languages 来获取当前系统设置的语言进行匹配，如果匹配不到，则使用默认（英文）。
+调用 i18n 对象的 setLang 方法可以切换语言，默认情况下使用 navigator.languages 中第一个
+可以被支持的语言，如果所有语言都不能被支持，使用默认语言（英文）。
 
 ```ts
-setLang('tibt')
+getI18n().setLang('tibt')
 ```
 
 ### 路由

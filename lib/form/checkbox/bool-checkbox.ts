@@ -1,4 +1,4 @@
-import { i18nMsg } from '../../i18n'
+import { getI18n } from '../../i18n'
 import { createDomModule } from '../../module'
 import { Text } from '../../text'
 import { FormInput } from '../form-input'
@@ -73,7 +73,7 @@ export class BoolCheckbox extends FormInput {
         msg:
           typeof this.opts.required === 'string'
             ? this.opts.required
-            : i18nMsg('form-err-must-check')
+            : getI18n().buildMsg('form-err-must-check')
       }
     } else {
       return { valid: true }

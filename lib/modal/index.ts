@@ -3,7 +3,7 @@ import './style.less'
 import { ANIMATION_PROVISION, Animation, animate } from '../animation'
 import { showWarning } from '../message'
 import { Button } from '../button'
-import { i18nMsg } from '../i18n'
+import { getI18n } from '../i18n'
 /**
  * 模态框选项
  */
@@ -212,7 +212,7 @@ class Dialog extends DivModule {
                   if (confirm) {
                     addChild(
                       new Button({
-                        text: typeof confirm === 'string' ? confirm : i18nMsg('confirm'),
+                        text: typeof confirm === 'string' ? confirm : getI18n().buildMsg('confirm'),
                         type: 'primary',
                         onClick(ev) {
                           if (opts.onConfirm) {
@@ -225,7 +225,7 @@ class Dialog extends DivModule {
                   if (cancel) {
                     addChild(
                       new Button({
-                        text: typeof cancel === 'string' ? cancel : i18nMsg('cancel'),
+                        text: typeof cancel === 'string' ? cancel : getI18n().buildMsg('cancel'),
                         onClick: ev => this.close().catch(showWarning)
                       })
                     )

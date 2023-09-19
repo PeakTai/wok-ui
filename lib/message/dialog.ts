@@ -1,7 +1,7 @@
 // 对话框提示消息，强制用户交互，层级比 loading 低一些
 import { Animation } from '../animation'
 import { getColor } from '../color'
-import { i18nMsg } from '../i18n'
+import { getI18n } from '../i18n'
 import { createDomModule } from '../module'
 import { Text } from '../text'
 import './dialog.less'
@@ -19,7 +19,7 @@ export function showAlert(msg: string): Promise<void> {
               classNames: ['dialog-footer'],
               children: [
                 createDomModule({
-                  innerText: i18nMsg('confirm'),
+                  innerText: getI18n().buildMsg('confirm'),
                   onClick(ev) {
                     res()
                     dialog.destroy()
@@ -47,14 +47,14 @@ export function showConfirm(msg: string): Promise<boolean> {
               classNames: ['dialog-footer'],
               children: [
                 createDomModule({
-                  innerText: i18nMsg('cancel'),
+                  innerText: getI18n().buildMsg('cancel'),
                   onClick(ev) {
                     res(false)
                     dialog.destroy()
                   }
                 }),
                 createDomModule({
-                  children: [new Text({ text: i18nMsg('confirm'), color: getColor().primary })],
+                  children: [new Text({ text: getI18n().buildMsg('confirm'), color: getColor().primary })],
                   onClick(ev) {
                     res(true)
                     dialog.destroy()

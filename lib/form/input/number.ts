@@ -1,4 +1,4 @@
-import { i18nMsg } from '../../i18n'
+import { getI18n } from '../../i18n'
 import { TextInput, ValidateResult } from './text'
 
 export interface NumberInputOpts {
@@ -67,18 +67,18 @@ export class NumberInput extends TextInput {
               msg:
                 typeof numOpts.required === 'string'
                   ? numOpts.required
-                  : i18nMsg('form-err-required')
+                  : getI18n().buildMsg('form-err-required')
             }
           }
           return { valid: true }
         }
         const num = parseFloat(val)
         if (isNaN(num)) {
-          return { valid: false, msg: i18nMsg('form-err-number') }
+          return { valid: false, msg: getI18n().buildMsg('form-err-number') }
         }
         if (typeof numOpts.max === 'number') {
           if (num > numOpts.max) {
-            return { valid: false, msg: i18nMsg('form-err-max', `${numOpts.max}`) }
+            return { valid: false, msg: getI18n().buildMsg('form-err-max', `${numOpts.max}`) }
           }
         } else if (numOpts.max) {
           if (num > numOpts.max.max) {
@@ -87,7 +87,7 @@ export class NumberInput extends TextInput {
         }
         if (typeof numOpts.min === 'number') {
           if (num < numOpts.min) {
-            return { valid: false, msg: i18nMsg('form-err-min', `${numOpts.min}`) }
+            return { valid: false, msg: getI18n().buildMsg('form-err-min', `${numOpts.min}`) }
           }
         } else if (numOpts.min) {
           if (num < numOpts.min.min) {

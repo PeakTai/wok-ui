@@ -1,4 +1,4 @@
-import { i18nMsg } from '../../i18n'
+import { getI18n } from '../../i18n'
 import { createDomModule } from '../../module'
 import { getSize } from '../../size'
 import { FormInput } from '../form-input'
@@ -85,7 +85,7 @@ export class Select extends FormInput {
           msg:
             typeof this.opts.required === 'string'
               ? this.opts.required
-              : i18nMsg('form-err-required')
+              : getI18n().buildMsg('form-err-required')
         }
       }
     }

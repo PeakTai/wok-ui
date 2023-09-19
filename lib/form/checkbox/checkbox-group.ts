@@ -1,4 +1,4 @@
-import { i18nMsg } from '../../i18n'
+import { getI18n } from '../../i18n'
 import { createDomModule } from '../../module'
 import { Text } from '../../text'
 import { FormInput } from '../form-input'
@@ -109,7 +109,7 @@ export class CheckboxGroup extends FormInput {
           msg:
             typeof this.opts.required === 'string'
               ? this.opts.required
-              : i18nMsg('form-err-must-check')
+              : getI18n().buildMsg('form-err-must-check')
         }
       } else {
         return { valid: true }
@@ -118,7 +118,7 @@ export class CheckboxGroup extends FormInput {
     // 有值校验
     if (typeof this.opts.minSelected === 'number') {
       if (this.values.length < this.opts.minSelected) {
-        return { valid: false, msg: i18nMsg('form-err-min-select', `${this.opts.minSelected}`) }
+        return { valid: false, msg: getI18n().buildMsg('form-err-min-select', `${this.opts.minSelected}`) }
       }
     } else if (this.opts.minSelected) {
       if (this.values.length < this.opts.minSelected.minSelected) {
@@ -127,7 +127,7 @@ export class CheckboxGroup extends FormInput {
     }
     if (typeof this.opts.maxSelected === 'number') {
       if (this.values.length > this.opts.maxSelected) {
-        return { valid: false, msg: i18nMsg('form-err-max-select', `${this.opts.maxSelected}`) }
+        return { valid: false, msg: getI18n().buildMsg('form-err-max-select', `${this.opts.maxSelected}`) }
       }
     } else if (this.opts.maxSelected) {
       if (this.values.length > this.opts.maxSelected.maxSelected) {

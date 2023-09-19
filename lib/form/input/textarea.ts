@@ -1,4 +1,4 @@
-import { i18nMsg } from '../../i18n'
+import { getI18n } from '../../i18n'
 import { getSize } from '../../size'
 import { FormInput } from '../form-input'
 import { InvalidFeedback } from '../invalid-feedback'
@@ -91,7 +91,7 @@ export class TextArea extends FormInput {
           msg:
             typeof this.opts.required === 'string'
               ? this.opts.required
-              : i18nMsg('form-err-required')
+              : getI18n().buildMsg('form-err-required')
         }
       }
     }
@@ -100,7 +100,7 @@ export class TextArea extends FormInput {
     }
     if (typeof this.opts.minLength === 'number') {
       if (val.length < this.opts.minLength) {
-        return { valid: false, msg: i18nMsg('form-err-min-length', `${this.opts.minLength}`) }
+        return { valid: false, msg: getI18n().buildMsg('form-err-min-length', `${this.opts.minLength}`) }
       }
     } else if (this.opts.minLength) {
       if (val.length < this.opts.minLength.minLength) {
@@ -109,7 +109,7 @@ export class TextArea extends FormInput {
     }
     if (typeof this.opts.maxLength === 'number') {
       if (val.length > this.opts.maxLength) {
-        return { valid: false, msg: i18nMsg('form-err-max-length', `${this.opts.maxLength}`) }
+        return { valid: false, msg: getI18n().buildMsg('form-err-max-length', `${this.opts.maxLength}`) }
       }
     } else if (this.opts.maxLength) {
       if (val.length > this.opts.maxLength.maxLength) {

@@ -1,4 +1,4 @@
-import { i18nMsg } from '../../i18n'
+import { getI18n } from '../../i18n'
 import { TextInput } from './text'
 
 export interface DateInputOpts {
@@ -58,7 +58,7 @@ export class DateInput extends TextInput {
               msg:
                 typeof dateOpts.required === 'string'
                   ? dateOpts.required
-                  : i18nMsg('form-err-required')
+                  : getI18n().buildMsg('form-err-required')
             }
           }
           return { valid: true }
@@ -66,7 +66,7 @@ export class DateInput extends TextInput {
         const date = parseDate(val)
         if (dateOpts.min instanceof Date) {
           if (date.getTime() < dateOpts.min.getTime()) {
-            return { valid: false, msg: i18nMsg('form-err-min', `${formatDate(dateOpts.min)}`) }
+            return { valid: false, msg: getI18n().buildMsg('form-err-min', `${formatDate(dateOpts.min)}`) }
           }
         } else if (dateOpts.min) {
           if (date.getTime() < dateOpts.min.min.getTime()) {
@@ -75,7 +75,7 @@ export class DateInput extends TextInput {
         }
         if (dateOpts.max instanceof Date) {
           if (date.getTime() > dateOpts.max.getTime()) {
-            return { valid: false, msg: i18nMsg('form-err-max', `${formatDate(dateOpts.max)}`) }
+            return { valid: false, msg: getI18n().buildMsg('form-err-max', `${formatDate(dateOpts.max)}`) }
           }
         } else if (dateOpts.max) {
           if (date.getTime() > dateOpts.max.max.getTime()) {

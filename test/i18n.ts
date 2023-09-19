@@ -3,20 +3,17 @@ import {
   FullRenderingModule,
   HBox,
   LargeTitle,
-  PrimaryBodyText,
   Spacer,
-  getLang,
-  i18nMsg,
+  getI18n,
   rem,
-  setI18nMessages,
-  setLang
+  showWarning
 } from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends FullRenderingModule {
   constructor() {
     super()
-    setI18nMessages('Tibt', {
+    getI18n().setMsgs('Tibt', {
       confirm: 'གཏན་འཁེལ་',
       cancel: 'ཕྱིར་འབུད་བྱ་ཡུལ།',
       'form-err-required': 'འདེམས་ཚན་ངེས་པར་དུ་འབྲི་དགོས།',
@@ -33,28 +30,29 @@ class Page extends FullRenderingModule {
   }
 
   protected buildContent(): void {
+    const i18n = getI18n()
     this.addChild(
       new LargeTitle('国际化'),
       new Spacer('lg'),
-      `当前语言：${getLang()}`,
+      `当前语言：${i18n.getLang()}`,
       new Spacer(),
-      `${i18nMsg('confirm')} / ${i18nMsg('cancel')}`,
+      `${i18n.buildMsg('confirm')} / ${i18n.buildMsg('cancel')}`,
       new Spacer(),
-      `${i18nMsg('form-err-required')}`,
+      `${i18n.buildMsg('form-err-required')}`,
       new Spacer(),
-      `${i18nMsg('form-err-must-check')}`,
+      `${i18n.buildMsg('form-err-must-check')}`,
       new Spacer(),
-      `${i18nMsg('form-err-min', '1')}`,
+      `${i18n.buildMsg('form-err-min', '1')}`,
       new Spacer(),
-      `${i18nMsg('form-err-max', '8')}`,
+      `${i18n.buildMsg('form-err-max', '8')}`,
       new Spacer(),
-      `${i18nMsg('form-err-max-select', '6')}`,
+      `${i18n.buildMsg('form-err-max-select', '6')}`,
       new Spacer(),
-      `${i18nMsg('form-err-min-select', '2')}`,
+      `${i18n.buildMsg('form-err-min-select', '2')}`,
       new Spacer(),
-      `${i18nMsg('form-err-min-length', '2')}`,
+      `${i18n.buildMsg('form-err-min-length', '2')}`,
       new Spacer(),
-      `${i18nMsg('form-err-max-length', '32')}`,
+      `${i18n.buildMsg('form-err-max-length', '32')}`,
       new Spacer(),
       new HBox({
         gap: rem(1),
@@ -62,21 +60,25 @@ class Page extends FullRenderingModule {
           new Button({
             text: '切换为中文',
             onClick: ev => {
-              setLang('zh-cn')
+              i18n.setLang('zh-cn')
               this.render()
             }
           }),
           new Button({
             text: 'switch to english',
             onClick: ev => {
-              setLang('en-us')
+              const res = i18n.setLang('en-us')
+              console.log('english', res)
               this.render()
             }
           }),
           new Button({
             text: '切换到自定义的藏语',
             onClick: ev => {
-              setLang('tibt')
+              const res = i18n.setLang('tibt')
+              if (!res) {
+                showWarning('设置为藏语失败')
+              }
               this.render()
             }
           })
