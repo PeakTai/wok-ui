@@ -73,35 +73,6 @@ class Page extends DivModule {
 new Page().mount(document.body)
 ```
 
-### 国际化
-
-组件库内置对中英文的支持，如果需要支持其它语言，需要自定义设置。
-
-调用 getI18n 函数获取 i18n 对象，调用 setMsgs 方法可以设置一种语言的消息模板。
-
-```ts
-getI18n().setMsgs('Tibt', {
-  confirm: 'གཏན་འཁེལ་',
-  cancel: 'ཕྱིར་འབུད་བྱ་ཡུལ།',
-  'form-err-required': 'འདེམས་ཚན་ངེས་པར་དུ་འབྲི་དགོས།',
-  'form-err-must-check': 'འདི་འདེམས་རོགས་།',
-  'form-err-number': 'ཨང་ཀིས་ནང་འཇུག་རོགས།',
-  'form-err-min': '{}ལས་ཆུང་མི་ཆོག',
-  'form-err-max': '{}ལས་ཆེ་མི་རུང་།',
-  'form-err-min-select': 'མ་ཐར་ཡང་འདེམས་ཁ{}འདེམས་རོགས།',
-  'form-err-max-select': 'གདམ་ག་མང་ཤོས་{}གདམ་ག་བྱས་ཆོག་།',
-  'form-err-min-length': 'ཉུང་མཐར་ཡང་{}ཡི་ཡིག་རྟགས་ནང་འཇུག་རོགས་།',
-  'form-err-max-length': 'ཆེས་མང་སྲིད་པའི་ཚད་{}ཡིག་རྟགས། '
-})
-```
-
-调用 i18n 对象的 setLang 方法可以切换语言，默认情况下使用 navigator.languages 中第一个
-可以被支持的语言，如果所有语言都不能被支持，使用默认语言（英文）。
-
-```ts
-getI18n().setLang('tibt')
-```
-
 ### 路由
 
 如果要使用路由，可以使用 initRouter 函数，函数返回一个 Router 实例，也是一个模块，可以直接挂载到 body 上。
@@ -124,6 +95,106 @@ initRouter({
 ```
 
 [更多组件的使用方法见测试示例的源代码。](./test/main.ts)
+
+### 国际化
+
+组件库内置对中英文的支持，如果需要支持其它语言，需要自定义设置。
+
+调用 getI18n 函数获取 i18n 对象，调用 setMsgs 方法可以设置一种语言的消息模板。
+
+```ts
+const i18n = getI18n()
+i18n.setMsgs('Tibt', {
+  confirm: 'གཏན་འཁེལ་',
+  cancel: 'ཕྱིར་འབུད་བྱ་ཡུལ།',
+  'form-err-required': 'འདེམས་ཚན་ངེས་པར་དུ་འབྲི་དགོས།',
+  'form-err-must-check': 'འདི་འདེམས་རོགས་།',
+  'form-err-number': 'ཨང་ཀིས་ནང་འཇུག་རོགས།',
+  'form-err-min': '{}ལས་ཆུང་མི་ཆོག',
+  'form-err-max': '{}ལས་ཆེ་མི་རུང་།',
+  'form-err-min-select': 'མ་ཐར་ཡང་འདེམས་ཁ{}འདེམས་རོགས།',
+  'form-err-max-select': 'གདམ་ག་མང་ཤོས་{}གདམ་ག་བྱས་ཆོག་།',
+  'form-err-min-length': 'ཉུང་མཐར་ཡང་{}ཡི་ཡིག་རྟགས་ནང་འཇུག་རོགས་།',
+  'form-err-max-length': 'ཆེས་མང་སྲིད་པའི་ཚད་{}ཡིག་རྟགས། '
+})
+// 也可以设置异步加载，这样在使用时可以按需加载，减少代码打包体积
+i18n.setMsgs('Tibt', () => fetch('/wok-ui/i18n/tibt.json').then(res => res.json()))
+```
+
+在完成自定义语言的设置后，调用 i18n 对象的 setLang 切换到合适的语言。
+
+```ts
+getI18n().setLang('tibt')
+```
+
+setLang 方法是异步的，返回 Promise 对象，这是因为需要处理异步加载语言的情况。最好等待 setLang 方法
+完成后才初始化页面，保证页面在渲染时使用的是正确的语言。
+
+### 国际化扩展
+
+在实际开发中，如果项目需要国际化，可以在 wok-ui 的基础上进行扩展，这样做可以让项目与框架的语言保持一致。
+
+getI18n 函数返回的 i18n 对象有一个 extend 方法，可以扩展生成一个新的 i18n 对象。当更改 i18n 对象的语言时，
+扩展的对象也会改变，可在扩展生成的对象中设置项目需要的消息模板。
+
+下面是完整的代码演示。
+
+```ts
+/**
+ * 扩展的 i18n 消息
+ */
+interface ExtI18nMsgs {
+  currentLanguage: string
+  switchToCustomLanguage: string
+  internationalization: string
+}
+
+/**
+ * 扩展 i18n 全局对象
+ */
+let extI18n: I18n<ExtI18nMsgs> | undefined = undefined
+
+/**
+ * 初始化 i18n ，完成所有项目中支持的语言的设置，并且切换到合适的语言.
+ * 项目需要在初始化 i18n 完成后，才进行页面的处理，否则页面渲染出来可能不是合适的语言.
+ */
+export async function initI18n() {
+  if (extI18n) {
+    throw new Error(`Initialization has finished !`)
+  }
+  const i18n = getI18n()
+  // 基础库添加新的语言，设置为异步加载
+  i18n.setMsgs('Tibt', () => fetch('/wok-ui/i18n/tibt.json').then(res => res.json()))
+
+  // 先加载默认语言，实际开发中默认语言也可以直接写代码文件中打包集成，减少一次请求
+  // 反正无论如何也要有一个默认语言的数据，多一次请求网络代价还要更大一些
+  const enUs = await fetch('/wok-ui/i18n/ext-en-us.json').then(res => res.json())
+
+  // 扩展生成新的 i18n 对象，必须设置英文消息模板
+  // i18n 组件统一默认使用英文，这样扩展的 i18n 对象与原 i18n 对象可以保持一致
+  extI18n = i18n.extend<ExtI18nMsgs>(enUs)
+
+  // 扩展部分设置异步加载其它语言，在需要时才会去拉取数据
+  extI18n.setMsgs('zh-CN', () => fetch('/wok-ui/i18n/ext-zh-cn.json').then(res => res.json()))
+  extI18n.setMsgs('tibt', () => fetch('/wok-ui/i18n/ext-tibt.json').then(res => res.json()))
+
+  // 设置完所有语言，切换到合适的语言
+  // 这里使用浏览器设置的语言列表，实际项目中也有可能会使用用户在平台中设置的语言
+  const supportedLangs = i18n.getSupportedLanguageTags(...navigator.languages)
+  if (supportedLangs.length) {
+    await i18n.setLang(supportedLangs[0])
+  }
+}
+/**
+ * 获取扩展的 i18n 对象
+ */
+export function getExtI18n(): I18n<ExtI18nMsgs> {
+  if (!extI18n) {
+    throw new Error(`Please invoke initI18n() first !`)
+  }
+  return extI18n
+}
+```
 
 ## css 变量与自定义
 

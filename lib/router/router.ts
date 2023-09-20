@@ -253,7 +253,11 @@ export abstract class Router extends Module {
   abstract buildUrl(path: string | { path: string; query: Query }): string
   abstract push(path: string | { path: string; query: Query }): void
   abstract replace(path: string | { path: string; query: Query }): void
-
+  /**
+   * 按名称获取链接上的参数，返回第一个值，如“url?a=1&a=2”，getParam('a') 返回 '1'
+   * @param paramName 参数名称
+   * @returns
+   */
   getParam(paramName: string): string {
     const val = this.query[paramName]
     if (!val) {
@@ -261,12 +265,20 @@ export abstract class Router extends Module {
     }
     return typeof val === 'string' ? val : val[0] || ''
   }
-
+  /**
+   * 获取链接上的所有指定名称的参数值，如“url?a=1&a=2”，getParamVals('a') 返回 ['1','2']
+   * @param paramName
+   * @returns
+   */
   getParamVals(paramName: string): string[] {
     const val = this.query[paramName]
     return typeof val === 'string' ? [val] : val
   }
-
+  /**
+   * 获取路径变量，如路由路径是“/books/:id”，则在相应的页面通过 getPathVar('id') 可以获取到 :id 表示的这一段路径内容
+   * @param varName
+   * @returns
+   */
   getPathVar(varName: string): string {
     return this.pathVars[varName] || ''
   }
