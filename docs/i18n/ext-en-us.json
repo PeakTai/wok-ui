@@ -1,0 +1,20 @@
+{
+  "color": "color",
+  "text": "text",
+  "icon": "icon",
+  "button": "button",
+  "message": "message",
+  "dropdown": "dropdown",
+  "table": "table",
+  "layout": "layout",
+  "modal": "modal",
+  "drawer": "drawer",
+  "form": "form",
+  "fullRendering": "full rendering",
+  "responsive": "responsive",
+  "routerTest": "test router",
+  "page404": "not found",
+  "currentLanguage": "Current language",
+  "switchToCustomLanguage": "Switch to a custom language",
+  "internationalization": "internationalization"
+}
