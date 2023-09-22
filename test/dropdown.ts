@@ -7,9 +7,10 @@ import {
   Title,
   createDomModule,
   rem,
-  showSuccess
+  showSuccess,
+  Dropdown,
+  Dropup
 } from '../lib'
-import { Dropdown, Dropup } from './../lib/dropdown/index'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {

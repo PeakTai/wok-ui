@@ -1,4 +1,4 @@
-import { DivModule, Module } from './../../lib/module'
+import { DivModule, Module } from './../../lib'
 import './style.less'
 
 /**

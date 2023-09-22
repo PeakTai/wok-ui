@@ -8,9 +8,9 @@ import {
   Spacer,
   SvgIcon,
   createDomModule,
-  getColor
+  getColor,
+  getSize
 } from '../lib'
-import { getSize } from './../lib/size'
 import { TestLayout } from './layout'
 import { generateRandomColor } from './utils/color'
 
