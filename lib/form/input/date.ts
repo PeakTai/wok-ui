@@ -1,6 +1,21 @@
 import { getI18n } from '../../i18n'
 import { TextInput } from './text'
 
+function formatDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+
+  const monthStr = `${month}`.padStart(2, '0')
+  const dayStr = `${day}`.padStart(2, '0')
+  return `${year}-${monthStr}-${dayStr}`
+}
+
+function parseDate(dateStr: string): Date | undefined {
+  const date = new Date(dateStr)
+  return isNaN(date.getTime()) ? undefined : date
+}
+
 export interface DateInputOpts {
   /**
    * 是否必填. 可自定义错误信息
@@ -51,7 +66,8 @@ export class DateInput extends TextInput {
       placeholder: dateOpts.placeholder,
       size: dateOpts.size,
       validator(val) {
-        if (!val) {
+        const date = parseDate(val)
+        if (!date) {
           if (dateOpts.required) {
             return {
               valid: false,
@@ -63,10 +79,12 @@ export class DateInput extends TextInput {
           }
           return { valid: true }
         }
-        const date = parseDate(val)
         if (dateOpts.min instanceof Date) {
           if (date.getTime() < dateOpts.min.getTime()) {
-            return { valid: false, msg: getI18n().buildMsg('form-err-min', `${formatDate(dateOpts.min)}`) }
+            return {
+              valid: false,
+              msg: getI18n().buildMsg('form-err-min', `${formatDate(dateOpts.min)}`)
+            }
           }
         } else if (dateOpts.min) {
           if (date.getTime() < dateOpts.min.min.getTime()) {
@@ -75,7 +93,10 @@ export class DateInput extends TextInput {
         }
         if (dateOpts.max instanceof Date) {
           if (date.getTime() > dateOpts.max.getTime()) {
-            return { valid: false, msg: getI18n().buildMsg('form-err-max', `${formatDate(dateOpts.max)}`) }
+            return {
+              valid: false,
+              msg: getI18n().buildMsg('form-err-max', `${formatDate(dateOpts.max)}`)
+            }
           }
         } else if (dateOpts.max) {
           if (date.getTime() > dateOpts.max.max.getTime()) {
@@ -103,24 +124,9 @@ export class DateInput extends TextInput {
       this.input.min = formatDate(dateOpts.min.min)
     }
     if (dateOpts.max instanceof Date) {
-      this.input.min = formatDate(dateOpts.max)
+      this.input.max = formatDate(dateOpts.max)
     } else if (dateOpts.max) {
-      this.input.min = formatDate(dateOpts.max.max)
+      this.input.max = formatDate(dateOpts.max.max)
     }
   }
-}
-
-function formatDate(date: Date): string {
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-
-  const monthStr = month >= 10 ? `${month}` : `0${month}`
-  const dayStr = day >= 10 ? `${date}` : `0${day}`
-  return `${year}-${monthStr}-${dayStr}`
-}
-
-function parseDate(dateStr: string): Date {
-  // eg: 2022-11-5 00:00:00 GMT+0800
-  return new Date(dateStr)
 }
