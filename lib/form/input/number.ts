@@ -56,7 +56,7 @@ export class NumberInput extends TextInput {
     super({
       required: numOpts.required,
       placeholder: numOpts.placeholder,
-      value: numOpts.value ? `${numOpts.value}` : undefined,
+      value: typeof numOpts.value === 'number' ? `${numOpts.value}` : undefined,
       disabled: numOpts.disabled,
       size: numOpts.size,
       validator(val) {
