@@ -112,12 +112,13 @@ export function showWarning(errMsg: any) {
   let message = ''
   if (typeof errMsg === 'string') {
     message = errMsg
-  } else if (errMsg.message) {
+  } else if (errMsg instanceof Error) {
     message = errMsg.message
+    console.error(errMsg)
   } else {
     message = JSON.stringify(errMsg)
   }
-  showToast({ type: 'warning', text: errMsg })
+  showToast({ type: 'warning', text: message })
 }
 
 /**
