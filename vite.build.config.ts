@@ -17,6 +17,7 @@ export default defineConfig({
   publicDir: '',
   build: {
     minify: true,
+    target: 'esnext',
     lib: {
       entry: path.resolve(__dirname, 'lib/index.ts'),
       name: 'wokUI',
