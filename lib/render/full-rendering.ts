@@ -10,19 +10,18 @@ import { CachedModule } from './cached-module'
  *
  * 一般情况下全量渲染不会导致滚动位置变化引发页面抖动，但是如果内容里有图片就会
  * 出现滚动位置变化和闪烁的情况，因为图片加载前和加载成功后会有大小变化。
- * 目前没有好的办法可以完美解决，这是全量渲染的缺陷.
- * 可以封装图片组件，在图片没有加载成功之前使用尺寸合适的占位符来缓解.
+ * 目前可以通过 cacheModule 来缓存图片组件避免重新渲染来解决。
  */
 export abstract class FullRenderingModule extends Module {
   constructor(rootEl?: HTMLElement) {
     super(rootEl || document.createElement('div'))
   }
 
-  private __pendingRender = false
+  #pendingRender = false
   /**
    * 缓存的模块
    */
-  private __cachedModules = new Map<string, CachedModule>()
+  #cachedModules = new Map<string, CachedModule>()
 
   /**
    * 渲染。会尽可能减少负载的情况下重新构建内容。
@@ -30,12 +29,12 @@ export abstract class FullRenderingModule extends Module {
    * FullRenderingModule 无法满足这种需求。
    */
   protected render() {
-    this.__pendingRender = true
+    this.#pendingRender = true
     setTimeout(() => {
-      if (!this.__pendingRender) {
+      if (!this.#pendingRender) {
         return
       }
-      this.__pendingRender = false
+      this.#pendingRender = false
       try {
         this.empty()
         this.buildContent()
@@ -54,7 +53,7 @@ export abstract class FullRenderingModule extends Module {
 
   /**
    * 缓存一个模块，返回的是一个特殊的模块，能够复用，避免重新渲染.
-   * 被缓存的模块将会和全量渲染模块销毁的时候一起被销毁，而无法直接被销毁.
+   * 被缓存的模块将会和全量渲染模块销毁的时候一起被销毁，也可以通过 removeCache 方法主要将其销毁.
    * @param opts
    */
   protected cacheModule(opts: {
@@ -68,36 +67,36 @@ export abstract class FullRenderingModule extends Module {
      */
     module: () => Module
   }): CachedModule {
-    const cachedModule = this.__cachedModules.get(opts.key)
+    const cachedModule = this.#cachedModules.get(opts.key)
     if (cachedModule) {
       return cachedModule
     }
     const module = new CachedModule(opts.module())
-    this.__cachedModules.set(opts.key, module)
+    this.#cachedModules.set(opts.key, module)
     return module
   }
 
   /**
-   * 删除缓存模块
+   * 删除缓存
    * @param key
    */
   protected removeCache(key: string) {
-    const module = this.__cachedModules.get(key)
+    const module = this.#cachedModules.get(key)
     if (module) {
       module.destroyThoroughly()
-      this.__cachedModules.delete(key)
+      this.#cachedModules.delete(key)
     }
   }
   /**
    * 清理掉所有的缓存
    */
   protected clearCaches() {
-    Array.from(this.__cachedModules.values()).forEach(m => m.destroyThoroughly())
-    this.__cachedModules.clear()
+    Array.from(this.#cachedModules.values()).forEach(m => m.destroyThoroughly())
+    this.#cachedModules.clear()
   }
 
   destroy(): void {
-    Array.from(this.__cachedModules.values()).forEach(m => m.destroyThoroughly())
+    Array.from(this.#cachedModules.values()).forEach(m => m.destroyThoroughly())
     super.destroy()
   }
 }

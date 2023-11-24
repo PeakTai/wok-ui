@@ -28,8 +28,10 @@ export interface Drawer {
 }
 
 class Backdrop extends DivModule {
-  constructor(private readonly opts: { onDestroy: () => void }) {
+  readonly #opts: { onDestroy: () => void }
+  constructor(opts: { onDestroy: () => void }) {
     super('wok-ui-drawer')
+    this.#opts = opts
     // 每点击一次，关闭一个弹出的抽屉
     this.el.addEventListener('click', () => {
       const children = this.getChildren()
@@ -54,15 +56,17 @@ class Backdrop extends DivModule {
 
   destroy(): void {
     super.destroy()
-    this.opts.onDestroy()
+    this.#opts.onDestroy()
   }
 }
 
 class Content extends DivModule implements DivModule {
-  private callbacked = false
-  private destroyListener?: () => void
-  constructor(private readonly opts: DrawerOpts) {
+  #callbacked = false
+  #destroyListener?: () => void
+  readonly #opts: DrawerOpts
+  constructor(opts: DrawerOpts) {
     super('wok-ui-drawer-content', ANIMATION_PROVISION)
+    this.#opts = opts
     this.el.addEventListener('click', e => e.stopPropagation())
     // 位置
     if (opts.placement === 'left') {
@@ -74,7 +78,7 @@ class Content extends DivModule implements DivModule {
     } else {
       this.el.classList.add('right')
     }
-    this.enter().catch(showWarning)
+    this.#enter().catch(showWarning)
     // 标题
     if (opts.title) {
       this.addChild(
@@ -106,55 +110,55 @@ class Content extends DivModule implements DivModule {
    * 入场
    * @returns
    */
-  private enter() {
-    if (this.opts.placement === 'left') {
+  #enter() {
+    if (this.#opts.placement === 'left') {
       return animate({ el: this.el, animation: Animation.SLIDE_LEFT })
-    } else if (this.opts.placement === 'top') {
+    } else if (this.#opts.placement === 'top') {
       return animate({ el: this.el, animation: Animation.SLIDE_TOP })
-    } else if (this.opts.placement === 'bottom') {
+    } else if (this.#opts.placement === 'bottom') {
       return animate({ el: this.el, animation: Animation.SLIDE_BOTTOM })
     } else {
       return animate({ el: this.el, animation: Animation.SLIDE_RIGHT })
     }
   }
 
-  private leaveAnimating = false
+  #leaveAnimating = false
   /**
    * 添加退场动画.
    */
-  private async leave() {
-    this.leaveAnimating = true
+  async #leave() {
+    this.#leaveAnimating = true
     try {
-      if (this.opts.placement === 'left') {
+      if (this.#opts.placement === 'left') {
         await animate({ el: this.el, animation: Animation.SLIDE_LEFT, reverse: true })
-      } else if (this.opts.placement === 'top') {
+      } else if (this.#opts.placement === 'top') {
         await animate({ el: this.el, animation: Animation.SLIDE_TOP, reverse: true })
-      } else if (this.opts.placement === 'bottom') {
+      } else if (this.#opts.placement === 'bottom') {
         await animate({ el: this.el, animation: Animation.SLIDE_BOTTOM, reverse: true })
       } else {
         await animate({ el: this.el, animation: Animation.SLIDE_RIGHT, reverse: true })
       }
     } finally {
-      this.leaveAnimating = false
+      this.#leaveAnimating = false
     }
   }
 
   onDestroy(listener: () => void) {
-    this.destroyListener = listener
+    this.#destroyListener = listener
   }
 
   destroy(): void {
-    if (this.leaveAnimating) {
+    if (this.#leaveAnimating) {
       return
     }
-    this.leave().then(() => {
+    this.#leave().then(() => {
       super.destroy()
-      if (this.destroyListener) {
-        this.destroyListener()
+      if (this.#destroyListener) {
+        this.#destroyListener()
       }
-      if (this.opts.onClose && !this.callbacked) {
-        this.opts.onClose()
-        this.callbacked = true
+      if (this.#opts.onClose && !this.#callbacked) {
+        this.#opts.onClose()
+        this.#callbacked = true
       }
     })
   }

@@ -2,12 +2,12 @@
  * 模块基类. 一个模块是对一到多个 dom 元素的封装，其作用是快速复用常用的 dom 组合。
  */
 export abstract class Module {
-  private children: Module[] = []
-  private parent?: Module
+  #children: Module[] = []
+  #parent?: Module
   /**
    * 销毁标识
    */
-  private ___destroyed = false
+  #destroyed = false
   /**
    * 构建模块.
    * @param el 根元素.
@@ -18,7 +18,7 @@ export abstract class Module {
     if (newChild.getParent()) {
       throw new Error('The module you want to insert already has a parent module')
     }
-    const existingChild = this.children[index]
+    const existingChild = this.#children[index]
     if (!existingChild) {
       return false
     }
@@ -29,25 +29,25 @@ export abstract class Module {
 
   protected insertChild(index: number, newChild: ConvertibleModule): boolean {
     const newChildModule = convertToModule(newChild)
-    if (newChildModule.___destroyed) {
+    if (newChildModule.#destroyed) {
       console.error('The module to be inserted has been destroyed', newChildModule)
       throw new Error('The module to be inserted has been destroyed')
     }
     if (newChildModule.getParent()) {
       throw new Error('The module you want to insert already has a parent module')
     }
-    if (index === this.children.length) {
+    if (index === this.#children.length) {
       this.addChild(newChildModule)
-      newChildModule.parent = this
+      newChildModule.#parent = this
       return true
     }
-    const existingChild = this.children[index]
+    const existingChild = this.#children[index]
     if (!existingChild) {
       return false
     }
     this.el.insertBefore(newChildModule.el, existingChild.el)
-    this.children.splice(index, 0, newChildModule)
-    newChildModule.parent = this
+    this.#children.splice(index, 0, newChildModule)
+    newChildModule.#parent = this
     return true
   }
 
@@ -62,8 +62,8 @@ export abstract class Module {
     if (!sourceChild || !targetChild) {
       return false
     }
-    this.children.splice(sourceIndex, 1)
-    this.children.splice(targetIndex, 0, sourceChild)
+    this.#children.splice(sourceIndex, 1)
+    this.#children.splice(targetIndex, 0, sourceChild)
     if (sourceIndex > targetIndex) {
       this.el.insertBefore(sourceChild.el, targetChild.el)
     } else {
@@ -79,42 +79,42 @@ export abstract class Module {
   }
 
   destroy(): void {
-    if (this.parent) {
+    if (this.#parent) {
       // 解除关系
-      const index = this.parent.children.indexOf(this)
+      const index = this.#parent.#children.indexOf(this)
       if (index !== -1) {
-        this.parent.children.splice(index, 1)
+        this.#parent.#children.splice(index, 1)
       }
-      this.parent = undefined
+      this.#parent = undefined
     }
     this.empty()
     this.el.remove()
-    this.___destroyed = true
+    this.#destroyed = true
   }
 
   protected empty(): void {
-    ;[...this.children].forEach(c => c.destroy())
+    ;[...this.#children].forEach(c => c.destroy())
   }
 
   getParent(): Module | undefined {
-    return this.parent
+    return this.#parent
   }
   /**
    * 用于别的模块替换当前模块.
    * @param module
    */
   replaceBy(module: Module): boolean {
-    if (!this.parent) {
+    if (!this.#parent) {
       return false
     }
     const idx = this.getIndex()
-    this.parent.replaceChild(idx, module)
+    this.#parent.replaceChild(idx, module)
     return true
   }
 
   protected find<T>(predicate: (m: Module) => boolean): T[] {
     const result: T[] = []
-    for (const child of this.children) {
+    for (const child of this.#children) {
       if (predicate(child)) {
         result.push(child as T)
       }
@@ -124,7 +124,7 @@ export abstract class Module {
   }
 
   protected findFirst<T>(predicate: (m: Module) => boolean): T | undefined {
-    for (const child of this.children) {
+    for (const child of this.#children) {
       if (predicate(child)) {
         return child as T
       }
@@ -139,12 +139,12 @@ export abstract class Module {
   protected addChild(...child: ConvertibleModule[]): void {
     // 外部调用 addChid(...[]) 会导致得到的 child 是 [undefined]，需要处理下，否则会有错误
     // 虽然外部检查后再调用可以避免，但是太过于繁琐了，这里处理更方便
-    child.filter(c => c !== undefined).forEach(c => this.addSingleChild(c))
+    child.filter(c => c !== undefined).forEach(c => this.#addSingleChild(c))
   }
 
-  private addSingleChild(child: ConvertibleModule): void {
+  #addSingleChild(child: ConvertibleModule): void {
     const childModule = convertToModule(child)
-    if (childModule.___destroyed) {
+    if (childModule.#destroyed) {
       console.error('The module to be added has been destroyed', child)
       throw new Error('The module to be added has been destroyed')
     }
@@ -152,8 +152,8 @@ export abstract class Module {
       throw new Error('The module you want to add already has a parent module')
     }
     childModule.mount(this.el)
-    this.children.push(childModule)
-    childModule.parent = this
+    this.#children.push(childModule)
+    childModule.#parent = this
   }
 
   protected removeChild(moduleOrIndex: Module | number): boolean {
@@ -161,26 +161,26 @@ export abstract class Module {
     let index = -1
     if (typeof moduleOrIndex === 'number') {
       index = moduleOrIndex
-      child = this.children[moduleOrIndex]
+      child = this.#children[moduleOrIndex]
     } else {
       child = moduleOrIndex
-      index = this.children.findIndex(c => c === moduleOrIndex)
+      index = this.#children.findIndex(c => c === moduleOrIndex)
     }
     if (!child || index === -1) {
       return false
     }
-    child.parent = undefined
+    child.#parent = undefined
     child.destroy()
-    this.children.splice(index, 1)
+    this.#children.splice(index, 1)
     return true
   }
 
   protected getChildren(): Readonly<Module[]> {
-    return this.children
+    return this.#children
   }
 
   protected getChild(index: number): Module | undefined {
-    return this.children[index]
+    return this.#children[index]
   }
 
   /**
@@ -188,10 +188,13 @@ export abstract class Module {
    * @param parentEl
    */
   mount(parentEl: Element): void {
-    if (this.parent) {
+    if (this.#parent) {
       throw new Error(
         'The current module has already been added to a parent module and cannot be mounted'
       )
+    }
+    if (this.#destroyed) {
+      throw new Error('The current module has been destroyed !')
     }
     parentEl.appendChild(this.el)
   }
@@ -208,10 +211,10 @@ export abstract class Module {
    * @returns
    */
   getIndex(): number {
-    if (!this.parent) {
+    if (!this.#parent) {
       return -1
     }
-    return this.parent.getChildren().findIndex(c => c === this)
+    return this.#parent.getChildren().findIndex(c => c === this)
   }
 
   /**
@@ -346,11 +349,17 @@ export interface CreateDomModuleOptions {
    */
   children?: SubModulesOpt
   /**
-   * 预处理，可对要转换成模块的 html 元素做一些额外的操作
+   * 前置处理，可以在元素刚创建时做一些额外的操作
    * @param el
    * @returns
    */
   preHandle?: (el: HTMLElement) => void
+  /**
+   * 后置处理，可以在元素处理完成后（属性赋值和子模块构造完成）做一些额外的操作
+   * @param el
+   * @returns
+   */
+  postHandle?: (el: HTMLElement) => void
   /**
    * 点击事件，因为点击比较常用，所以有单独的设置项
    */
@@ -368,6 +377,10 @@ export interface CreateDomModuleOptions {
  */
 export function createDomModule(options: CreateDomModuleOptions): Module {
   const el = document.createElement(options.tag || 'div') as HTMLElement
+  // 前置处理
+  if (options.preHandle) {
+    options.preHandle(el)
+  }
   if (options.innerText) {
     el.innerText = options.innerText
   } else if (options.innerHTML) {
@@ -406,9 +419,10 @@ export function createDomModule(options: CreateDomModuleOptions): Module {
       el.addEventListener(evtName, options.events[evtName])
     }
   }
-  if (options.preHandle) {
-    options.preHandle(el)
-  }
   const children: Module[] = options.children ? buildSubModules(options.children) : []
-  return new DomModule(el, children)
+  const module = new DomModule(el, children)
+  if (options.postHandle) {
+    options.postHandle(el)
+  }
+  return module
 }

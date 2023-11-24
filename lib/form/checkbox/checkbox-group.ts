@@ -47,19 +47,21 @@ export interface CheckboxGroupOpts {
  * 多选框组.
  */
 export class CheckboxGroup extends FormInput {
-  private values: string[] = []
-  private disabled = false
-  constructor(private readonly opts: CheckboxGroupOpts) {
+  #values: string[] = []
+  #disabled = false
+  readonly #opts: CheckboxGroupOpts
+  constructor(opts: CheckboxGroupOpts) {
     super(document.createElement('div'))
+    this.#opts = opts
     this.el.classList.add('wok-ui-checkbox-group')
     if (opts.inline) {
       this.el.classList.add('inline')
     }
     if (opts.value) {
-      this.values = [...opts.value]
+      this.#values = [...opts.value]
     }
     if (opts.disabled) {
-      this.disabled = true
+      this.#disabled = true
     }
     this.addChild(
       ...opts.options.map(opt =>
@@ -69,19 +71,19 @@ export class CheckboxGroup extends FormInput {
           children: [
             new Checkbox({
               value: opt.value,
-              status: this.values.includes(opt.value) ? 'checked' : 'unchecked',
-              disabled: this.disabled,
+              status: this.#values.includes(opt.value) ? 'checked' : 'unchecked',
+              disabled: this.#disabled,
               onChange: status => {
                 if (status === 'checked') {
-                  if (!this.values.includes(opt.value)) {
-                    this.values.push(opt.value)
-                    this.handleChange()
+                  if (!this.#values.includes(opt.value)) {
+                    this.#values.push(opt.value)
+                    this.#handleChange()
                   }
                 } else {
-                  const idx = this.values.indexOf(opt.value)
+                  const idx = this.#values.indexOf(opt.value)
                   if (idx !== -1) {
-                    this.values.splice(idx, 1)
-                    this.handleChange()
+                    this.#values.splice(idx, 1)
+                    this.#handleChange()
                   }
                 }
               }
@@ -93,22 +95,22 @@ export class CheckboxGroup extends FormInput {
     )
   }
 
-  private handleChange() {
-    if (this.opts.onChange) {
-      this.opts.onChange(this.values)
+  #handleChange() {
+    if (this.#opts.onChange) {
+      this.#opts.onChange(this.#values)
     }
     this.validate()
   }
 
-  private _validate(): ValidateResult {
+  #validate(): ValidateResult {
     // 无值校验
-    if (!this.values.length) {
-      if (this.opts.required) {
+    if (!this.#values.length) {
+      if (this.#opts.required) {
         return {
           valid: false,
           msg:
-            typeof this.opts.required === 'string'
-              ? this.opts.required
+            typeof this.#opts.required === 'string'
+              ? this.#opts.required
               : getI18n().buildMsg('form-err-must-check')
         }
       } else {
@@ -116,29 +118,35 @@ export class CheckboxGroup extends FormInput {
       }
     }
     // 有值校验
-    if (typeof this.opts.minSelected === 'number') {
-      if (this.values.length < this.opts.minSelected) {
-        return { valid: false, msg: getI18n().buildMsg('form-err-min-select', `${this.opts.minSelected}`) }
+    if (typeof this.#opts.minSelected === 'number') {
+      if (this.#values.length < this.#opts.minSelected) {
+        return {
+          valid: false,
+          msg: getI18n().buildMsg('form-err-min-select', `${this.#opts.minSelected}`)
+        }
       }
-    } else if (this.opts.minSelected) {
-      if (this.values.length < this.opts.minSelected.minSelected) {
-        return { valid: false, msg: this.opts.minSelected.errMsg }
+    } else if (this.#opts.minSelected) {
+      if (this.#values.length < this.#opts.minSelected.minSelected) {
+        return { valid: false, msg: this.#opts.minSelected.errMsg }
       }
     }
-    if (typeof this.opts.maxSelected === 'number') {
-      if (this.values.length > this.opts.maxSelected) {
-        return { valid: false, msg: getI18n().buildMsg('form-err-max-select', `${this.opts.maxSelected}`) }
+    if (typeof this.#opts.maxSelected === 'number') {
+      if (this.#values.length > this.#opts.maxSelected) {
+        return {
+          valid: false,
+          msg: getI18n().buildMsg('form-err-max-select', `${this.#opts.maxSelected}`)
+        }
       }
-    } else if (this.opts.maxSelected) {
-      if (this.values.length > this.opts.maxSelected.maxSelected) {
-        return { valid: false, msg: this.opts.maxSelected.errMsg }
+    } else if (this.#opts.maxSelected) {
+      if (this.#values.length > this.#opts.maxSelected.maxSelected) {
+        return { valid: false, msg: this.#opts.maxSelected.errMsg }
       }
     }
     return { valid: true }
   }
 
   validate(): boolean {
-    const res = this._validate()
+    const res = this.#validate()
     this.getChildren()
       .filter(m => m instanceof InvalidFeedback)
       .forEach(m => m.destroy())
@@ -149,11 +157,11 @@ export class CheckboxGroup extends FormInput {
   }
 
   setDisabled(disabled: boolean): void {
-    if (this.disabled !== disabled) {
-      this.disabled = disabled
+    if (this.#disabled !== disabled) {
+      this.#disabled = disabled
       this.find(m => m instanceof Checkbox)
         .map(m => m as Checkbox)
-        .forEach(box => box.setDisabled(this.disabled))
+        .forEach(box => box.setDisabled(this.#disabled))
     }
   }
 }

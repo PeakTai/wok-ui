@@ -3,10 +3,9 @@ import {
   ConvertibleModule,
   createDomModule,
   DivModule,
-  Module,
   SubModulesOpt
-} from '../module'
-import './grid.less'
+} from '../module';
+import './grid.less';
 
 export interface GridOpts {
   /**
@@ -31,17 +30,18 @@ export interface GridOpts {
  * 网格.
  */
 export class Grid extends DivModule {
-  private readonly gap: { col: number; row: number }
-
-  constructor(private readonly opts: GridOpts) {
+  readonly #gap: { col: number; row: number }
+  readonly #opts: GridOpts
+  constructor(opts: GridOpts) {
     super('wok-ui-grid')
+    this.#opts = opts
     // gap
     if (typeof opts.gap === 'number') {
-      this.gap = { col: opts.gap, row: opts.gap }
+      this.#gap = { col: opts.gap, row: opts.gap }
     } else if (opts.gap) {
-      this.gap = opts.gap
+      this.#gap = opts.gap
     } else {
-      this.gap = { col: 0, row: 0 }
+      this.#gap = { col: 0, row: 0 }
     }
     if (!Number.isInteger(opts.cols)) {
       throw new Error(`cols 必须是整数,当前值: ${opts.cols}`)
@@ -49,8 +49,8 @@ export class Grid extends DivModule {
     if (opts.cols < 1 || opts.cols > 12) {
       throw new Error(`cols 超出范围, 有效范围是 1-12 ,当前值: ${opts.cols}`)
     }
-    this.el.style.columnGap = `${this.gap.col}px`
-    this.el.style.rowGap = `${this.gap.row}px`
+    this.el.style.columnGap = `${this.#gap.col}px`
+    this.el.style.rowGap = `${this.#gap.row}px`
     buildSubModules(opts.cells).forEach(cell => this.addCell(cell))
   }
 
@@ -58,10 +58,10 @@ export class Grid extends DivModule {
     this.addChild(
       createDomModule({
         style: {
-          width: `calc((100% - ${this.gap.col * (this.opts.cols - 1)}px) / ${this.opts.cols})`,
+          width: `calc((100% - ${this.#gap.col * (this.#opts.cols - 1)}px) / ${this.#opts.cols})`,
           minWidth:
-            this.opts.cellMinWidth && this.opts.cellMinWidth > 0
-              ? `${this.opts.cellMinWidth}px`
+            this.#opts.cellMinWidth && this.#opts.cellMinWidth > 0
+              ? `${this.#opts.cellMinWidth}px`
               : undefined
         },
         children: [module]

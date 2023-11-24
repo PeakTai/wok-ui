@@ -9,9 +9,27 @@ import {
   Spacer,
   Text,
   TextInput,
-  rem
+  rem,
+  showWarning
 } from '../lib'
 import { TestLayout } from './layout'
+
+class Input extends DivModule {
+  constructor() {
+    super()
+    this.addChild(
+      new TextInput({
+        placeholder: '输入点内容，试试看吧',
+        maxLength: 128
+      })
+    )
+  }
+
+  destroy(): void {
+    showWarning('被缓存的输入框销毁')
+    super.destroy()
+  }
+}
 
 class Page extends FullRenderingModule {
   private renderCount = 0
@@ -42,11 +60,7 @@ class Page extends FullRenderingModule {
       new Spacer('sm'),
       this.cacheModule({
         key: 'input',
-        module: () =>
-          new TextInput({
-            placeholder: '输入点内容，试试看吧',
-            maxLength: 128
-          })
+        module: () => new Input()
       }),
       new Spacer(),
       new HBox({
@@ -73,8 +87,6 @@ class Page extends FullRenderingModule {
         ]
       })
     )
-
-    throw new Error('Method not implemented.')
   }
 }
 

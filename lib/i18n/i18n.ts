@@ -7,17 +7,17 @@ export class I18n<T extends object> {
   /**
    * 当前语言
    */
-  private lang: string
+  #lang: string
   /**
    * 消息模板表，与当前语言是对应的
    */
-  private msgs: T
+  #msgs: T
 
   /**
    * 消息表，key 是语言，value 是一个 key 为地区，value 为 消息模板的 map，两层 map 为的是能够快速匹配.
    * 地区为空的情况下，缺省值为 - 。语言和地区的 key 全转成小写存储。
    */
-  private msgsMap: Map<string, Map<string, T | (() => Promise<T>)>>
+  #msgsMap: Map<string, Map<string, T | (() => Promise<T>)>>
 
   /**
    * 构造 i18n 对象，必须指定英文的消息模板作为默认。
@@ -26,16 +26,16 @@ export class I18n<T extends object> {
   constructor(readonly enMsgs: T) {
     const regionMap = new Map<string, T>()
     regionMap.set('-', enMsgs)
-    this.msgsMap = new Map<string, Map<string, T>>()
-    this.msgsMap.set('en', regionMap)
-    this.lang = 'en'
-    this.msgs = enMsgs
+    this.#msgsMap = new Map<string, Map<string, T>>()
+    this.#msgsMap.set('en', regionMap)
+    this.#lang = 'en'
+    this.#msgs = enMsgs
   }
 
   protected async findMsgsByLang(langTag: string): Promise<T | undefined> {
     // 检查表中是否支持指定语言，如果不支持则使用默认语言
     const tag = parseLangTag(langTag)
-    const regionMap = this.msgsMap.get(tag.lang)
+    const regionMap = this.#msgsMap.get(tag.lang)
     if (!regionMap) {
       return undefined
     }
@@ -76,10 +76,10 @@ export class I18n<T extends object> {
    */
   setMsgs(langTag: string, msgs: T | (() => Promise<T>)) {
     const tag = parseLangTag(langTag)
-    let regionMap = this.msgsMap.get(tag.lang)
+    let regionMap = this.#msgsMap.get(tag.lang)
     if (!regionMap) {
       regionMap = new Map<string, T>()
-      this.msgsMap.set(tag.lang, regionMap)
+      this.#msgsMap.set(tag.lang, regionMap)
     }
     regionMap.set(tag.region || '-', msgs)
   }
@@ -91,7 +91,7 @@ export class I18n<T extends object> {
   getSupportedLanguageTags(...tags: string[]): string[] {
     return tags.filter(tag => {
       const langTag = parseLangTag(tag)
-      return this.msgsMap.get(langTag.lang)
+      return this.#msgsMap.get(langTag.lang)
     })
   }
 
@@ -105,8 +105,8 @@ export class I18n<T extends object> {
     if (!msgs) {
       return false
     }
-    this.lang = lang
-    this.msgs = msgs
+    this.#lang = lang
+    this.#msgs = msgs
     return true
   }
 
@@ -114,7 +114,7 @@ export class I18n<T extends object> {
    * 获取当前语言
    */
   getLang(): string {
-    return this.lang
+    return this.#lang
   }
 
   /**
@@ -123,7 +123,7 @@ export class I18n<T extends object> {
    * @param args 参数，如果 key 对应的消息模板有占位符号（{}）可以使用参数来填充
    */
   buildMsg(key: keyof T, ...args: string[]): string {
-    const template = this.msgs[key] as unknown as string
+    const template = this.#msgs[key] as unknown as string
     if (!args || !args.length) {
       return template
     }
@@ -135,10 +135,10 @@ export class I18n<T extends object> {
  * 可扩展的 i18n ，增加扩展新 i18n 对象的功能，记录扩展的新对象，同步 setLang 操作
  */
 export class ExtensibleI18n<T extends object> extends I18n<T> {
-  private extendedI18ns: I18n<any>[] = []
+  #extendedI18ns: I18n<any>[] = []
 
   async setLang(lang: string): Promise<boolean> {
-    for (const ex of this.extendedI18ns) {
+    for (const ex of this.#extendedI18ns) {
       await ex.setLang(lang)
     }
     return super.setLang(lang)
@@ -151,7 +151,7 @@ export class ExtensibleI18n<T extends object> extends I18n<T> {
    */
   extend<K extends object>(enMsgs: K): I18n<K> {
     const extendedI18n = new I18n<K>(enMsgs)
-    this.extendedI18ns.push(extendedI18n)
+    this.#extendedI18ns.push(extendedI18n)
     return extendedI18n
   }
 }

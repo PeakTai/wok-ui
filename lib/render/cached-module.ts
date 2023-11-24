@@ -10,14 +10,9 @@ export class CachedModule extends DivModule {
    * @returns
    */
   destroy(): void {
-    const parent = this.getParent() as any
+    const parent = this.getParent()
     if (parent) {
-      // 解除关系
-      const index = parent.children.indexOf(this)
-      if (index !== -1) {
-        parent.children.splice(index, 1)
-      }
-      ;(this as any).parent = undefined
+      ;(parent as any).removeChild(this)
     }
     this.el.remove()
   }

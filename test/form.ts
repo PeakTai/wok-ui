@@ -39,7 +39,7 @@ class Page extends FullRenderingModule {
   } = {
     name: '',
     age: 30,
-    district: '',
+    district: '徐家汇',
     street: '',
     edudition: '',
     aggree: false,
@@ -127,7 +127,6 @@ class Page extends FullRenderingModule {
               // 联动,改变街道的选项
               this.form.district = val
               // 可以全量渲染,也可以局部替换,为了减少渲染这里使用局部替换
-              // 或者 select 提供运行时修改选项的功能也是可以的
               const newStreetSelect = this.buildStreetSelect()
               streetSelect.replaceBy(newStreetSelect)
               streetSelect = newStreetSelect
@@ -217,12 +216,19 @@ class Page extends FullRenderingModule {
   private buildStreetSelect() {
     return new Select({
       value: this.form.street,
-      options: [
-        { label: `-- 请选择 --`, value: '' },
-        { label: `${this.form.district}-街道一`, value: '街道一' },
-        { label: `${this.form.district}-街道二`, value: '街道二' },
-        { label: `${this.form.district}-街道三`, value: '街道三' }
-      ]
+      options: this.form.district
+        ? [
+            { label: `-- 请选择 --`, value: '' },
+            { label: `${this.form.district}-街道一`, value: '街道一' },
+            { label: `${this.form.district}-街道二`, value: '街道二' },
+            { label: `${this.form.district}-街道三`, value: '街道三' }
+          ]
+        : [{ label: `-- 请选择 --`, value: '' }],
+      onChange: val => {
+        if (val) {
+          this.form.street = val
+        }
+      }
     })
   }
 

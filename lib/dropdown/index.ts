@@ -1,4 +1,4 @@
-import { DivModule, Module, SubModulesOpt, buildSubModules, createDomModule } from '../module'
+import { DivModule, SubModulesOpt, buildSubModules, createDomModule } from '../module'
 import './style.less'
 
 /**
@@ -38,7 +38,7 @@ export interface DropdownOpts {
  * 下拉框
  */
 export class Dropdown extends DivModule {
-  private closeListener?: (ev: MouseEvent) => void
+  #closeListener?: (ev: MouseEvent) => void
   constructor(opts: DropdownOpts) {
     super('wok-ui-dropdown')
     // 下拉触发
@@ -46,22 +46,22 @@ export class Dropdown extends DivModule {
     this.el.addEventListener('click', ev => {
       if (this.el.classList.contains('open')) {
         // 关闭
-        this.close()
+        this.#close()
       } else {
         // 打开
         this.el.classList.add('open')
         setTimeout(() => {
-          this.closeListener = ev => {
+          this.#closeListener = ev => {
             const target = ev.currentTarget as HTMLElement
             if (this.el.contains(target)) {
               return
             }
             // 关闭
             if (this.el.classList.contains('open')) {
-              this.close()
+              this.#close()
             }
           }
-          document.addEventListener('click', this.closeListener)
+          document.addEventListener('click', this.#closeListener)
         }, 0)
       }
     })
@@ -84,7 +84,7 @@ export class Dropdown extends DivModule {
                 if (item.disabled) {
                   return
                 }
-                this.close()
+                this.#close()
                 if (item.callback) item.callback()
               }
             })
@@ -104,16 +104,16 @@ export class Dropdown extends DivModule {
     }
   }
 
-  private close() {
+  #close() {
     this.el.classList.remove('open')
-    if (this.closeListener) {
-      document.removeEventListener('click', this.closeListener)
+    if (this.#closeListener) {
+      document.removeEventListener('click', this.#closeListener)
     }
   }
 
   destroy(): void {
-    if (this.closeListener) {
-      document.removeEventListener('click', this.closeListener)
+    if (this.#closeListener) {
+      document.removeEventListener('click', this.#closeListener)
     }
     super.destroy()
   }

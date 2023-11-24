@@ -32,23 +32,25 @@ export interface SelectOpts {
 }
 
 export class Select extends FormInput {
-  private select!: HTMLSelectElement
+  #select!: HTMLSelectElement
+  readonly #opts: SelectOpts
 
-  constructor(private readonly opts: SelectOpts) {
+  constructor(opts: SelectOpts) {
     // 尺寸信息
     super(document.createElement('div'))
+    this.#opts = opts
     this.addChild(
       createDomModule({
         tag: 'select',
         classNames: ['wok-ui-select'],
-        preHandle: el => {
-          this.select = el as HTMLSelectElement
+        postHandle: el => {
+          this.#select = el as HTMLSelectElement
           if (opts.value) {
-            this.select.value = opts.value
+            this.#select.value = opts.value
           }
-          this.select.addEventListener('change', ev => {
-            if (this.opts.onChange) {
-              this.opts.onChange(this.select.value)
+          this.#select.addEventListener('change', ev => {
+            if (this.#opts.onChange) {
+              this.#opts.onChange(this.#select.value)
             }
             this.validate()
           })
@@ -66,25 +68,25 @@ export class Select extends FormInput {
     const size = getSize()
     switch (opts.size) {
       case 'lg':
-        this.select.style.setProperty('--select-font-size', `${size.textLg}px`)
+        this.#select.style.setProperty('--select-font-size', `${size.textLg}px`)
         break
       case 'sm':
-        this.select.style.setProperty('--select-font-size', `${size.textSm}px`)
+        this.#select.style.setProperty('--select-font-size', `${size.textSm}px`)
         break
       default:
-        this.select.style.setProperty('--select-font-size', `${size.text}px`)
+        this.#select.style.setProperty('--select-font-size', `${size.text}px`)
         break
     }
   }
 
-  private _validate(val: string): ValidateResult {
-    if (this.opts.required) {
+  #validate(val: string): ValidateResult {
+    if (this.#opts.required) {
       if (!val) {
         return {
           valid: false,
           msg:
-            typeof this.opts.required === 'string'
-              ? this.opts.required
+            typeof this.#opts.required === 'string'
+              ? this.#opts.required
               : getI18n().buildMsg('form-err-required')
         }
       }
@@ -93,20 +95,20 @@ export class Select extends FormInput {
   }
 
   validate(): boolean {
-    const validateRes = this._validate(this.select.value)
+    const validateRes = this.#validate(this.#select.value)
     // 根据是否有效，显示反馈信息
     this.getChildren()
       .filter(m => m instanceof InvalidFeedback)
       .forEach(m => m.destroy())
     if (validateRes.valid) {
-      this.select.classList.remove('invalid')
+      this.#select.classList.remove('invalid')
     } else {
-      this.select.classList.add('invalid')
+      this.#select.classList.add('invalid')
       this.addChild(new InvalidFeedback(validateRes.msg))
     }
     return validateRes.valid
   }
   setDisabled(disabled: boolean): void {
-    this.select.disabled = disabled
+    this.#select.disabled = disabled
   }
 }
