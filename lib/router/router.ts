@@ -99,7 +99,7 @@ export abstract class Router extends Module {
   /**
    * 缓存限制
    */
-  #cacheLimit = 100
+  #cacheLimit = 10
   /**
    * 容器滚动监听器
    */
