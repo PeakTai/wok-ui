@@ -1,5 +1,4 @@
 import { getI18n } from '../../i18n'
-import { createDomModule } from '../../module'
 import { Text } from '../../text'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
@@ -46,26 +45,24 @@ export class BoolCheckbox extends FormInput {
     if (opts.value) {
       this.#value = opts.value
     }
-    this.addChild(
-      createDomModule({
-        classNames: ['wok-ui-bool-checkbox'],
-        children: [
-          new Checkbox({
-            value: '',
-            status: this.#value ? 'checked' : 'unchecked',
-            disabled: this.#disabled,
-            onChange: status => {
-              this.#value = status === 'checked'
-              if (this.#opts.onChange) {
-                this.#opts.onChange(this.#value)
-              }
-              this.validate()
+    this.addChild({
+      classNames: ['wok-ui-bool-checkbox'],
+      children: [
+        new Checkbox({
+          value: '',
+          status: this.#value ? 'checked' : 'unchecked',
+          disabled: this.#disabled,
+          onChange: status => {
+            this.#value = status === 'checked'
+            if (this.#opts.onChange) {
+              this.#opts.onChange(this.#value)
             }
-          }),
-          new Text(opts.label)
-        ]
-      })
-    )
+            this.validate()
+          }
+        }),
+        new Text(opts.label)
+      ]
+    })
   }
 
   #validate(): ValidateResult {

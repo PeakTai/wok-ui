@@ -1,7 +1,7 @@
-import { DivModule, Module } from '../module'
+import { ConvertibleModule, DivModule } from '../module'
 
 export class CachedModule extends DivModule {
-  constructor(module: Module) {
+  constructor(module: ConvertibleModule) {
     super()
     this.addChild(module)
   }

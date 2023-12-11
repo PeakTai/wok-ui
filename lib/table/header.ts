@@ -1,4 +1,4 @@
-import { ConvertibleModule, Module, createDomModule } from '../module'
+import { ConvertibleModule, Module } from '../module'
 import { TableColumn } from './column'
 
 /**
@@ -7,15 +7,13 @@ import { TableColumn } from './column'
 export class TableHeader<T> extends Module {
   constructor(opts: { cols: TableColumn<T>[] }) {
     super(document.createElement('thead'))
-    this.addChild(
-      createDomModule({
-        tag: 'tr',
-        children: opts.cols.map(col => {
-          const width = col.setting.width && col.setting.width > 0 ? col.setting.width : 80
-          return new Title(col.setting.name, width)
-        })
+    this.addChild({
+      tag: 'tr',
+      children: opts.cols.map(col => {
+        const width = col.setting.width && col.setting.width > 0 ? col.setting.width : 80
+        return new Title(col.setting.name, width)
       })
-    )
+    })
   }
 }
 

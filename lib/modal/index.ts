@@ -2,7 +2,7 @@ import { ANIMATION_PROVISION, Animation, animate } from '../animation'
 import { Button } from '../button'
 import { getI18n } from '../i18n'
 import { showWarning } from '../message'
-import { ConvertibleModule, DivModule, Module, createDomModule } from '../module'
+import { ConvertibleModule, DivModule, Module } from '../module'
 import './style.less'
 /**
  * 模态框选项
@@ -145,103 +145,91 @@ class Dialog extends DivModule {
     })
     // 完全自定义内容，使用 body 替换原本的内容
     if (opts.replaceByBody) {
-      this.addChild(
-        createDomModule({
-          classNames: ['wok-ui-modal-content'],
-          children: [opts.body]
-        })
-      )
+      this.addChild({
+        classNames: ['wok-ui-modal-content'],
+        children: [opts.body]
+      })
       return
     }
     // 正常流程
-    this.addChild(
-      createDomModule({
-        classNames: ['wok-ui-modal-content', 'normal'],
-        style: {
-          // 圆角
-          borderRadius:
-            opts.borderRadius && opts.borderRadius > 0 ? `${opts.borderRadius}px` : undefined,
-          // 宽度
-          width: opts.fullscreen
-            ? undefined
-            : opts.width && opts.width > 0
-            ? `${opts.width}px`
-            : '500px'
-        },
-        onClick(ev) {
-          // 防止传递到 dialog 这一层 div 触发关闭
-          ev.stopPropagation()
-        },
-        children: addChild => {
-          // header
-          if (opts.title) {
-            addChild(
-              createDomModule({
-                classNames: ['wok-ui-modal-header'],
-                children: addChild => {
-                  addChild(createDomModule({ classNames: ['title'], innerText: opts.title }))
-                  // 关闭按钮
-                  if (opts.closeBtn !== false) {
-                    addChild(
-                      createDomModule({
-                        classNames: ['close'],
-                        innerHTML: '&times;',
-                        onClick: () => {
-                          this.close().catch(showWarning)
-                        }
-                      })
-                    )
+    this.addChild({
+      classNames: ['wok-ui-modal-content', 'normal'],
+      style: {
+        // 圆角
+        borderRadius:
+          opts.borderRadius && opts.borderRadius > 0 ? `${opts.borderRadius}px` : undefined,
+        // 宽度
+        width: opts.fullscreen
+          ? undefined
+          : opts.width && opts.width > 0
+          ? `${opts.width}px`
+          : '500px'
+      },
+      onClick(ev) {
+        // 防止传递到 dialog 这一层 div 触发关闭
+        ev.stopPropagation()
+      },
+      children: addChild => {
+        // header
+        if (opts.title) {
+          addChild({
+            classNames: ['wok-ui-modal-header'],
+            children: addChild => {
+              addChild({ classNames: ['title'], innerText: opts.title })
+              // 关闭按钮
+              if (opts.closeBtn !== false) {
+                addChild({
+                  classNames: ['close'],
+                  innerHTML: '&times;',
+                  onClick: () => {
+                    this.close().catch(showWarning)
                   }
-                }
-              })
-            )
-          }
-          // body
-          addChild(
-            createDomModule({
-              classNames: ['wok-ui-modal-body'],
-              children: [opts.body]
-            })
-          )
-          // footer
-          // 自定义
-          if (opts.footer) {
-            addChild(opts.footer)
-          } else if (opts.buttons && (opts.buttons.cancel || opts.buttons.confirm)) {
-            // 非自定义，判定按钮
-            const { confirm, cancel } = opts.buttons
-            addChild(
-              createDomModule({
-                classNames: ['wok-ui-modal-footer'],
-                children: addChild => {
-                  if (confirm) {
-                    addChild(
-                      new Button({
-                        text: typeof confirm === 'string' ? confirm : getI18n().buildMsg('confirm'),
-                        type: 'primary',
-                        onClick(ev) {
-                          if (opts.onConfirm) {
-                            opts.onConfirm()
-                          }
-                        }
-                      })
-                    )
-                  }
-                  if (cancel) {
-                    addChild(
-                      new Button({
-                        text: typeof cancel === 'string' ? cancel : getI18n().buildMsg('cancel'),
-                        onClick: ev => this.close().catch(showWarning)
-                      })
-                    )
-                  }
-                }
-              })
-            )
-          }
+                })
+              }
+            }
+          })
         }
-      })
-    )
+        // body
+        addChild({
+          classNames: ['wok-ui-modal-body'],
+          children: [opts.body]
+        })
+        // footer
+        // 自定义
+        if (opts.footer) {
+          addChild(opts.footer)
+        } else if (opts.buttons && (opts.buttons.cancel || opts.buttons.confirm)) {
+          // 非自定义，判定按钮
+          const { confirm, cancel } = opts.buttons
+          addChild({
+            classNames: ['wok-ui-modal-footer'],
+            children: addChild => {
+              if (confirm) {
+                addChild(
+                  new Button({
+                    text: typeof confirm === 'string' ? confirm : getI18n().buildMsg('confirm'),
+                    type: 'primary',
+                    onClick(ev) {
+                      if (opts.onConfirm) {
+                        opts.onConfirm()
+                      }
+                    }
+                  })
+                )
+              }
+              if (cancel) {
+                addChild(
+                  new Button({
+                    text: typeof cancel === 'string' ? cancel : getI18n().buildMsg('cancel'),
+                    onClick: ev => this.close().catch(showWarning)
+                  })
+                )
+              }
+            }
+          })
+        }
+      }
+    })
   }
 
   /**

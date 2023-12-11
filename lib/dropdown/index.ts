@@ -1,4 +1,10 @@
-import { DivModule, SubModulesOpt, buildSubModules, createDomModule } from '../module'
+import {
+  ConvertibleModule,
+  DivModule,
+  SubModulesOpt,
+  buildSubModules,
+  createDomModule
+} from '../module'
 import './style.less'
 
 /**
@@ -70,14 +76,15 @@ export class Dropdown extends DivModule {
     const menusAlign = opts.menusAlign || 'left'
     // 菜单
     if (Array.isArray(opts.menus)) {
-      this.addChild(
-        createDomModule({
-          classNames: ['wok-ui-dropdown-menu', menusAlign],
-          onClick(ev) {
-            ev.stopPropagation()
-          },
-          children: opts.menus.map(item =>
-            createDomModule({
+      this.addChild({
+        classNames: ['wok-ui-dropdown-menu', menusAlign],
+        onClick(ev) {
+          ev.stopPropagation()
+        },
+        children: opts.menus.map((item: any) => {
+          if (item.label) {
+            item as DropdownMenuItem
+            return createDomModule({
               classNames: ['wok-ui-dropdown-item', item.disabled ? 'disabled' : ''],
               innerText: item.label,
               onClick: ev => {
@@ -88,19 +95,20 @@ export class Dropdown extends DivModule {
                 if (item.callback) item.callback()
               }
             })
-          )
+          } else {
+            item as ConvertibleModule
+            return createDomModule(item)
+          }
         })
-      )
+      })
     } else {
-      this.addChild(
-        createDomModule({
-          classNames: ['wok-ui-dropdown-menu', menusAlign],
-          onClick(ev) {
-            ev.stopPropagation()
-          },
-          children: opts.menus
-        })
-      )
+      this.addChild({
+        classNames: ['wok-ui-dropdown-menu', menusAlign],
+        onClick(ev) {
+          ev.stopPropagation()
+        },
+        children: opts.menus
+      })
     }
   }
 

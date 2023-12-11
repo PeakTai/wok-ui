@@ -1,7 +1,7 @@
 // 抽屉
 import { ANIMATION_PROVISION, Animation, animate } from '../animation'
 import { showWarning } from '../message'
-import { ConvertibleModule, DivModule, createDomModule } from '../module'
+import { ConvertibleModule, DivModule } from '../module'
 import './style.less'
 
 export interface DrawerOpts {
@@ -81,30 +81,26 @@ class Content extends DivModule implements DivModule {
     this.#enter().catch(showWarning)
     // 标题
     if (opts.title) {
-      this.addChild(
-        createDomModule({
-          classNames: ['header'],
-          children: [
-            createDomModule({
-              classNames: ['title'],
-              innerText: opts.title
-            }),
-            createDomModule({
-              classNames: ['close'],
-              innerHTML: '&times;',
-              onClick: () => this.destroy()
-            })
-          ]
-        })
-      )
+      this.addChild({
+        classNames: ['header'],
+        children: [
+          {
+            classNames: ['title'],
+            innerText: opts.title
+          },
+          {
+            classNames: ['close'],
+            innerHTML: '&times;',
+            onClick: () => this.destroy()
+          }
+        ]
+      })
     }
     // 内容
-    this.addChild(
-      createDomModule({
-        classNames: ['body'],
-        children: [opts.body]
-      })
-    )
+    this.addChild({
+      classNames: ['body'],
+      children: [opts.body]
+    })
   }
   /**
    * 入场

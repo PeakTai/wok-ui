@@ -1,5 +1,4 @@
 import { getI18n } from '../../i18n'
-import { createDomModule } from '../../module'
 import { getSize } from '../../size'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
@@ -39,31 +38,27 @@ export class Select extends FormInput {
     // 尺寸信息
     super(document.createElement('div'))
     this.#opts = opts
-    this.addChild(
-      createDomModule({
-        tag: 'select',
-        classNames: ['wok-ui-select'],
-        postHandle: el => {
-          this.#select = el as HTMLSelectElement
-          if (opts.value) {
-            this.#select.value = opts.value
+    this.addChild({
+      tag: 'select',
+      classNames: ['wok-ui-select'],
+      postHandle: el => {
+        this.#select = el as HTMLSelectElement
+        if (opts.value) {
+          this.#select.value = opts.value
+        }
+        this.#select.addEventListener('change', ev => {
+          if (this.#opts.onChange) {
+            this.#opts.onChange(this.#select.value)
           }
-          this.#select.addEventListener('change', ev => {
-            if (this.#opts.onChange) {
-              this.#opts.onChange(this.#select.value)
-            }
-            this.validate()
-          })
-        },
-        children: opts.options.map(opt =>
-          createDomModule({
-            tag: 'option',
-            innerText: opt.label,
-            attrs: { value: opt.value }
-          })
-        )
-      })
-    )
+          this.validate()
+        })
+      },
+      children: opts.options.map(opt => ({
+        tag: 'option',
+        innerText: opt.label,
+        attrs: { value: opt.value }
+      }))
+    })
     // 尺寸
     const size = getSize()
     switch (opts.size) {

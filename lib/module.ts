@@ -273,17 +273,28 @@ export class DivModule extends Module {
 /**
  * 可转换为模块的类型，这些类型在一些场景可以直接当模块来使用，主要是为了方便.
  */
-export type ConvertibleModule = string | number | Module | HTMLElement | (() => Module)
+export type ConvertibleModule =
+  | string
+  | number
+  | Module
+  | HTMLElement
+  | (() => Module)
+  | CreateDomModuleOptions
 
 /**
  * 将受支持的类型实例转换成模块实例
  * @param cm
  */
 export function convertToModule(cm: ConvertibleModule): Module {
-  if (typeof cm === 'string' || typeof cm === 'number') {
+  if (typeof cm === 'string') {
     const text = document.createElement('span')
     text.innerText = `${cm}`
     return new DomModule(text)
+  }
+  if (typeof cm === 'number') {
+    const spacer = document.createElement('div')
+    spacer.style.height = `${cm}px`
+    return new DomModule(spacer)
   }
   if (cm instanceof HTMLElement) {
     return new DomModule(cm)
@@ -291,7 +302,10 @@ export function convertToModule(cm: ConvertibleModule): Module {
   if (cm instanceof Module) {
     return cm
   }
-  return cm()
+  if (typeof cm === 'function') {
+    return cm()
+  }
+  return createDomModule(cm)
 }
 /**
  * 子模块选项，可用于模块的构建参数中.

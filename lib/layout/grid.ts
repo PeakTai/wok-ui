@@ -1,7 +1,6 @@
 import {
   buildSubModules,
   ConvertibleModule,
-  createDomModule,
   DivModule,
   SubModulesOpt
 } from '../module';
@@ -55,17 +54,15 @@ export class Grid extends DivModule {
   }
 
   addCell(module: ConvertibleModule) {
-    this.addChild(
-      createDomModule({
-        style: {
-          width: `calc((100% - ${this.#gap.col * (this.#opts.cols - 1)}px) / ${this.#opts.cols})`,
-          minWidth:
-            this.#opts.cellMinWidth && this.#opts.cellMinWidth > 0
-              ? `${this.#opts.cellMinWidth}px`
-              : undefined
-        },
-        children: [module]
-      })
-    )
+    this.addChild({
+      style: {
+        width: `calc((100% - ${this.#gap.col * (this.#opts.cols - 1)}px) / ${this.#opts.cols})`,
+        minWidth:
+          this.#opts.cellMinWidth && this.#opts.cellMinWidth > 0
+            ? `${this.#opts.cellMinWidth}px`
+            : undefined
+      },
+      children: [module]
+    })
   }
 }

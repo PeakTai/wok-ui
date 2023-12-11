@@ -1,4 +1,4 @@
-import { Module } from '../module'
+import { ConvertibleModule, Module } from '../module'
 import { CachedModule } from './cached-module'
 
 /**
@@ -136,7 +136,7 @@ export abstract class ResponsiveModule extends Module {
      * 要缓存的模块，一个函数，仅首次执行，如果查询到缓存结果，则不执行
      * @returns
      */
-    module: () => Module
+    module: () => Exclude<ConvertibleModule, () => Module>
   }): CachedModule {
     const cachedModule = this.#cachedModules.get(opts.key)
     if (cachedModule) {

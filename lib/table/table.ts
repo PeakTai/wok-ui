@@ -27,20 +27,18 @@ export class Table<T> extends DivModule {
     if (opts.bordered) {
       this.el.classList.add('bordered')
     }
-    this.addChild(
-      createDomModule({
-        tag: 'table',
-        children: [
-          // 表头
-          new TableHeader({ cols: opts.cols }),
-          // 主体
-          new TableBody<T>({
-            table: this,
-            list: opts.list,
-            cols: opts.cols
-          })
-        ]
-      })
-    )
+    this.addChild({
+      tag: 'table',
+      children: [
+        // 表头
+        new TableHeader({ cols: opts.cols }),
+        // 主体
+        new TableBody<T>({
+          table: this,
+          list: opts.list,
+          cols: opts.cols
+        })
+      ]
+    })
   }
 }
