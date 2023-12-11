@@ -35,9 +35,9 @@ if (isNaN(defaultFontSize) || defaultFontSize < 14 || defaultFontSize > 20) {
  */
 const defaultSize: Size = {
   text: defaultFontSize,
-  textSm: defaultFontSize - 2,
-  textLg: defaultFontSize + 2,
-  textXl: defaultFontSize + 4,
+  textSm: defaultFontSize * 0.75,
+  textLg: defaultFontSize * 1.25,
+  textXl: defaultFontSize * 1.5,
   borderRadius: Math.round(defaultFontSize * 0.375)
 }
 
