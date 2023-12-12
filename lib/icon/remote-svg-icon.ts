@@ -7,10 +7,6 @@ import { DivModule } from '../module'
 export class RemoteSvgIcon extends DivModule {
   constructor(iconUrl: string) {
     super('wok-ui-svg-icon')
-    const svg = this.el.querySelector('svg')
-    if (svg) {
-      svg.setAttribute('fill', 'currentColor')
-    }
     fetch(iconUrl)
       .then(async res => {
         if (res.status !== 200) {
