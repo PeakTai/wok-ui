@@ -19,7 +19,7 @@ export class VSplitBox extends DivModule {
      */
     bottom: ConvertibleModule
     /**
-     * 要固定的一侧，另一侧占满剩余的空间，固定的一侧模块需要有固定的宽度
+     * 要固定的一侧，另一侧占满剩余的空间，固定的一侧模块需要有固定的高度
      */
     fixedSide: 'top' | 'bottom'
     /**
