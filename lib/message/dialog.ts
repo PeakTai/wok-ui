@@ -16,15 +16,13 @@ export function showAlert(msg: string): Promise<void> {
           { classNames: 'dialog-body', innerText: msg },
           {
             classNames: 'dialog-footer',
-            children: [
-              {
-                innerText: getI18n().buildMsg('confirm'),
-                onClick(ev) {
-                  res()
-                  dialog.destroy()
-                }
+            children: {
+              innerText: getI18n().buildMsg('confirm'),
+              onClick(ev) {
+                res()
+                dialog.destroy()
               }
-            ]
+            }
           }
         ]
       }
@@ -36,35 +34,34 @@ export function showConfirm(msg: string): Promise<boolean> {
   return new Promise<boolean>(res => {
     const dialog = createDomModule({
       classNames: ['wok-ui-dialog-box'],
-      children: [
-        {
-          classNames: ['dialog-content', Animation.SLIDE_TOP],
-          children: [
-            { classNames: 'dialog-body', innerText: msg },
-            {
-              classNames: 'dialog-footer',
-              children: [
-                {
-                  innerText: getI18n().buildMsg('cancel'),
-                  onClick(ev) {
-                    res(false)
-                    dialog.destroy()
-                  }
-                },
-                {
-                  children: [
-                    new Text({ text: getI18n().buildMsg('confirm'), color: getColor().primary })
-                  ],
-                  onClick(ev) {
-                    res(true)
-                    dialog.destroy()
-                  }
+      children: {
+        classNames: ['dialog-content', Animation.SLIDE_TOP],
+        children: [
+          { classNames: 'dialog-body', innerText: msg },
+          {
+            classNames: 'dialog-footer',
+            children: [
+              {
+                innerText: getI18n().buildMsg('cancel'),
+                onClick(ev) {
+                  res(false)
+                  dialog.destroy()
                 }
-              ]
-            }
-          ]
-        }
-      ]
+              },
+              {
+                children: new Text({
+                  text: getI18n().buildMsg('confirm'),
+                  color: getColor().primary
+                }),
+                onClick(ev) {
+                  res(true)
+                  dialog.destroy()
+                }
+              }
+            ]
+          }
+        ]
+      }
     })
     dialog.mount(document.body)
   })

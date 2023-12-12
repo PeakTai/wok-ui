@@ -1,5 +1,4 @@
 import { HSplitBox } from '../../layout'
-import { convertToModule } from '../../module'
 import { rem } from '../../size'
 import { Text } from '../../text'
 import { FormInput } from '../form-input'
@@ -76,7 +75,7 @@ export class Range extends FormInput {
     } else {
       this.addChild(
         new HSplitBox({
-          left: convertToModule(this.#input),
+          left: this.#input,
           right: text,
           gap: rem(0.5),
           fixedSide: 'right'

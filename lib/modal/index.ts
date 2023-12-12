@@ -192,7 +192,7 @@ class Dialog extends DivModule {
         // body
         addChild({
           classNames: ['wok-ui-modal-body'],
-          children: [opts.body]
+          children: opts.body
         })
         // footer
         // 自定义

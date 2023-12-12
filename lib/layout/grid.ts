@@ -1,9 +1,4 @@
-import {
-  buildSubModules,
-  ConvertibleModule,
-  DivModule,
-  SubModulesOpt
-} from '../module';
+import { buildSubModules, ConvertibleModule, DivModule, SubModulesOpt } from '../module';
 import './grid.less';
 
 export interface GridOpts {
@@ -62,7 +57,7 @@ export class Grid extends DivModule {
             ? `${this.#opts.cellMinWidth}px`
             : undefined
       },
-      children: [module]
+      children: module
     })
   }
 }

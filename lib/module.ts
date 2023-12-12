@@ -312,7 +312,7 @@ export function convertToModule(cm: ConvertibleModule): Module {
  * 支持直接使用可转换的模块和动态添加的函数.
  */
 export type SubModulesOpt =
-  | Exclude<ConvertibleModule, () => Module>
+  | ConvertibleModule
   | ConvertibleModule[]
   | ((addChild: (...child: ConvertibleModule[]) => void) => void)
 
@@ -326,7 +326,10 @@ export function buildSubModules(opt: SubModulesOpt): Module[] {
   }
   if (typeof opt === 'function') {
     const children: ConvertibleModule[] = []
-    opt((...child) => children.push(...child))
+    const res = opt((...child) => children.push(...child))
+    if (res instanceof Module) {
+      return [res]
+    }
     return children.map(c => convertToModule(c))
   } else {
     return [convertToModule(opt)]
