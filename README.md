@@ -32,10 +32,18 @@ wok-ui 是一个前端 UI 组件库，简洁易用，响应式设计，无第三
 
 ## 快速使用
 
-安装
+正常使用 npm 安装
 
 ```
 npm i wok-ui --save
+```
+
+在国内有时候会因为网络问题无法使用 npm 来安装，经常出现 ETIMEDOUT 错误，
+也因为这个问题新版本可能无法及时发布到 npm 官方仓库。
+若急需使用新版本，可以使用 git 仓库来安装。
+
+```
+npm install git+https://gitee.com/tai/wok-ui.git --save
 ```
 
 入口文件 src/main.ts 代码示例
@@ -76,4 +84,3 @@ initRouter({
 ```
 
 更多的使用方法，请[查看文档](https://gitee.com/tai/wok-ui/blob/master/documentation/zh-cn/index.md)。
-
