@@ -22,6 +22,8 @@ initRouter({
     // alias 别名，使用别名路径一样可以访问，主要作用是兼容旧地址
     // module 页面对应的模块，需要是一个函数，返回模块实例
     { path: '/', alias: ['/list'], module: () => new HomePage() },
+    // 支持带变量的动态路径
+    { path: '/phones/:id', alias: ['/list'], module: () => new PhoneDetail() },
     { path: '*', module: () => new NotFound() }
   ]
   // 直接将路由实例挂载
@@ -57,6 +59,56 @@ initRouter({
 
 通过上面的操作 button.ts 这个文件在构建时会单独生成一个文件，在请求 `/button` 这个页面地址时
 才去加载这个文件。当然，这一切都需要打包器的支持才可以实现。
+
+## 参数获取
+
+通过 getRouter 函数可以获取路由实例，通过路由实例对象可以获取路径变量和请求参数。
+
+```ts
+/**
+ * 列表页面
+ */
+class List extends DivModule {
+  constructor() {
+    super()
+    // 请求地址：/list?keyword=phone&tag=ios&tag=android
+    const router = getRouter()
+    const keyword = router.getParam('keyword') // 'phone'
+    const tags = router.getParamVals('tag') // ['ios','android']
+  }
+}
+```
+
+路径变量获取示例：
+
+```ts
+/**
+ * 书藉详情页
+ */
+class BookDetail extends DivModule {
+  constructor() {
+    super()
+    // 路由 path 设置： /books/:id
+    // 请求地址：/books/0001
+    const router = getRouter()
+    const id = router.getPathVar('id') // '0001'
+  }
+}
+```
+
+## 页面跳转
+
+通过路由实例对象的 push 和 replace 方法可以分别以增加记录和替换记录的方式来跳转页面。
+
+```ts
+// push 支持直接填写路径，或者指定路径的查询参数
+getRouter().push('books')
+getRouter().push({ path: 'books', query: { tag: 'coding' } })
+// replace 和 push 方法参数类型是一模一样的
+// 不同的是 replace 会替换当前页面，后退的时候不会再回到当前页面，相当于将当前页面从访问历史中抹除了
+getRouter().replace('books')
+getRouter().replace({ path: 'books', query: { tag: 'coding' } })
+```
 
 ## 布局复用
 
