@@ -18,6 +18,7 @@ class Page extends DivModule {
       new Spacer(20),
       new HBox({
         gap: 16,
+        wrap: true,
         children: [
           new Button({
             text: '右侧弹出抽屉',

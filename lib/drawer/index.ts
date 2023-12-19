@@ -40,17 +40,13 @@ class Backdrop extends DivModule {
       }
     })
   }
-  /**
-   * 处理内容销毁，如果最后一个弹出的内容也销毁了，则销毁自身
-   */
-  handleContentDestroy() {
-    if (this.getChildren().length === 0) {
-      this.destroy()
-    }
-  }
 
   addContent(content: Content) {
-    content.onDestroy(this.handleContentDestroy.bind(this))
+    content.onDestroy(() => {
+      if (this.getChildren().length === 0) {
+        this.destroy()
+      }
+    })
     this.addChild(content)
   }
 

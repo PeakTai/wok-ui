@@ -1532,13 +1532,12 @@ class Backdrop extends DivModule {
       }
     });
   }
-  handleContentDestroy() {
-    if (this.getChildren().length === 0) {
-      this.destroy();
-    }
-  }
   addContent(content) {
-    content.onDestroy(this.handleContentDestroy.bind(this));
+    content.onDestroy(() => {
+      if (this.getChildren().length === 0) {
+        this.destroy();
+      }
+    });
     this.addChild(content);
   }
   destroy() {
