@@ -178,7 +178,7 @@ var Animation = /* @__PURE__ */ ((Animation2) => {
 const ANIMATION_PROVISION = "animation-provision";
 const ANIMATION_REVERSE = "animation-reverse";
 async function animate(opts) {
-  opts.el.classList.remove(...Object.values(Animation));
+  opts.el.classList.remove(...Object.values(Animation), ANIMATION_REVERSE);
   await new Promise((res) => {
     setTimeout(() => {
       res();

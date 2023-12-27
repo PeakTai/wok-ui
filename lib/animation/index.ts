@@ -79,7 +79,7 @@ export async function animate(opts: {
   duration?: number
 }) {
   // 删除已有的动态类
-  opts.el.classList.remove(...Object.values(Animation))
+  opts.el.classList.remove(...Object.values(Animation), ANIMATION_REVERSE)
   await new Promise<void>(res => {
     setTimeout(() => {
       // 注：requestAnimationFrame 经测试在部分版本的 firefox 上会有问题，动画不能显示出来
