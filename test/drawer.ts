@@ -1,13 +1,4 @@
-import {
-  showDrawer,
-  Button,
-  DivModule,
-  HBox,
-  LargeTitle,
-  Spacer,
-  PrimaryBodyText,
-  createDomModule
-} from '../lib'
+import { Button, DivModule, HBox, LargeTitle, Spacer, showDrawer, showWarning } from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {
@@ -26,7 +17,10 @@ class Page extends DivModule {
               showDrawer({
                 title: '右侧弹出的抽屉',
                 placement: 'right',
-                body: '右侧弹出的抽屉'
+                body: '右侧弹出的抽屉',
+                onClose() {
+                  showWarning('抽屉关闭了')
+                }
               })
             }
           }),
@@ -71,7 +65,10 @@ class Page extends DivModule {
                   onClick(ev) {
                     drawer.close()
                   }
-                })
+                }),
+                onClose() {
+                  showWarning('抽屉关闭了')
+                }
               })
             }
           })
