@@ -185,9 +185,8 @@ async function animate(opts) {
     }, 0);
   });
   opts.el.classList.remove(ANIMATION_PROVISION);
-  if (opts.duration && opts.duration > 0) {
-    opts.el.style.animationDuration = `${opts.duration}ms`;
-  }
+  const duration = typeof opts.duration === "number" && opts.duration > 0 ? opts.duration : 500;
+  opts.el.style.animationDuration = `${duration}ms`;
   if (Array.isArray(opts.animation)) {
     opts.el.classList.add(...opts.animation);
   } else {
@@ -196,12 +195,8 @@ async function animate(opts) {
   if (opts.reverse) {
     opts.el.classList.add(ANIMATION_REVERSE);
   }
-  return new Promise((res, rej) => {
-    const listener = () => {
-      res();
-      opts.el.removeEventListener("animationend", listener);
-    };
-    opts.el.addEventListener("animationend", listener);
+  return new Promise((res) => {
+    setTimeout(res, duration);
   });
 }
 

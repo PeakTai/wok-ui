@@ -57,7 +57,7 @@ export declare function animate(opts: {
      */
     reverse?: boolean;
     /**
-     * 持续时间,单位毫秒
+     * 持续时间,单位毫秒，默认 500
      */
     duration?: number;
 }): Promise<void>;
