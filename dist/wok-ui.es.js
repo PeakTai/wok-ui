@@ -1404,6 +1404,10 @@ class Dialog extends DivModule {
     if (opts.replaceByBody) {
       this.addChild({
         classNames: ["wok-ui-modal-content"],
+        style: {
+          borderRadius: opts.borderRadius && opts.borderRadius > 0 ? `${opts.borderRadius}px` : void 0,
+          width: opts.fullscreen ? void 0 : opts.width && opts.width > 0 ? `${opts.width}px` : "500px"
+        },
         onClick(ev) {
           ev.stopPropagation();
         },
