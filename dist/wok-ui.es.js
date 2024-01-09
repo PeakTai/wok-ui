@@ -1404,6 +1404,9 @@ class Dialog extends DivModule {
     if (opts.replaceByBody) {
       this.addChild({
         classNames: ["wok-ui-modal-content"],
+        onClick(ev) {
+          ev.stopPropagation();
+        },
         children: [opts.body]
       });
       return;

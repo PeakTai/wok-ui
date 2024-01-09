@@ -147,6 +147,10 @@ class Dialog extends DivModule {
     if (opts.replaceByBody) {
       this.addChild({
         classNames: ['wok-ui-modal-content'],
+        onClick(ev) {
+          // 防止传递到 dialog 这一层 div 触发关闭
+          ev.stopPropagation()
+        },
         children: [opts.body]
       })
       return
