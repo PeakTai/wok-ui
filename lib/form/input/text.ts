@@ -110,11 +110,6 @@ export class TextInput extends FormInput {
     if (opts.disabled) {
       this.input.disabled = true
     }
-    if (opts.autofocus) {
-      setTimeout(() => {
-        this.input.focus()
-      }, 0)
-    }
     this.input.addEventListener('compositionstart', () => (this.#composing = true))
     this.input.addEventListener('compositionend', () => {
       this.#composing = false
@@ -129,6 +124,17 @@ export class TextInput extends FormInput {
     if (opts.onBlur) {
       this.input.addEventListener('blur', opts.onBlur)
     }
+  }
+
+  mount(parentEl: Element): void {
+    super.mount(parentEl)
+    if (this.#opts.autofocus) {
+      setTimeout(() => this.input.focus(), 0)
+    }
+  }
+
+  focus() {
+    this.input.focus()
   }
 
   #handleChange() {
