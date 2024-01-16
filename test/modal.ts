@@ -1,12 +1,12 @@
 import {
   Button,
   DivModule,
+  Form,
   HBox,
   LargeTitle,
   Link,
-  PrimaryBodyText,
   Spacer,
-  Text,
+  TextInput,
   createDomModule,
   rem,
   showModal,
@@ -20,7 +20,7 @@ class Page extends DivModule {
     super()
     this.addChild(
       new LargeTitle('模态框'),
-      new Spacer(20),
+      rem(1),
       new HBox({
         gap: rem(1),
         wrap: true,
@@ -129,6 +129,43 @@ class Page extends DivModule {
                 dialogCentered: true,
                 title: '内容居中演示',
                 body: '内容居中显示'
+              })
+            }
+          }),
+          new Button({
+            text: '嵌入表单',
+            onClick(ev) {
+              let input: TextInput
+              let form: Form
+              const modal = showModal({
+                dialogCentered: true,
+                title: '嵌套表单演示',
+                body: (form = new Form({
+                  onSubmit() {
+                    showSuccess('提交成功')
+                    modal.close()
+                  },
+                  children: [
+                    '评论内容',
+                    new Spacer('sm'),
+                    (input = new TextInput({
+                      placeholder: '2至32个字',
+                      required: true,
+                      minLength: 2,
+                      maxLength: 32
+                    }))
+                  ]
+                })),
+                onShown() {
+                  input.focus()
+                },
+                buttons: {
+                  confirm: '提交',
+                  cancel: true
+                },
+                onConfirm() {
+                  form.submit()
+                }
               })
             }
           })
