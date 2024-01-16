@@ -68,6 +68,8 @@ export declare class TextInput extends FormInput {
     #private;
     protected input: HTMLInputElement;
     constructor(opts: TextInputOpts);
+    mount(parentEl: Element): void;
+    focus(): void;
     validate(): boolean;
     setDisabled(disabled: boolean): void;
 }

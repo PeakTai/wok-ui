@@ -1391,7 +1391,11 @@ class Dialog extends DivModule {
   constructor(opts) {
     super("wok-ui-modal-dialog", ANIMATION_PROVISION);
     this.#opts = opts;
-    animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300 });
+    animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300 }).then(() => {
+      if (opts.onShown) {
+        opts.onShown();
+      }
+    });
     if (this.#opts.fullscreen) {
       this.el.classList.add("fullscreen");
     } else if (this.#opts.dialogCentered) {
@@ -2174,11 +2178,6 @@ class TextInput extends FormInput {
     if (opts.disabled) {
       this.input.disabled = true;
     }
-    if (opts.autofocus) {
-      setTimeout(() => {
-        this.input.focus();
-      }, 0);
-    }
     this.input.addEventListener("compositionstart", () => this.#composing = true);
     this.input.addEventListener("compositionend", () => {
       this.#composing = false;
@@ -2196,6 +2195,15 @@ class TextInput extends FormInput {
   }
   #composing;
   #opts;
+  mount(parentEl) {
+    super.mount(parentEl);
+    if (this.#opts.autofocus) {
+      setTimeout(() => this.input.focus(), 0);
+    }
+  }
+  focus() {
+    this.input.focus();
+  }
   #handleChange() {
     if (this.#opts.onChange) {
       this.#opts.onChange(this.input.value);

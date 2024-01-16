@@ -60,6 +60,11 @@ export interface ModalOptions {
         confirm?: boolean | string;
         cancel?: boolean | string;
     };
+    /**
+     * 模态框完全显示回调，在模态框入场动画完成后触发
+     * @returns
+     */
+    onShown?: () => void;
 }
 /**
  * 模态框对象，每次展示模态框后返回一个实例对象，用于关闭打开的模态框.
