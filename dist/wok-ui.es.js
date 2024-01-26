@@ -1569,6 +1569,10 @@ class Content extends DivModule {
       this.el.classList.add("right");
     }
     this.#enter().catch(showWarning);
+    if (opts.replaceByBody) {
+      this.addChild(opts.body);
+      return;
+    }
     if (opts.title) {
       this.addChild({
         classNames: ["header"],

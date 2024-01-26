@@ -18,6 +18,10 @@ export interface DrawerOpts {
    */
   body: ConvertibleModule
   /**
+   * 使用 body 部分替换掉整个内容.适用于高度自定义的场景.
+   */
+  replaceByBody?: boolean
+  /**
    * 关闭事件回调
    */
   onClose?: () => void
@@ -75,6 +79,10 @@ class Content extends DivModule implements DivModule {
       this.el.classList.add('right')
     }
     this.#enter().catch(showWarning)
+    if (opts.replaceByBody) {
+      this.addChild(opts.body)
+      return
+    }
     // 标题
     if (opts.title) {
       this.addChild({

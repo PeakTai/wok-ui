@@ -1,4 +1,4 @@
-import { Button, DivModule, HBox, LargeTitle, Spacer, showDrawer, showWarning } from '../lib'
+import { Button, DivModule, HBox, LargeTitle, Spacer, rem, showDrawer, showWarning } from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {
@@ -66,6 +66,38 @@ class Page extends DivModule {
                     drawer.close()
                   }
                 }),
+                onClose() {
+                  showWarning('抽屉关闭了')
+                }
+              })
+            }
+          }),
+          new Button({
+            text: '完全自定义',
+            onClick(ev) {
+              const drawer = showDrawer({
+                title: '标题不会显示出来',
+                placement: 'right',
+                replaceByBody: true,
+                body: {
+                  style: {
+                    background: 'white',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  },
+                  children: [
+                    '这里是完全自定义的内容',
+                    rem(1),
+                    new Button({
+                      text: '点击关闭窗口',
+                      onClick: () => drawer.close()
+                    })
+                  ]
+                },
                 onClose() {
                   showWarning('抽屉关闭了')
                 }
