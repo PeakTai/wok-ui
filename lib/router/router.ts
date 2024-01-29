@@ -55,6 +55,12 @@ class CachedModule extends DivModule {
   hide() {
     this.el.style.display = 'none'
     this.#title = document.title
+    this.find(() => true).forEach(m => {
+      const mm = m as any
+      if (mm.onPageHide) {
+        mm.onPageHide()
+      }
+    })
   }
 
   show() {
@@ -67,6 +73,12 @@ class CachedModule extends DivModule {
         window.scrollTo({ top: this.#scrollTop, behavior: 'instant' as ScrollBehavior })
       }, 0)
     }
+    this.find(() => true).forEach(m => {
+      const mm = m as any
+      if (mm.onPageShow) {
+        mm.onPageShow()
+      }
+    })
   }
 }
 

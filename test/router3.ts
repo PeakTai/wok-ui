@@ -1,4 +1,12 @@
-import { FullRenderingModule, LargeTitle, PrimaryBodyText, Spacer, getRouter } from '../lib'
+import {
+  FullRenderingModule,
+  LargeTitle,
+  PrimaryBodyText,
+  Spacer,
+  getRouter,
+  showSuccess,
+  showWarning
+} from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends FullRenderingModule {
@@ -42,6 +50,25 @@ class Page extends FullRenderingModule {
         '由于整个页面是缓存的，再次进入到当前页面将不会重新渲染，前提是参数相同，不同的参数缓存不复用'
       )
     )
+  }
+
+  // 生命周期测试
+  mount(parentEl: Element): void {
+    super.mount(parentEl)
+    showSuccess('路由页面完成挂载')
+  }
+
+  destroy(): void {
+    super.destroy()
+    showSuccess('路由页面销毁')
+  }
+
+  onPageHide() {
+    showWarning('路由页面被隐藏')
+  }
+
+  onPageShow() {
+    showSuccess('路由页面被显示')
   }
 }
 
