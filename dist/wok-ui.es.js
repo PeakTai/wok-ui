@@ -2896,6 +2896,12 @@ class CachedModule extends DivModule {
   hide() {
     this.el.style.display = "none";
     this.#title = document.title;
+    this.find(() => true).forEach((m) => {
+      const mm = m;
+      if (mm.onPageHide) {
+        mm.onPageHide();
+      }
+    });
   }
   show() {
     this.el.style.display = "block";
@@ -2907,6 +2913,12 @@ class CachedModule extends DivModule {
         window.scrollTo({ top: this.#scrollTop, behavior: "instant" });
       }, 0);
     }
+    this.find(() => true).forEach((m) => {
+      const mm = m;
+      if (mm.onPageShow) {
+        mm.onPageShow();
+      }
+    });
   }
 }
 class Router extends Module {
@@ -3253,7 +3265,7 @@ function getRouter() {
 var style = '';
 
 class Dropdown extends DivModule {
-  #closeListener;
+  #removeCloseListener;
   constructor(opts) {
     super("wok-ui-dropdown");
     this.el.addEventListener("click", (ev) => {
@@ -3261,18 +3273,7 @@ class Dropdown extends DivModule {
         this.#close();
       } else {
         this.el.classList.add("open");
-        setTimeout(() => {
-          this.#closeListener = (ev2) => {
-            const target = ev2.currentTarget;
-            if (this.el.contains(target)) {
-              return;
-            }
-            if (this.el.classList.contains("open")) {
-              this.#close();
-            }
-          };
-          document.addEventListener("click", this.#closeListener);
-        }, 0);
+        setTimeout(() => this.#addCloseListener(), 0);
       }
     });
     this.addChild(...buildSubModules(opts.content));
@@ -3312,15 +3313,37 @@ class Dropdown extends DivModule {
       });
     }
   }
+  #addCloseListener() {
+    const closeListener = (ev) => {
+      ev.stopPropagation();
+      const target = ev.target;
+      if (this.el.contains(target)) {
+        return;
+      }
+      if (this.el.classList.contains("open")) {
+        this.#close();
+      }
+    };
+    let parent = this.el.parentElement;
+    let parentList = [];
+    while (parent) {
+      parentList.push(parent);
+      parent.addEventListener("click", closeListener);
+      parent = parent.parentElement;
+    }
+    this.#removeCloseListener = () => parentList.forEach((p) => p.removeEventListener("click", closeListener));
+  }
   #close() {
     this.el.classList.remove("open");
-    if (this.#closeListener) {
-      document.removeEventListener("click", this.#closeListener);
+    if (this.#removeCloseListener) {
+      this.#removeCloseListener();
+      this.#removeCloseListener = void 0;
+      return;
     }
   }
   destroy() {
-    if (this.#closeListener) {
-      document.removeEventListener("click", this.#closeListener);
+    if (this.#removeCloseListener) {
+      this.#removeCloseListener();
     }
     super.destroy();
   }
