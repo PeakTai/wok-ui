@@ -44,7 +44,11 @@ export interface DropdownOpts {
  * 下拉框
  */
 export class Dropdown extends DivModule {
-  #closeListener?: (ev: MouseEvent) => void
+  /**
+   * 监听器删除函数
+   */
+  #removeCloseListener?: () => void
+
   constructor(opts: DropdownOpts) {
     super('wok-ui-dropdown')
     // 下拉触发
@@ -56,19 +60,7 @@ export class Dropdown extends DivModule {
       } else {
         // 打开
         this.el.classList.add('open')
-        setTimeout(() => {
-          this.#closeListener = ev => {
-            const target = ev.currentTarget as HTMLElement
-            if (this.el.contains(target)) {
-              return
-            }
-            // 关闭
-            if (this.el.classList.contains('open')) {
-              this.#close()
-            }
-          }
-          document.addEventListener('click', this.#closeListener)
-        }, 0)
+        setTimeout(() => this.#addCloseListener(), 0)
       }
     })
     // 内容
@@ -112,16 +104,41 @@ export class Dropdown extends DivModule {
     }
   }
 
+  #addCloseListener() {
+    const closeListener = (ev: Event) => {
+      ev.stopPropagation()
+      const target = ev.target as HTMLElement
+      if (this.el.contains(target)) {
+        return
+      }
+      // 关闭
+      if (this.el.classList.contains('open')) {
+        this.#close()
+      }
+    }
+    let parent = this.el.parentElement
+    let parentList: HTMLElement[] = []
+    while (parent) {
+      parentList.push(parent)
+      parent.addEventListener('click', closeListener)
+      parent = parent.parentElement
+    }
+    this.#removeCloseListener = () =>
+      parentList.forEach(p => p.removeEventListener('click', closeListener))
+  }
+
   #close() {
     this.el.classList.remove('open')
-    if (this.#closeListener) {
-      document.removeEventListener('click', this.#closeListener)
+    if (this.#removeCloseListener) {
+      this.#removeCloseListener()
+      this.#removeCloseListener = undefined
+      return
     }
   }
 
   destroy(): void {
-    if (this.#closeListener) {
-      document.removeEventListener('click', this.#closeListener)
+    if (this.#removeCloseListener) {
+      this.#removeCloseListener()
     }
     super.destroy()
   }

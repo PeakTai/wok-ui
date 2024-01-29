@@ -9,7 +9,9 @@ import {
   rem,
   showSuccess,
   Dropdown,
-  Dropup
+  Dropup,
+  showModal,
+  Link
 } from '../lib'
 import { TestLayout } from './layout'
 
@@ -62,6 +64,10 @@ class Page extends DivModule {
               ]
             }),
             content: new Button({ text: '嵌入自定义内容' })
+          }),
+          new Button({
+            text: '嵌入到模态框中',
+            onClick: () => this.embedModal()
           })
         ]
       }),
@@ -82,6 +88,23 @@ class Page extends DivModule {
         ]
       })
     )
+  }
+
+  private embedModal() {
+    showModal({
+      title: '在模态框中嵌入下拉框',
+      body: {
+        children: [
+          '嵌入到模态框中的下拉框，也可以点击空白处关闭',
+          new Spacer(),
+          new Dropdown({
+            content: new Button({ text: '嵌入的下拉框' }),
+            menus: [{ label: '菜单一' }, { label: '菜单二' }, { label: '菜单三' }]
+          }),
+          120
+        ]
+      }
+    })
   }
 }
 export function dropdownTest() {
