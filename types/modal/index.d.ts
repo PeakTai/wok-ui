@@ -1,4 +1,4 @@
-import { ConvertibleModule, Module } from '../module';
+import { Module, SubModulesOpt } from '../module';
 /**
  * 模态框选项
  */
@@ -19,7 +19,7 @@ export interface ModalOptions {
     /**
      * 主体部分.
      */
-    body: ConvertibleModule;
+    body: SubModulesOpt;
     /**
      * 使用 body 部分替换掉整个内容.body 默认会被包裹
      * 在 content 容器中，容器有背景色和内边距，该选项为 true ，则可以完全自定义内容.

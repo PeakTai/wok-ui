@@ -1415,7 +1415,7 @@ class Dialog extends DivModule {
         onClick(ev) {
           ev.stopPropagation();
         },
-        children: [opts.body]
+        children: opts.body
       });
       return;
     }
@@ -1570,7 +1570,7 @@ class Content extends DivModule {
     }
     this.#enter().catch(showWarning);
     if (opts.replaceByBody) {
-      this.addChild(opts.body);
+      this.addChild(...buildSubModules(opts.body));
       return;
     }
     if (opts.title) {
@@ -1591,7 +1591,7 @@ class Content extends DivModule {
     }
     this.addChild({
       classNames: ["body"],
-      children: [opts.body]
+      children: opts.body
     });
   }
   #enter() {

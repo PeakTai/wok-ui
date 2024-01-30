@@ -1,4 +1,4 @@
-import { ConvertibleModule } from '../module';
+import { SubModulesOpt } from '../module';
 export interface DrawerOpts {
     /**
      * 位置，默认是 right．
@@ -11,7 +11,7 @@ export interface DrawerOpts {
     /**
      * 内容.
      */
-    body: ConvertibleModule;
+    body: SubModulesOpt;
     /**
      * 使用 body 部分替换掉整个内容.适用于高度自定义的场景.
      */
