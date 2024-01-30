@@ -2,7 +2,7 @@ import { ANIMATION_PROVISION, Animation, animate } from '../animation'
 import { Button } from '../button'
 import { getI18n } from '../i18n'
 import { showWarning } from '../message'
-import { ConvertibleModule, DivModule, Module } from '../module'
+import { DivModule, Module, SubModulesOpt } from '../module'
 import './style.less'
 /**
  * 模态框选项
@@ -24,7 +24,7 @@ export interface ModalOptions {
   /**
    * 主体部分.
    */
-  body: ConvertibleModule
+  body: SubModulesOpt
   /**
    * 使用 body 部分替换掉整个内容.body 默认会被包裹
    * 在 content 容器中，容器有背景色和内边距，该选项为 true ，则可以完全自定义内容.
@@ -171,7 +171,7 @@ class Dialog extends DivModule {
           // 防止传递到 dialog 这一层 div 触发关闭
           ev.stopPropagation()
         },
-        children: [opts.body]
+        children: opts.body
       })
       return
     }

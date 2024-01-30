@@ -1,7 +1,7 @@
 // 抽屉
 import { ANIMATION_PROVISION, Animation, animate } from '../animation'
 import { showWarning } from '../message'
-import { ConvertibleModule, DivModule } from '../module'
+import { DivModule, SubModulesOpt, buildSubModules } from '../module'
 import './style.less'
 
 export interface DrawerOpts {
@@ -16,7 +16,7 @@ export interface DrawerOpts {
   /**
    * 内容.
    */
-  body: ConvertibleModule
+  body: SubModulesOpt
   /**
    * 使用 body 部分替换掉整个内容.适用于高度自定义的场景.
    */
@@ -80,7 +80,7 @@ class Content extends DivModule implements DivModule {
     }
     this.#enter().catch(showWarning)
     if (opts.replaceByBody) {
-      this.addChild(opts.body)
+      this.addChild(...buildSubModules(opts.body))
       return
     }
     // 标题
@@ -103,7 +103,7 @@ class Content extends DivModule implements DivModule {
     // 内容
     this.addChild({
       classNames: ['body'],
-      children: [opts.body]
+      children: opts.body
     })
   }
   /**
