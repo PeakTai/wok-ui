@@ -44,16 +44,16 @@ class CustomModule extends FullRenderingModule {
 
 ```ts
 class List extends FullRenderingModule {
-  readonly #list: Product[]
+  private readonly list: Product[]
 
   constructor(list: Product[]) {
     super(document.createElement('div'))
-    this.#list = list
+    this.list = list
     this.render()
   }
 
   protected buildContent(): void {
-    for (const item of this.#list) {
+    for (const item of this.list) {
       this.addChild({
         classNames: 'item',
         children: [
@@ -78,8 +78,53 @@ class List extends FullRenderingModule {
 也可以在适当的时候调用 removeCache 方法来删除指定 key 的模块缓存，还可以调用 clearCaches 方法
 清理掉所有缓存。清理缓存会让被缓存的模块立即销毁。
 
-但是缓存模块会带来副作用，因为缓存本身也是一种模块，会绑定一个 dom 元素，所以被缓存的模块外面就多了一层 div，
-有可能会影响原本已经设计好的结构和样式，这个需要注意。
+> 但是缓存模块会带来副作用，因为缓存本身也是一种模块，会绑定一个 dom 元素，所以被缓存的模块外面就多了一层 div，
+>有可能会影响原本已经设计好的结构和样式，这个需要注意。
+>
+> -- 0.6 之前的版本
+
+**新版本已经改用代理（Proxy）来实现缓存，避免了多套一层 div 的副作用，但是代理也带来了新问题需要注意。**
+
+首先是 cacheModule 方法的参数 module 仍然是函数类型，但是函数必须返回 Module 实例，可能会与旧代码不兼容。
+其次就是 es 原生的私有属性（名称以 # 开头的属性）是无法代理的，被代理的模块中不能使用这个语法，否则重新渲染会报错。
+
+比如下面的例子，模块就是不能被缓存的。
+
+```ts
+class CanNotCacheModule extends FullRenderingModule {
+  // # count无法被代理，将模块缓存可能会报错
+  #count = 0
+  // timerId 是可以被代理的，无影响
+  // 使用 ts 的语法 private 是可以的，最终生成的 js 仍然是普通的属性
+  private timerId = 0
+
+  constructor() {
+    super()
+    this.render()
+    this.timerId = setTimeout(() => {
+      this.#count++
+      this.render()
+    }, 1000)
+  }
+
+  protected buildContent(): void {
+    // 由于 #count 是私有属性，无法被代理，调用 this.#count 将会出现下的错误：
+    // Cannot read private member #count from an object whose class did not declare it
+    this.addChild(`${this.#count}次`)
+  }
+
+  destroy() {
+    clearTimeout(this.timerId)
+    super.destroy()
+  }
+}
+```
+
+如果使用缓存出现下面的类似错误，就是使用私有属性导致的。
+
+```
+Cannot read private member #xxx from an object whose class did not declare it
+```
 
 ## 响应式模块
 
@@ -101,11 +146,11 @@ class List extends FullRenderingModule {
 
 ```ts
 class List extends ResponsiveModule {
-  readonly #list: Product[]
+  private readonly list: Product[]
 
   constructor(list: Product[]) {
     super(document.createElement('div'))
-    this.#list = list
+    this.list = list
     this.render()
   }
 
@@ -133,7 +178,7 @@ class List extends ResponsiveModule {
       new Grid({
         cols,
         gap: 12,
-        cells: this.#list.map(item => ({
+        cells: this.list.map(item => ({
           classNames: 'item',
           children: [
             this.cacheModule({
@@ -149,4 +194,3 @@ class List extends ResponsiveModule {
   }
 }
 ```
- 
