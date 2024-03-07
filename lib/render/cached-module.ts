@@ -10,7 +10,6 @@ export function proxyCachedModule<T extends Module>(module: T): T {
       // 重写 destroy
       if (p === 'destroy') {
         return () => {
-          console.log('代理 destroy')
           // 仅仅解除关系
           const parent = target.getParent()
           if (parent) {
