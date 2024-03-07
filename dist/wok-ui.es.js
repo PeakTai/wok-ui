@@ -500,7 +500,6 @@ function proxyCachedModule(module) {
     get(target, p) {
       if (p === "destroy") {
         return () => {
-          console.log("\u4EE3\u7406 destroy");
           const parent = target.getParent();
           if (parent) {
             parent.removeChild(delegate);
