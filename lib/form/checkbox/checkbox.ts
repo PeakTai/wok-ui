@@ -11,7 +11,7 @@ export type CheckboxStatus = 'checked' | 'unchecked' | 'indeterminate'
  */
 export class Checkbox extends Module {
   readonly value: string
-  #input: HTMLInputElement
+  private __input: HTMLInputElement
 
   constructor(opts: {
     /**
@@ -39,7 +39,7 @@ export class Checkbox extends Module {
     super(input)
     input.value = opts.value
     this.value = opts.value
-    this.#input = input
+    this.__input = input
     if (opts.disabled) {
       input.disabled = opts.disabled
     }
@@ -63,35 +63,35 @@ export class Checkbox extends Module {
     }
     switch (status) {
       case 'checked':
-        this.#input.checked = true
-        this.#input.indeterminate = false
+        this.__input.checked = true
+        this.__input.indeterminate = false
         break
       case 'unchecked':
-        this.#input.checked = false
-        this.#input.indeterminate = false
+        this.__input.checked = false
+        this.__input.indeterminate = false
         break
       case 'indeterminate':
-        this.#input.checked = false
-        this.#input.indeterminate = true
+        this.__input.checked = false
+        this.__input.indeterminate = true
         break
     }
   }
 
   getStatus(): CheckboxStatus {
-    if (this.#input.checked) {
+    if (this.__input.checked) {
       return 'checked'
     }
-    if (this.#input.indeterminate) {
+    if (this.__input.indeterminate) {
       return 'indeterminate'
     }
     return 'unchecked'
   }
 
   isChecked() {
-    return this.#input.checked
+    return this.__input.checked
   }
 
   setDisabled(disabled: boolean): void {
-    this.#input.disabled = disabled
+    this.__input.disabled = disabled
   }
 }

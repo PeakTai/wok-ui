@@ -1,5 +1,5 @@
-import { ConvertibleModule, Module } from '../module'
-import { CachedModule } from './cached-module'
+import { Module } from '../module'
+import { proxyCachedModule } from './cached-module'
 
 /**
  * 响应式尺寸,分隔点信息:
@@ -46,23 +46,23 @@ export abstract class ResponsiveModule extends Module {
   /**
    * 页面大小调整的监听器.
    */
-  readonly #resizeListener: () => void
+  private readonly __resizeListener: () => void
 
-  #respSize: ResponsiveSize = 'xs'
+  private __respSize: ResponsiveSize = 'xs'
 
-  #pendingRender = false
+  private __pendingRender = false
   /**
    * 缓存的模块
    */
-  #cachedModules = new Map<string, CachedModule>()
+  private __cachedModules = new Map<string, Module>()
   /**
    * 构造器.
    * @param el
    */
   constructor(el?: HTMLElement) {
     super(el || document.createElement('div'))
-    this.#resizeListener = () => this.render(false)
-    window.addEventListener('resize', this.#resizeListener)
+    this.__resizeListener = () => this.render(false)
+    window.addEventListener('resize', this.__resizeListener)
   }
   /**
    * 根据尺寸信息构建内容
@@ -82,21 +82,21 @@ export abstract class ResponsiveModule extends Module {
    * @param force 是否强制渲染,如果为 false ,则在尺寸信息不变化的情况下不会渲染
    */
   protected render(force = true): void {
-    this.#pendingRender = true
+    this.__pendingRender = true
     setTimeout(() => {
       try {
-        this.#render(force)
+        this.__render(force)
       } catch (e) {
         console.error(e)
       }
     }, 0)
   }
 
-  #render(force: boolean) {
-    if (!this.#pendingRender) {
+  private __render(force: boolean) {
+    if (!this.__pendingRender) {
       return
     }
-    this.#pendingRender = false
+    this.__pendingRender = false
     let size: ResponsiveSize = 'xs'
     const windowWidth = window.innerWidth
     if (windowWidth >= 1400) {
@@ -112,8 +112,8 @@ export abstract class ResponsiveModule extends Module {
     } else {
       size = 'xs'
     }
-    if (force || this.#respSize !== size) {
-      this.#respSize = size
+    if (force || this.__respSize !== size) {
+      this.__respSize = size
       this.empty()
       this.buildContent({
         respSize: size,
@@ -124,7 +124,7 @@ export abstract class ResponsiveModule extends Module {
 
   /**
    * 缓存一个模块，返回的是一个特殊的模块，能够复用，避免重新渲染.
-   * 被缓存的模块将会和响应式模块销毁的时候一起被销毁，也可以通过 removeCache 主要将其销毁.
+   * 被缓存的模块将会和全量渲染模块销毁的时候一起被销毁，也可以通过 removeCache 方法主要将其销毁.
    * @param opts
    */
   protected cacheModule(opts: {
@@ -136,39 +136,42 @@ export abstract class ResponsiveModule extends Module {
      * 要缓存的模块，一个函数，仅首次执行，如果查询到缓存结果，则不执行
      * @returns
      */
-    module: () => Exclude<ConvertibleModule, () => Module>
-  }): CachedModule {
-    const cachedModule = this.#cachedModules.get(opts.key)
+    module: () => Module
+  }): Module {
+    const cachedModule = this.__cachedModules.get(opts.key)
     if (cachedModule) {
       return cachedModule
     }
-    const module = new CachedModule(opts.module())
-    this.#cachedModules.set(opts.key, module)
+    const module = proxyCachedModule(opts.module())
+    this.__cachedModules.set(opts.key, module)
     return module
   }
 
   /**
-   * 删除缓存模块
+   * 删除缓存
    * @param key
    */
   protected removeCache(key: string) {
-    const module = this.#cachedModules.get(key)
+    const module = this.__cachedModules.get(key)
     if (module) {
-      module.destroyThoroughly()
-      this.#cachedModules.delete(key)
+      const { destroyThoroughly } = module as any
+      if (typeof destroyThoroughly === 'function') {
+        destroyThoroughly()
+      }
+      this.__cachedModules.delete(key)
     }
   }
   /**
    * 清理掉所有的缓存
    */
   protected clearCaches() {
-    Array.from(this.#cachedModules.values()).forEach(m => m.destroyThoroughly())
-    this.#cachedModules.clear()
+    for (const key of this.__cachedModules.keys()) {
+      this.removeCache(key)
+    }
   }
 
-  destroyed() {
-    window.removeEventListener('resize', this.#resizeListener)
-    Array.from(this.#cachedModules.values()).forEach(m => m.destroyThoroughly())
+  destroy(): void {
+    this.clearCaches()
     super.destroy()
   }
 }

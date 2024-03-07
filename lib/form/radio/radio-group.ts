@@ -36,14 +36,12 @@ export interface RadioGroupOpts {
 }
 
 export class RadioGroup extends FormInput {
-  #name: string
-  #value = ''
-  #opts: RadioGroupOpts
-  constructor(opts: RadioGroupOpts) {
+  private name: string
+  private value = ''
+  constructor(private readonly opts: RadioGroupOpts) {
     super(document.createElement('div'))
-    this.#opts = opts
     this.el.classList.add('wok-ui-radio-group')
-    this.#name = generateId()
+    this.name = generateId()
     if (opts.inline) {
       this.el.classList.add('inline')
     }
@@ -53,14 +51,14 @@ export class RadioGroup extends FormInput {
           tag: 'label',
           children: [
             new Radio({
-              name: this.#name,
+              name: this.name,
               value: opt.value,
               checked: opts.value === opt.value,
               disabled: opts.disabled,
               onChecked: () => {
-                this.#value = opt.value
-                if (this.#opts.onChange) {
-                  this.#opts.onChange(this.#value)
+                this.value = opt.value
+                if (this.opts.onChange) {
+                  this.opts.onChange(this.value)
                 }
                 this.validate()
               }
@@ -72,14 +70,14 @@ export class RadioGroup extends FormInput {
     )
   }
 
-  #validate(): ValidateResult {
-    if (!this.#value) {
-      if (this.#opts.required) {
+  private __validate(): ValidateResult {
+    if (!this.value) {
+      if (this.opts.required) {
         return {
           valid: false,
           msg:
-            typeof this.#opts.required === 'string'
-              ? this.#opts.required
+            typeof this.opts.required === 'string'
+              ? this.opts.required
               : getI18n().buildMsg('form-err-must-check')
         }
       } else {
@@ -90,7 +88,7 @@ export class RadioGroup extends FormInput {
   }
 
   validate(): boolean {
-    const res = this.#validate()
+    const res = this.__validate()
     this.getChildren()
       .filter(m => m instanceof InvalidFeedback)
       .forEach(m => m.destroy())

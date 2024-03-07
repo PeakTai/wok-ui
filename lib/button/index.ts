@@ -78,16 +78,16 @@ export class Button extends Module {
     // 类型
     switch (opts.type) {
       case 'primary':
-        this.#setCssVars(getColor().primary, !!opts.outline)
+        this.setCssVars(getColor().primary, !!opts.outline)
         break
       case 'danger':
-        this.#setCssVars(getColor().danger, !!opts.outline)
+        this.setCssVars(getColor().danger, !!opts.outline)
         break
       case 'success':
-        this.#setCssVars(getColor().success, !!opts.outline)
+        this.setCssVars(getColor().success, !!opts.outline)
         break
       case 'warning':
-        this.#setCssVars(getColor().warning, !!opts.outline)
+        this.setCssVars(getColor().warning, !!opts.outline)
         break
       default:
         // 默认
@@ -113,7 +113,7 @@ export class Button extends Module {
     }
   }
 
-  #setCssVars(color: string, outline: boolean) {
+  private setCssVars(color: string, outline: boolean) {
     if (outline) {
       this.el.style.setProperty('--btn-bg-color', 'transparent')
       this.el.style.setProperty('--btn-color', color)

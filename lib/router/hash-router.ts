@@ -5,12 +5,12 @@ import { Router, RouterRule } from './router'
  * 哈希路由.
  */
 export class HashRouter extends Router {
-  readonly #listener: () => void
+  private readonly listener: () => void
 
   constructor(rules: RouterRule[], cacheLimit?: number) {
     super({ rules, cacheLimit })
-    this.#listener = () => this.handleUrl()
-    window.addEventListener('hashchange', this.#listener)
+    this.listener = () => this.handleUrl()
+    window.addEventListener('hashchange', this.listener)
     // 异步执行第一次链接处理，为的是在构造完成后执行
     // 否则未造成成功就执行，配置的路由组件如果对路由实例有依赖就会出错
     setTimeout(() => this.handleUrl(), 0)
@@ -59,7 +59,7 @@ export class HashRouter extends Router {
   }
 
   destroy(): void {
-    window.removeEventListener('hashchange', this.#listener)
+    window.removeEventListener('hashchange', this.listener)
     super.destroy()
   }
 }

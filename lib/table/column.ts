@@ -16,7 +16,7 @@ export interface TableColumnSetting<T> {
   /**
    * 内容生成.
    */
-  content: (data: T, rowIdx: number) => ConvertibleModule | Promise<ConvertibleModule>
+  content: (data: T, rowIdx: number) => ConvertibleModule
 }
 /**
  * 列.
@@ -28,8 +28,8 @@ export class TableColumn<T> {
  * 勾选框列.
  */
 export class TableCheckboxColumn<T> extends TableColumn<T> {
-  #checkAllBox?: Checkbox
-  #boxes: Checkbox[] = []
+  private checkAllBox?: Checkbox
+  private boxes: Checkbox[] = []
   constructor(opts: {
     /**
      * 勾选框绑定的值.
@@ -58,10 +58,10 @@ export class TableCheckboxColumn<T> extends TableColumn<T> {
           }
           if (checkAllBox.isChecked()) {
             // 全选
-            this.#boxes.forEach(b => b.setStatus('checked'))
+            this.boxes.forEach(b => b.setStatus('checked'))
           } else {
             // 全不选
-            this.#boxes.forEach(b => b.setStatus('unchecked'))
+            this.boxes.forEach(b => b.setStatus('unchecked'))
           }
           if (opts.onChange) {
             opts.onChange(this.getCheckedValues())
@@ -83,50 +83,50 @@ export class TableCheckboxColumn<T> extends TableColumn<T> {
             if (opts.onChange) {
               opts.onChange(checkedValues)
             }
-            this.#updateCheckAllBox()
+            this.updateCheckAllBox()
           }
         })
-        this.#boxes.push(box)
+        this.boxes.push(box)
         return box
       },
       width: 30
     })
-    this.#checkAllBox = checkAllBox
+    this.checkAllBox = checkAllBox
   }
 
   /**
    * 更新全选勾选框.
    */
-  #updateCheckAllBox() {
-    if (!this.#checkAllBox) {
+  private updateCheckAllBox() {
+    if (!this.checkAllBox) {
       return
     }
     const checkedValues = this.getCheckedValues()
-    if (checkedValues.length === this.#boxes.length) {
-      this.#checkAllBox.setStatus('checked')
+    if (checkedValues.length === this.boxes.length) {
+      this.checkAllBox.setStatus('checked')
     } else if (checkedValues.length === 0) {
-      this.#checkAllBox.setStatus('unchecked')
+      this.checkAllBox.setStatus('unchecked')
     } else {
-      this.#checkAllBox.setStatus('indeterminate')
+      this.checkAllBox.setStatus('indeterminate')
     }
   }
 
   getCheckedValues(): string[] {
-    return this.#boxes.filter(b => b.isChecked()).map(b => b.value)
+    return this.boxes.filter(b => b.isChecked()).map(b => b.value)
   }
 
   checkAll() {
-    if (this.#checkAllBox) {
-      this.#checkAllBox.setStatus('checked')
+    if (this.checkAllBox) {
+      this.checkAllBox.setStatus('checked')
     }
-    this.#boxes.forEach(b => b.setStatus('checked'))
+    this.boxes.forEach(b => b.setStatus('checked'))
   }
 
   uncheckAll() {
-    if (this.#checkAllBox) {
-      this.#checkAllBox.setStatus('unchecked')
+    if (this.checkAllBox) {
+      this.checkAllBox.setStatus('unchecked')
     }
-    this.#boxes.forEach(b => b.setStatus('unchecked'))
+    this.boxes.forEach(b => b.setStatus('unchecked'))
   }
 }
 

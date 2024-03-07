@@ -21,13 +21,11 @@ export interface FormOpts {
  * <FD> 表单绑定的数据类型
  */
 export class Form extends Module {
-  readonly #opts: FormOpts
-  constructor(opts: FormOpts) {
+  constructor(private readonly opts: FormOpts) {
     const form = document.createElement('form')
     form.noValidate = true
     form.autocomplete = opts.autocomplete ? 'on' : 'off'
     super(form)
-    this.#opts = opts
     this.addChild(...buildSubModules(opts.children))
     form.addEventListener('submit', ev => {
       ev.preventDefault()
@@ -39,7 +37,7 @@ export class Form extends Module {
    * 主要请求提交，如果所有表单元素都校验通过，则会触发 submit 事件
    */
   submit() {
-    if (!this.#opts.onSubmit) {
+    if (!this.opts.onSubmit) {
       return
     }
     const invalidInputs = this.find<FormInput>(m => m instanceof FormInput).filter(
@@ -49,6 +47,6 @@ export class Form extends Module {
       invalidInputs[0].scrollIntoViewIfInvisible()
       return
     }
-    this.#opts.onSubmit()
+    this.opts.onSubmit()
   }
 }

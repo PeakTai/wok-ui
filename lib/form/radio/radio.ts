@@ -2,7 +2,7 @@ import { Module } from '../../module'
 import './radio.less'
 
 export class Radio extends Module {
-  #input: HTMLInputElement
+  private input: HTMLInputElement
   constructor(opts: {
     /**
      * 表单的属性名称，用于联动
@@ -33,7 +33,7 @@ export class Radio extends Module {
     input.value = opts.value
     input.classList.add('wok-ui-radio')
     super(input)
-    this.#input = input
+    this.input = input
     if (opts.checked) {
       input.checked = true
     }
@@ -53,20 +53,20 @@ export class Radio extends Module {
   }
 
   isChecked() {
-    return this.#input.checked
+    return this.input.checked
   }
 
   setChecked(checked: boolean) {
-    if (this.#input.checked !== checked) {
-      this.#input.checked = checked
+    if (this.input.checked !== checked) {
+      this.input.checked = checked
     }
   }
 
   getValue() {
-    return this.#input.value
+    return this.input.value
   }
 
   setDisabled(disabled: boolean) {
-    this.#input.disabled = disabled
+    this.input.disabled = disabled
   }
 }

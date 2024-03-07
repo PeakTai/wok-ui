@@ -64,15 +64,13 @@ export class TextInput extends FormInput {
    * 组合中，true 表示输入法正在输入中.中文输入时，在备选文字没有上屏时，输入框里是拼音字母，我们不希望输入每按一下按键，
    * 带有拼音字母的内容也回调，这样可能会导致回调过于频繁.
    */
-  #composing = false
+  private composing = false
 
   protected input: HTMLInputElement
 
-  readonly #opts: TextInputOpts
-
-  constructor(opts: TextInputOpts) {
+  constructor(private readonly opts: TextInputOpts) {
     super(document.createElement('div'))
-    this.#opts = opts
+    this.opts = opts
     this.input = document.createElement('input')
     this.input.type = 'text'
     this.input.classList.add('wok-ui-input')
@@ -110,16 +108,16 @@ export class TextInput extends FormInput {
     if (opts.disabled) {
       this.input.disabled = true
     }
-    this.input.addEventListener('compositionstart', () => (this.#composing = true))
+    this.input.addEventListener('compositionstart', () => (this.composing = true))
     this.input.addEventListener('compositionend', () => {
-      this.#composing = false
-      this.#handleChange()
+      this.composing = false
+      this.handleChange()
     })
     this.input.addEventListener('input', () => {
-      if (this.#composing) {
+      if (this.composing) {
         return
       }
-      this.#handleChange()
+      this.handleChange()
     })
     if (opts.onBlur) {
       this.input.addEventListener('blur', opts.onBlur)
@@ -128,7 +126,7 @@ export class TextInput extends FormInput {
 
   mount(parentEl: Element): void {
     super.mount(parentEl)
-    if (this.#opts.autofocus) {
+    if (this.opts.autofocus) {
       setTimeout(() => this.input.focus(), 0)
     }
   }
@@ -137,21 +135,21 @@ export class TextInput extends FormInput {
     this.input.focus()
   }
 
-  #handleChange() {
-    if (this.#opts.onChange) {
-      this.#opts.onChange(this.input.value)
+  private handleChange() {
+    if (this.opts.onChange) {
+      this.opts.onChange(this.input.value)
     }
     this.validate()
   }
 
-  #validate(val: string): ValidateResult {
-    if (this.#opts.required) {
+  private __validate(val: string): ValidateResult {
+    if (this.opts.required) {
       if (!val) {
         return {
           valid: false,
           msg:
-            typeof this.#opts.required === 'string'
-              ? this.#opts.required
+            typeof this.opts.required === 'string'
+              ? this.opts.required
               : getI18n().buildMsg('form-err-required')
         }
       }
@@ -159,39 +157,39 @@ export class TextInput extends FormInput {
     if (!val) {
       return { valid: true }
     }
-    if (typeof this.#opts.minLength === 'number') {
-      if (val.length < this.#opts.minLength) {
+    if (typeof this.opts.minLength === 'number') {
+      if (val.length < this.opts.minLength) {
         return {
           valid: false,
-          msg: getI18n().buildMsg('form-err-min-length', `${this.#opts.minLength}`)
+          msg: getI18n().buildMsg('form-err-min-length', `${this.opts.minLength}`)
         }
       }
-    } else if (this.#opts.minLength) {
-      if (val.length < this.#opts.minLength.minLength) {
-        return { valid: false, msg: this.#opts.minLength.errMsg }
+    } else if (this.opts.minLength) {
+      if (val.length < this.opts.minLength.minLength) {
+        return { valid: false, msg: this.opts.minLength.errMsg }
       }
     }
-    if (typeof this.#opts.maxLength === 'number') {
-      if (val.length > this.#opts.maxLength) {
+    if (typeof this.opts.maxLength === 'number') {
+      if (val.length > this.opts.maxLength) {
         return {
           valid: false,
-          msg: getI18n().buildMsg('form-err-max-length', `${this.#opts.maxLength}`)
+          msg: getI18n().buildMsg('form-err-max-length', `${this.opts.maxLength}`)
         }
       }
-    } else if (this.#opts.maxLength) {
-      if (val.length > this.#opts.maxLength.maxLength) {
-        return { valid: false, msg: this.#opts.maxLength.errMsg }
+    } else if (this.opts.maxLength) {
+      if (val.length > this.opts.maxLength.maxLength) {
+        return { valid: false, msg: this.opts.maxLength.errMsg }
       }
     }
     // 自定义校验
-    if (this.#opts.validator) {
-      return this.#opts.validator(val)
+    if (this.opts.validator) {
+      return this.opts.validator(val)
     }
     return { valid: true }
   }
 
   validate(): boolean {
-    const validateRes = this.#validate(this.input.value)
+    const validateRes = this.__validate(this.input.value)
     // 根据是否有效，显示反馈信息
     this.getChildren()
       .filter(m => m instanceof InvalidFeedback)

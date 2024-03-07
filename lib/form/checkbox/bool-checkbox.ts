@@ -36,26 +36,24 @@ export interface BoolCheckboxOpts {
  * 布尔勾选框，绑定布尔值，功能和 switch 组件一致
  */
 export class BoolCheckbox extends FormInput {
-  #value = false
-  #disabled = false
-  readonly #opts: BoolCheckboxOpts
-  constructor(opts: BoolCheckboxOpts) {
+  private __value = false
+  private __disabled = false
+  constructor(private readonly opts: BoolCheckboxOpts) {
     super(document.createElement('label'))
-    this.#opts = opts
     if (opts.value) {
-      this.#value = opts.value
+      this.__value = opts.value
     }
     this.addChild({
       classNames: ['wok-ui-bool-checkbox'],
       children: [
         new Checkbox({
           value: '',
-          status: this.#value ? 'checked' : 'unchecked',
-          disabled: this.#disabled,
+          status: this.__value ? 'checked' : 'unchecked',
+          disabled: this.__disabled,
           onChange: status => {
-            this.#value = status === 'checked'
-            if (this.#opts.onChange) {
-              this.#opts.onChange(this.#value)
+            this.__value = status === 'checked'
+            if (this.opts.onChange) {
+              this.opts.onChange(this.__value)
             }
             this.validate()
           }
@@ -65,13 +63,13 @@ export class BoolCheckbox extends FormInput {
     })
   }
 
-  #validate(): ValidateResult {
-    if (this.#opts.required && !this.#value) {
+  private __validate(): ValidateResult {
+    if (this.opts.required && !this.__value) {
       return {
         valid: false,
         msg:
-          typeof this.#opts.required === 'string'
-            ? this.#opts.required
+          typeof this.opts.required === 'string'
+            ? this.opts.required
             : getI18n().buildMsg('form-err-must-check')
       }
     } else {
@@ -80,7 +78,7 @@ export class BoolCheckbox extends FormInput {
   }
 
   validate(): boolean {
-    const res = this.#validate()
+    const res = this.__validate()
     this.getChildren()
       .filter(m => m instanceof InvalidFeedback)
       .forEach(m => m.destroy())
@@ -90,11 +88,11 @@ export class BoolCheckbox extends FormInput {
     return res.valid
   }
   setDisabled(disabled: boolean): void {
-    if (this.#disabled !== disabled) {
-      this.#disabled = disabled
+    if (this.__disabled !== disabled) {
+      this.__disabled = disabled
       this.find(m => m instanceof Checkbox)
         .map(m => m as Checkbox)
-        .forEach(box => box.setDisabled(this.#disabled))
+        .forEach(box => box.setDisabled(this.__disabled))
     }
   }
 }

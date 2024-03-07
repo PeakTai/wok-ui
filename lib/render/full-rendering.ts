@@ -1,5 +1,5 @@
-import { ConvertibleModule, Module } from '../module'
-import { CachedModule } from './cached-module'
+import { Module } from '../module'
+import { proxyCachedModule } from './cached-module'
 
 /**
  * 全量渲染模块，当内部有变化时，需要整个模块的内容重新渲染.
@@ -17,11 +17,11 @@ export abstract class FullRenderingModule extends Module {
     super(rootEl || document.createElement('div'))
   }
 
-  #pendingRender = false
+  private __pendingRender = false
   /**
    * 缓存的模块
    */
-  #cachedModules = new Map<string, CachedModule>()
+  private __cachedModules = new Map<string, Module>()
 
   /**
    * 渲染。会尽可能减少负载的情况下重新构建内容。
@@ -29,12 +29,12 @@ export abstract class FullRenderingModule extends Module {
    * FullRenderingModule 无法满足这种需求。
    */
   protected render() {
-    this.#pendingRender = true
+    this.__pendingRender = true
     setTimeout(() => {
-      if (!this.#pendingRender) {
+      if (!this.__pendingRender) {
         return
       }
-      this.#pendingRender = false
+      this.__pendingRender = false
       try {
         this.empty()
         this.buildContent()
@@ -65,14 +65,14 @@ export abstract class FullRenderingModule extends Module {
      * 要缓存的模块，一个函数，仅首次执行，如果查询到缓存结果，则不执行
      * @returns
      */
-    module: () => Exclude<ConvertibleModule, () => Module>
-  }): CachedModule {
-    const cachedModule = this.#cachedModules.get(opts.key)
+    module: () => Module
+  }): Module {
+    const cachedModule = this.__cachedModules.get(opts.key)
     if (cachedModule) {
       return cachedModule
     }
-    const module = new CachedModule(opts.module())
-    this.#cachedModules.set(opts.key, module)
+    const module = proxyCachedModule(opts.module())
+    this.__cachedModules.set(opts.key, module)
     return module
   }
 
@@ -81,22 +81,26 @@ export abstract class FullRenderingModule extends Module {
    * @param key
    */
   protected removeCache(key: string) {
-    const module = this.#cachedModules.get(key)
+    const module = this.__cachedModules.get(key)
     if (module) {
-      module.destroyThoroughly()
-      this.#cachedModules.delete(key)
+      const { destroyThoroughly } = module as any
+      if (typeof destroyThoroughly === 'function') {
+        destroyThoroughly()
+      }
+      this.__cachedModules.delete(key)
     }
   }
   /**
    * 清理掉所有的缓存
    */
   protected clearCaches() {
-    Array.from(this.#cachedModules.values()).forEach(m => m.destroyThoroughly())
-    this.#cachedModules.clear()
+    for (const key of this.__cachedModules.keys()) {
+      this.removeCache(key)
+    }
   }
 
   destroy(): void {
-    Array.from(this.#cachedModules.values()).forEach(m => m.destroyThoroughly())
+    this.clearCaches()
     super.destroy()
   }
 }

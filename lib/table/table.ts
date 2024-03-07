@@ -1,4 +1,4 @@
-import { DivModule, createDomModule } from '../module'
+import { DivModule } from '../module'
 import { TableBody } from './body'
 import { TableColumn } from './column'
 import { TableHeader } from './header'

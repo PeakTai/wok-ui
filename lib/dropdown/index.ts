@@ -47,7 +47,7 @@ export class Dropdown extends DivModule {
   /**
    * 监听器删除函数
    */
-  #removeCloseListener?: () => void
+  private __removeCloseListener?: () => void
 
   constructor(opts: DropdownOpts) {
     super('wok-ui-dropdown')
@@ -56,11 +56,11 @@ export class Dropdown extends DivModule {
     this.el.addEventListener('click', ev => {
       if (this.el.classList.contains('open')) {
         // 关闭
-        this.#close()
+        this.close()
       } else {
         // 打开
         this.el.classList.add('open')
-        setTimeout(() => this.#addCloseListener(), 0)
+        setTimeout(() => this.addCloseListener(), 0)
       }
     })
     // 内容
@@ -83,7 +83,7 @@ export class Dropdown extends DivModule {
                 if (item.disabled) {
                   return
                 }
-                this.#close()
+                this.close()
                 if (item.callback) item.callback()
               }
             })
@@ -104,7 +104,7 @@ export class Dropdown extends DivModule {
     }
   }
 
-  #addCloseListener() {
+  private addCloseListener() {
     const closeListener = (ev: Event) => {
       ev.stopPropagation()
       const target = ev.target as HTMLElement
@@ -113,7 +113,7 @@ export class Dropdown extends DivModule {
       }
       // 关闭
       if (this.el.classList.contains('open')) {
-        this.#close()
+        this.close()
       }
     }
     let parent = this.el.parentElement
@@ -123,22 +123,22 @@ export class Dropdown extends DivModule {
       parent.addEventListener('click', closeListener)
       parent = parent.parentElement
     }
-    this.#removeCloseListener = () =>
+    this.__removeCloseListener = () =>
       parentList.forEach(p => p.removeEventListener('click', closeListener))
   }
 
-  #close() {
+  private close() {
     this.el.classList.remove('open')
-    if (this.#removeCloseListener) {
-      this.#removeCloseListener()
-      this.#removeCloseListener = undefined
+    if (this.__removeCloseListener) {
+      this.__removeCloseListener()
+      this.__removeCloseListener = undefined
       return
     }
   }
 
   destroy(): void {
-    if (this.#removeCloseListener) {
-      this.#removeCloseListener()
+    if (this.__removeCloseListener) {
+      this.__removeCloseListener()
     }
     super.destroy()
   }

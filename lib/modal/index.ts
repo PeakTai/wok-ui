@@ -81,10 +81,8 @@ export interface Modal {
  * 背景.
  */
 class Backdrop extends DivModule {
-  readonly #opts: { onDestroy: () => void }
-  constructor(opts: { onDestroy: () => void }) {
+  constructor(private readonly opts: { onDestroy: () => void }) {
     super('wok-ui-modal')
-    this.#opts = opts
   }
 
   addDialog(dialog: Dialog) {
@@ -117,7 +115,7 @@ class Backdrop extends DivModule {
 
   destroy(): void {
     super.destroy()
-    this.#opts.onDestroy()
+    this.opts.onDestroy()
   }
 }
 
@@ -128,23 +126,20 @@ class Dialog extends DivModule {
   /**
    * 回调标记，目的是防止重复回调，因为关闭有动画，有一个过程，在这个过程中用户重复操作会导致重复回调
    */
-  #callbacked = false
+  private callbacked = false
 
-  #destroyListener?: () => void
+  private destroyListener?: () => void
 
-  readonly #opts: ModalOptions
-
-  constructor(opts: ModalOptions) {
+  constructor(private readonly opts: ModalOptions) {
     super('wok-ui-modal-dialog', ANIMATION_PROVISION)
-    this.#opts = opts
     animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300 }).then(() => {
       if (opts.onShown) {
         opts.onShown()
       }
     })
-    if (this.#opts.fullscreen) {
+    if (this.opts.fullscreen) {
       this.el.classList.add('fullscreen')
-    } else if (this.#opts.dialogCentered) {
+    } else if (this.opts.dialogCentered) {
       this.el.classList.add('centered')
     }
     // 点击关闭
@@ -260,7 +255,7 @@ class Dialog extends DivModule {
    * 尝试关闭销毁，由外部触发，如果模态框不支持点击自身以外的区域则无法销毁成功.
    */
   tryDestroy() {
-    if (this.#opts.staticBackDrop) {
+    if (this.opts.staticBackDrop) {
       animate({ el: this.el, animation: Animation.SHAKE }).catch(showWarning)
       return
     }
@@ -268,18 +263,18 @@ class Dialog extends DivModule {
   }
 
   onDestroy(listener: () => void) {
-    this.#destroyListener = listener
+    this.destroyListener = listener
   }
 
   async close(): Promise<void> {
     await animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300, reverse: true })
     this.destroy()
-    if (this.#destroyListener) {
-      this.#destroyListener()
+    if (this.destroyListener) {
+      this.destroyListener()
     }
-    if (this.#opts.onClose && !this.#callbacked) {
-      this.#opts.onClose()
-      this.#callbacked = true
+    if (this.opts.onClose && !this.callbacked) {
+      this.opts.onClose()
+      this.callbacked = true
     }
   }
 }

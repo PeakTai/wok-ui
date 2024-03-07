@@ -1,5 +1,6 @@
 import {
   BoolCheckbox,
+  DivModule,
   FullRenderingModule,
   HBox,
   LargeTitle,
@@ -10,6 +11,7 @@ import {
   TableCheckboxColumn,
   TableColumn,
   TableIndexColumn,
+  Text,
   getColor,
   rem
 } from '../lib'
@@ -110,29 +112,21 @@ class Page extends FullRenderingModule {
                 checked: user => this.checkedVals.includes(user.id)
               }),
               new TableIndexColumn(), // 序号列
-              new TableColumn({ name: '姓名', content: user => user.name }),
+              new TableColumn({ name: '姓名', content: user => user.name, width: 100 }),
               new TableColumn({ name: '年龄', content: user => `${user.age}` }),
               new TableColumn({ name: '性别', content: user => `${user.gender}`, width: 60 }),
-              new TableColumn({ name: '城市', content: user => `${user.city}` }),
+              new TableColumn({ name: '城市', content: user => `${user.city}`, width: 80 }),
               new TableColumn({ name: '部门', content: user => `${user.dept}`, width: 100 }),
-              // 延迟加载
+              // 异步加载
               new TableColumn({
                 name: '积分',
-                content: user =>
-                  new Promise<string>((res, rej) => {
-                    setTimeout(() => {
-                      const points = Math.random() * 1000
-                      if (points < 500) {
-                        rej(`加载${user.name}的积分失败`)
-                        return
-                      }
-                      res(points.toFixed(1))
-                    }, 2000)
-                  })
+                content: user => new Point(user),
+                width: 100
               }),
               // 内容是模块
               new TableColumn({
                 name: '状态',
+                width: 80,
                 content: user => {
                   if (user.status === '激活') {
                     return new PrimaryBodyText('激活').setColor(getColor().success)
@@ -182,6 +176,29 @@ class Page extends FullRenderingModule {
           })
       })
     )
+  }
+}
+/**
+ * 积分，异步加载数据
+ */
+class Point extends DivModule {
+  constructor(user: User) {
+    super()
+    this.addChild('加载中...')
+    setTimeout(() => {
+      this.empty()
+      const points = Math.random() * 1000
+      if (points < 500) {
+        this.addChild(
+          new Text({
+            text: `加载${user.name}的积分失败`,
+            color: getColor().danger
+          })
+        )
+        return
+      }
+      this.addChild(points.toFixed(1))
+    }, 2000)
   }
 }
 
