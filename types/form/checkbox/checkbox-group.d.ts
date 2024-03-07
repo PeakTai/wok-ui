@@ -49,8 +49,12 @@ export interface CheckboxGroupOpts {
  * 多选框组.
  */
 export declare class CheckboxGroup extends FormInput {
-    #private;
+    private readonly opts;
+    private __values;
+    private __disabled;
     constructor(opts: CheckboxGroupOpts);
+    private handleChange;
+    private __validate;
     validate(): boolean;
     setDisabled(disabled: boolean): void;
 }

@@ -7,8 +7,8 @@ export type CheckboxStatus = 'checked' | 'unchecked' | 'indeterminate';
  * 基础的勾选框.
  */
 export declare class Checkbox extends Module {
-    #private;
     readonly value: string;
+    private __input;
     constructor(opts: {
         /**
          * 绑定值.

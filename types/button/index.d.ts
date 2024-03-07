@@ -53,8 +53,8 @@ export interface ButtonOpts {
  * 按钮
  */
 export declare class Button extends Module {
-    #private;
     constructor(opts: ButtonOpts);
+    private setCssVars;
     setDisabled(disabled: boolean): this;
     onClick(listener: (ev: MouseEvent) => void): this;
 }

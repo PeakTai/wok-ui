@@ -30,8 +30,11 @@ export interface BoolCheckboxOpts {
  * 布尔勾选框，绑定布尔值，功能和 switch 组件一致
  */
 export declare class BoolCheckbox extends FormInput {
-    #private;
+    private readonly opts;
+    private __value;
+    private __disabled;
     constructor(opts: BoolCheckboxOpts);
+    private __validate;
     validate(): boolean;
     setDisabled(disabled: boolean): void;
 }

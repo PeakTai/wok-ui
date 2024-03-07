@@ -30,12 +30,41 @@ export interface RouterRule {
  * 路由，用于模拟页面跳转，而不刷新页面.路由本身也是一个模块，切换页面实际上就是动态的切换路由中的子模块.
  */
 export declare abstract class Router extends Module {
-    #private;
+    /**
+     * 路径规则列表，用于匹配.
+     */
+    private readonly paths;
+    private defaultPathInfo?;
+    /**
+     * 当前路径.
+     */
+    private currentPath;
+    /**
+     * 路径变量.
+     */
+    private pathVars;
+    /**
+     * 查询参数.
+     */
+    private query;
+    /**
+     * 当前展示的模块
+     */
+    private currentModule?;
+    /**
+     * 缓存限制
+     */
+    private cacheLimit;
+    /**
+     * 容器滚动监听器
+     */
+    private scrollListener;
     constructor(options: {
         rules: RouterRule[];
         cacheLimit?: number;
     });
     handleUrl(): void;
+    private handleModule;
     /**
      * 解析当前的地址.
      */

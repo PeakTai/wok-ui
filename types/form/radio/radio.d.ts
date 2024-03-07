@@ -1,6 +1,6 @@
 import { Module } from '../../module';
 export declare class Radio extends Module {
-    #private;
+    private input;
     constructor(opts: {
         /**
          * 表单的属性名称，用于联动

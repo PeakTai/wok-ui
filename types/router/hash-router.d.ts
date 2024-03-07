@@ -4,7 +4,7 @@ import { Router, RouterRule } from './router';
  * 哈希路由.
  */
 export declare class HashRouter extends Router {
-    #private;
+    private readonly listener;
     constructor(rules: RouterRule[], cacheLimit?: number);
     parseCurrentUrl(): {
         path: string;

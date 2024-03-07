@@ -1,5 +1,4 @@
-import { ConvertibleModule, Module } from '../module';
-import { CachedModule } from './cached-module';
+import { Module } from '../module';
 /**
  * 全量渲染模块，当内部有变化时，需要整个模块的内容重新渲染.
  * 子类需要实现 buildContent()方法，用于构建完整内容.在需要渲染的时候调用
@@ -12,8 +11,12 @@ import { CachedModule } from './cached-module';
  * 目前可以通过 cacheModule 来缓存图片组件避免重新渲染来解决。
  */
 export declare abstract class FullRenderingModule extends Module {
-    #private;
     constructor(rootEl?: HTMLElement);
+    private __pendingRender;
+    /**
+     * 缓存的模块
+     */
+    private __cachedModules;
     /**
      * 渲染。会尽可能减少负载的情况下重新构建内容。
      * 注意：渲染是异步的，不会立即执行，如果有需要等等渲染结果的逻辑，是不能使用这个方法的，
@@ -40,8 +43,8 @@ export declare abstract class FullRenderingModule extends Module {
          * 要缓存的模块，一个函数，仅首次执行，如果查询到缓存结果，则不执行
          * @returns
          */
-        module: () => Exclude<ConvertibleModule, () => Module>;
-    }): CachedModule;
+        module: () => Module;
+    }): Module;
     /**
      * 删除缓存
      * @param key

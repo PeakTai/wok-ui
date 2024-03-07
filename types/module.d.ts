@@ -2,8 +2,13 @@
  * 模块基类. 一个模块是对一到多个 dom 元素的封装，其作用是快速复用常用的 dom 组合。
  */
 export declare abstract class Module {
-    #private;
     protected readonly el: HTMLElement;
+    private __children;
+    private __parent?;
+    /**
+     * 销毁标识
+     */
+    private __destroyed;
     /**
      * 构建模块.
      * @param el 根元素.
@@ -28,6 +33,7 @@ export declare abstract class Module {
     protected find<T>(predicate: (m: Module) => boolean): T[];
     protected findFirst<T>(predicate: (m: Module) => boolean): T | undefined;
     protected addChild(...child: ConvertibleModule[]): void;
+    private __addSingleChild;
     protected removeChild(moduleOrIndex: Module | number): boolean;
     protected getChildren(): Readonly<Module[]>;
     protected getChild(index: number): Module | undefined;

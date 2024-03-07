@@ -25,7 +25,8 @@ export interface GridOpts {
  * 网格.
  */
 export declare class Grid extends DivModule {
-    #private;
+    private readonly opts;
+    private readonly gap;
     constructor(opts: GridOpts);
     addCell(module: ConvertibleModule): void;
 }

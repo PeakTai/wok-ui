@@ -14,7 +14,7 @@ export interface TableColumnSetting<T> {
     /**
      * 内容生成.
      */
-    content: (data: T, rowIdx: number) => ConvertibleModule | Promise<ConvertibleModule>;
+    content: (data: T, rowIdx: number) => ConvertibleModule;
 }
 /**
  * 列.
@@ -27,7 +27,8 @@ export declare class TableColumn<T> {
  * 勾选框列.
  */
 export declare class TableCheckboxColumn<T> extends TableColumn<T> {
-    #private;
+    private checkAllBox?;
+    private boxes;
     constructor(opts: {
         /**
          * 勾选框绑定的值.
@@ -46,6 +47,10 @@ export declare class TableCheckboxColumn<T> extends TableColumn<T> {
          */
         onChange?: (checkedVals: string[]) => void;
     });
+    /**
+     * 更新全选勾选框.
+     */
+    private updateCheckAllBox;
     getCheckedValues(): string[];
     checkAll(): void;
     uncheckAll(): void;

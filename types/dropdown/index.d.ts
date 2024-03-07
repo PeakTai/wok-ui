@@ -35,8 +35,13 @@ export interface DropdownOpts {
  * 下拉框
  */
 export declare class Dropdown extends DivModule {
-    #private;
+    /**
+     * 监听器删除函数
+     */
+    private __removeCloseListener?;
     constructor(opts: DropdownOpts);
+    private addCloseListener;
+    private close;
     destroy(): void;
 }
 /**

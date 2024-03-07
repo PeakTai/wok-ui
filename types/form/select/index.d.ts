@@ -27,8 +27,10 @@ export interface SelectOpts {
     onChange?: (val: string) => void;
 }
 export declare class Select extends FormInput {
-    #private;
+    private readonly opts;
+    private select;
     constructor(opts: SelectOpts);
+    private __validate;
     validate(): boolean;
     setDisabled(disabled: boolean): void;
 }

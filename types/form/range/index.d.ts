@@ -28,7 +28,7 @@ export interface RangeOpts {
     onChange?: (val: number) => void;
 }
 export declare class Range extends FormInput {
-    #private;
+    private input;
     constructor(opts: RangeOpts);
     validate(): boolean;
     setDisabled(disabled: boolean): void;

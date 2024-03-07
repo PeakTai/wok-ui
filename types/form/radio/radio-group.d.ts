@@ -29,8 +29,11 @@ export interface RadioGroupOpts {
     onChange?: (val: string) => void;
 }
 export declare class RadioGroup extends FormInput {
-    #private;
+    private readonly opts;
+    private name;
+    private value;
     constructor(opts: RadioGroupOpts);
+    private __validate;
     validate(): boolean;
     setDisabled(disabled: boolean): void;
 }

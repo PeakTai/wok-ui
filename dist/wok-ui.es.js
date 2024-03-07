@@ -203,15 +203,14 @@ async function animate(opts) {
 class Module {
   constructor(el) {
     this.el = el;
+    this.__children = [];
+    this.__destroyed = false;
   }
-  #children = [];
-  #parent;
-  #destroyed = false;
   replaceChild(index, newChild) {
     if (newChild.getParent()) {
       throw new Error("The module you want to insert already has a parent module");
     }
-    const existingChild = this.#children[index];
+    const existingChild = this.__children[index];
     if (!existingChild) {
       return false;
     }
@@ -221,25 +220,25 @@ class Module {
   }
   insertChild(index, newChild) {
     const newChildModule = convertToModule(newChild);
-    if (newChildModule.#destroyed) {
+    if (newChildModule.__destroyed) {
       console.error("The module to be inserted has been destroyed", newChildModule);
       throw new Error("The module to be inserted has been destroyed");
     }
     if (newChildModule.getParent()) {
       throw new Error("The module you want to insert already has a parent module");
     }
-    if (index === this.#children.length) {
+    if (index === this.__children.length) {
       this.addChild(newChildModule);
-      newChildModule.#parent = this;
+      newChildModule.__parent = this;
       return true;
     }
-    const existingChild = this.#children[index];
+    const existingChild = this.__children[index];
     if (!existingChild) {
       return false;
     }
     this.el.insertBefore(newChildModule.el, existingChild.el);
-    this.#children.splice(index, 0, newChildModule);
-    newChildModule.#parent = this;
+    this.__children.splice(index, 0, newChildModule);
+    newChildModule.__parent = this;
     return true;
   }
   moveChild(sourceIndex, targetIndex) {
@@ -248,8 +247,8 @@ class Module {
     if (!sourceChild || !targetChild) {
       return false;
     }
-    this.#children.splice(sourceIndex, 1);
-    this.#children.splice(targetIndex, 0, sourceChild);
+    this.__children.splice(sourceIndex, 1);
+    this.__children.splice(targetIndex, 0, sourceChild);
     if (sourceIndex > targetIndex) {
       this.el.insertBefore(sourceChild.el, targetChild.el);
     } else {
@@ -264,34 +263,34 @@ class Module {
     return true;
   }
   destroy() {
-    if (this.#parent) {
-      const index = this.#parent.#children.indexOf(this);
+    if (this.__parent) {
+      const index = this.__parent.__children.indexOf(this);
       if (index !== -1) {
-        this.#parent.#children.splice(index, 1);
+        this.__parent.__children.splice(index, 1);
       }
-      this.#parent = void 0;
+      this.__parent = void 0;
     }
     this.empty();
     this.el.remove();
-    this.#destroyed = true;
+    this.__destroyed = true;
   }
   empty() {
-    [...this.#children].forEach((c) => c.destroy());
+    [...this.__children].forEach((c) => c.destroy());
   }
   getParent() {
-    return this.#parent;
+    return this.__parent;
   }
   replaceBy(module) {
-    if (!this.#parent) {
+    if (!this.__parent) {
       return false;
     }
     const idx = this.getIndex();
-    this.#parent.replaceChild(idx, module);
+    this.__parent.replaceChild(idx, module);
     return true;
   }
   find(predicate) {
     const result = [];
-    for (const child of this.#children) {
+    for (const child of this.__children) {
       if (predicate(child)) {
         result.push(child);
       }
@@ -300,7 +299,7 @@ class Module {
     return result;
   }
   findFirst(predicate) {
-    for (const child of this.#children) {
+    for (const child of this.__children) {
       if (predicate(child)) {
         return child;
       }
@@ -312,11 +311,11 @@ class Module {
     return void 0;
   }
   addChild(...child) {
-    child.filter((c) => c !== void 0).forEach((c) => this.#addSingleChild(c));
+    child.filter((c) => c !== void 0).forEach((c) => this.__addSingleChild(c));
   }
-  #addSingleChild(child) {
+  __addSingleChild(child) {
     const childModule = convertToModule(child);
-    if (childModule.#destroyed) {
+    if (childModule.__destroyed) {
       console.error("The module to be added has been destroyed", child);
       throw new Error("The module to be added has been destroyed");
     }
@@ -324,40 +323,40 @@ class Module {
       throw new Error("The module you want to add already has a parent module");
     }
     childModule.mount(this.el);
-    this.#children.push(childModule);
-    childModule.#parent = this;
+    this.__children.push(childModule);
+    childModule.__parent = this;
   }
   removeChild(moduleOrIndex) {
     let child = void 0;
     let index = -1;
     if (typeof moduleOrIndex === "number") {
       index = moduleOrIndex;
-      child = this.#children[moduleOrIndex];
+      child = this.__children[moduleOrIndex];
     } else {
       child = moduleOrIndex;
-      index = this.#children.findIndex((c) => c === moduleOrIndex);
+      index = this.__children.findIndex((c) => c === moduleOrIndex);
     }
     if (!child || index === -1) {
       return false;
     }
-    child.#parent = void 0;
+    child.__parent = void 0;
     child.destroy();
-    this.#children.splice(index, 1);
+    this.__children.splice(index, 1);
     return true;
   }
   getChildren() {
-    return this.#children;
+    return this.__children;
   }
   getChild(index) {
-    return this.#children[index];
+    return this.__children[index];
   }
   mount(parentEl) {
-    if (this.#parent) {
+    if (this.__parent) {
       throw new Error(
         "The current module has already been added to a parent module and cannot be mounted"
       );
     }
-    if (this.#destroyed) {
+    if (this.__destroyed) {
       throw new Error("The current module has been destroyed !");
     }
     parentEl.appendChild(this.el);
@@ -366,10 +365,10 @@ class Module {
     this.el.scrollIntoView(true);
   }
   getIndex() {
-    if (!this.#parent) {
+    if (!this.__parent) {
       return -1;
     }
-    return this.#parent.getChildren().findIndex((c) => c === this);
+    return this.__parent.getChildren().findIndex((c) => c === this);
   }
   scrollIntoViewIfInvisible() {
     const el = this.el;
@@ -496,36 +495,43 @@ function createDomModule(options) {
   return module;
 }
 
-class CachedModule$1 extends DivModule {
-  constructor(module) {
-    super();
-    this.addChild(module);
-  }
-  destroy() {
-    const parent = this.getParent();
-    if (parent) {
-      parent.removeChild(this);
+function proxyCachedModule(module) {
+  const delegate = new Proxy(module, {
+    get(target, p) {
+      if (p === "destroy") {
+        return () => {
+          console.log("\u4EE3\u7406 destroy");
+          const parent = target.getParent();
+          if (parent) {
+            parent.removeChild(delegate);
+          }
+          target.el.remove();
+        };
+      }
+      if (p === "destroyThoroughly") {
+        return () => {
+          target.destroy();
+        };
+      }
+      return target[p];
     }
-    this.el.remove();
-  }
-  destroyThoroughly() {
-    super.destroy();
-  }
+  });
+  return delegate;
 }
 
 class FullRenderingModule extends Module {
   constructor(rootEl) {
     super(rootEl || document.createElement("div"));
+    this.__pendingRender = false;
+    this.__cachedModules = /* @__PURE__ */ new Map();
   }
-  #pendingRender = false;
-  #cachedModules = /* @__PURE__ */ new Map();
   render() {
-    this.#pendingRender = true;
+    this.__pendingRender = true;
     setTimeout(() => {
-      if (!this.#pendingRender) {
+      if (!this.__pendingRender) {
         return;
       }
-      this.#pendingRender = false;
+      this.__pendingRender = false;
       try {
         this.empty();
         this.buildContent();
@@ -535,27 +541,31 @@ class FullRenderingModule extends Module {
     }, 0);
   }
   cacheModule(opts) {
-    const cachedModule = this.#cachedModules.get(opts.key);
+    const cachedModule = this.__cachedModules.get(opts.key);
     if (cachedModule) {
       return cachedModule;
     }
-    const module = new CachedModule$1(opts.module());
-    this.#cachedModules.set(opts.key, module);
+    const module = proxyCachedModule(opts.module());
+    this.__cachedModules.set(opts.key, module);
     return module;
   }
   removeCache(key) {
-    const module = this.#cachedModules.get(key);
+    const module = this.__cachedModules.get(key);
     if (module) {
-      module.destroyThoroughly();
-      this.#cachedModules.delete(key);
+      const { destroyThoroughly } = module;
+      if (typeof destroyThoroughly === "function") {
+        destroyThoroughly();
+      }
+      this.__cachedModules.delete(key);
     }
   }
   clearCaches() {
-    Array.from(this.#cachedModules.values()).forEach((m) => m.destroyThoroughly());
-    this.#cachedModules.clear();
+    for (const key of this.__cachedModules.keys()) {
+      this.removeCache(key);
+    }
   }
   destroy() {
-    Array.from(this.#cachedModules.values()).forEach((m) => m.destroyThoroughly());
+    this.clearCaches();
     super.destroy();
   }
 }
@@ -569,30 +579,29 @@ var ResponsiveBreakPoint = /* @__PURE__ */ ((ResponsiveBreakPoint2) => {
   return ResponsiveBreakPoint2;
 })(ResponsiveBreakPoint || {});
 class ResponsiveModule extends Module {
-  #resizeListener;
-  #respSize = "xs";
-  #pendingRender = false;
-  #cachedModules = /* @__PURE__ */ new Map();
   constructor(el) {
     super(el || document.createElement("div"));
-    this.#resizeListener = () => this.render(false);
-    window.addEventListener("resize", this.#resizeListener);
+    this.__respSize = "xs";
+    this.__pendingRender = false;
+    this.__cachedModules = /* @__PURE__ */ new Map();
+    this.__resizeListener = () => this.render(false);
+    window.addEventListener("resize", this.__resizeListener);
   }
   render(force = true) {
-    this.#pendingRender = true;
+    this.__pendingRender = true;
     setTimeout(() => {
       try {
-        this.#render(force);
+        this.__render(force);
       } catch (e) {
         console.error(e);
       }
     }, 0);
   }
-  #render(force) {
-    if (!this.#pendingRender) {
+  __render(force) {
+    if (!this.__pendingRender) {
       return;
     }
-    this.#pendingRender = false;
+    this.__pendingRender = false;
     let size = "xs";
     const windowWidth = window.innerWidth;
     if (windowWidth >= 1400) {
@@ -608,8 +617,8 @@ class ResponsiveModule extends Module {
     } else {
       size = "xs";
     }
-    if (force || this.#respSize !== size) {
-      this.#respSize = size;
+    if (force || this.__respSize !== size) {
+      this.__respSize = size;
       this.empty();
       this.buildContent({
         respSize: size,
@@ -618,28 +627,31 @@ class ResponsiveModule extends Module {
     }
   }
   cacheModule(opts) {
-    const cachedModule = this.#cachedModules.get(opts.key);
+    const cachedModule = this.__cachedModules.get(opts.key);
     if (cachedModule) {
       return cachedModule;
     }
-    const module = new CachedModule$1(opts.module());
-    this.#cachedModules.set(opts.key, module);
+    const module = proxyCachedModule(opts.module());
+    this.__cachedModules.set(opts.key, module);
     return module;
   }
   removeCache(key) {
-    const module = this.#cachedModules.get(key);
+    const module = this.__cachedModules.get(key);
     if (module) {
-      module.destroyThoroughly();
-      this.#cachedModules.delete(key);
+      const { destroyThoroughly } = module;
+      if (typeof destroyThoroughly === "function") {
+        destroyThoroughly();
+      }
+      this.__cachedModules.delete(key);
     }
   }
   clearCaches() {
-    Array.from(this.#cachedModules.values()).forEach((m) => m.destroyThoroughly());
-    this.#cachedModules.clear();
+    for (const key of this.__cachedModules.keys()) {
+      this.removeCache(key);
+    }
   }
-  destroyed() {
-    window.removeEventListener("resize", this.#resizeListener);
-    Array.from(this.#cachedModules.values()).forEach((m) => m.destroyThoroughly());
+  destroy() {
+    this.clearCaches();
     super.destroy();
   }
 }
@@ -896,16 +908,16 @@ class Button extends Module {
     }
     switch (opts.type) {
       case "primary":
-        this.#setCssVars(getColor().primary, !!opts.outline);
+        this.setCssVars(getColor().primary, !!opts.outline);
         break;
       case "danger":
-        this.#setCssVars(getColor().danger, !!opts.outline);
+        this.setCssVars(getColor().danger, !!opts.outline);
         break;
       case "success":
-        this.#setCssVars(getColor().success, !!opts.outline);
+        this.setCssVars(getColor().success, !!opts.outline);
         break;
       case "warning":
-        this.#setCssVars(getColor().warning, !!opts.outline);
+        this.setCssVars(getColor().warning, !!opts.outline);
         break;
       default:
         this.el.style.setProperty("--btn-bg-color", "transparent");
@@ -927,7 +939,7 @@ class Button extends Module {
         break;
     }
   }
-  #setCssVars(color, outline) {
+  setCssVars(color, outline) {
     if (outline) {
       this.el.style.setProperty("--btn-bg-color", "transparent");
       this.el.style.setProperty("--btn-color", color);
@@ -953,17 +965,15 @@ class Button extends Module {
 var grid = '';
 
 class Grid extends DivModule {
-  #gap;
-  #opts;
   constructor(opts) {
     super("wok-ui-grid");
-    this.#opts = opts;
+    this.opts = opts;
     if (typeof opts.gap === "number") {
-      this.#gap = { col: opts.gap, row: opts.gap };
+      this.gap = { col: opts.gap, row: opts.gap };
     } else if (opts.gap) {
-      this.#gap = opts.gap;
+      this.gap = opts.gap;
     } else {
-      this.#gap = { col: 0, row: 0 };
+      this.gap = { col: 0, row: 0 };
     }
     if (!Number.isInteger(opts.cols)) {
       throw new Error(`cols \u5FC5\u987B\u662F\u6574\u6570,\u5F53\u524D\u503C: ${opts.cols}`);
@@ -971,15 +981,15 @@ class Grid extends DivModule {
     if (opts.cols < 1 || opts.cols > 12) {
       throw new Error(`cols \u8D85\u51FA\u8303\u56F4, \u6709\u6548\u8303\u56F4\u662F 1-12 ,\u5F53\u524D\u503C: ${opts.cols}`);
     }
-    this.el.style.columnGap = `${this.#gap.col}px`;
-    this.el.style.rowGap = `${this.#gap.row}px`;
+    this.el.style.columnGap = `${this.gap.col}px`;
+    this.el.style.rowGap = `${this.gap.row}px`;
     buildSubModules(opts.cells).forEach((cell) => this.addCell(cell));
   }
   addCell(module) {
     this.addChild({
       style: {
-        width: `calc((100% - ${this.#gap.col * (this.#opts.cols - 1)}px) / ${this.#opts.cols})`,
-        minWidth: this.#opts.cellMinWidth && this.#opts.cellMinWidth > 0 ? `${this.#opts.cellMinWidth}px` : void 0
+        width: `calc((100% - ${this.gap.col * (this.opts.cols - 1)}px) / ${this.opts.cols})`,
+        minWidth: this.opts.cellMinWidth && this.opts.cellMinWidth > 0 ? `${this.opts.cellMinWidth}px` : void 0
       },
       children: module
     });
@@ -1353,10 +1363,9 @@ function showSuccess(text) {
 var style$6 = '';
 
 class Backdrop$1 extends DivModule {
-  #opts;
   constructor(opts) {
     super("wok-ui-modal");
-    this.#opts = opts;
+    this.opts = opts;
   }
   addDialog(dialog) {
     dialog.onDestroy(() => {
@@ -1381,24 +1390,22 @@ class Backdrop$1 extends DivModule {
   }
   destroy() {
     super.destroy();
-    this.#opts.onDestroy();
+    this.opts.onDestroy();
   }
 }
 class Dialog extends DivModule {
-  #callbacked = false;
-  #destroyListener;
-  #opts;
   constructor(opts) {
     super("wok-ui-modal-dialog", ANIMATION_PROVISION);
-    this.#opts = opts;
+    this.opts = opts;
+    this.callbacked = false;
     animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300 }).then(() => {
       if (opts.onShown) {
         opts.onShown();
       }
     });
-    if (this.#opts.fullscreen) {
+    if (this.opts.fullscreen) {
       this.el.classList.add("fullscreen");
-    } else if (this.#opts.dialogCentered) {
+    } else if (this.opts.dialogCentered) {
       this.el.classList.add("centered");
     }
     this.el.addEventListener("click", (ev) => {
@@ -1485,24 +1492,24 @@ class Dialog extends DivModule {
     });
   }
   tryDestroy() {
-    if (this.#opts.staticBackDrop) {
+    if (this.opts.staticBackDrop) {
       animate({ el: this.el, animation: Animation.SHAKE }).catch(showWarning);
       return;
     }
     this.close().catch(showWarning);
   }
   onDestroy(listener) {
-    this.#destroyListener = listener;
+    this.destroyListener = listener;
   }
   async close() {
     await animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300, reverse: true });
     this.destroy();
-    if (this.#destroyListener) {
-      this.#destroyListener();
+    if (this.destroyListener) {
+      this.destroyListener();
     }
-    if (this.#opts.onClose && !this.#callbacked) {
-      this.#opts.onClose();
-      this.#callbacked = true;
+    if (this.opts.onClose && !this.callbacked) {
+      this.opts.onClose();
+      this.callbacked = true;
     }
   }
 }
@@ -1527,10 +1534,9 @@ async function closeAllModals() {
 var style$5 = '';
 
 class Backdrop extends DivModule {
-  #opts;
   constructor(opts) {
     super("wok-ui-drawer");
-    this.#opts = opts;
+    this.opts = opts;
     this.el.addEventListener("click", () => {
       const children = this.getChildren();
       if (children.length) {
@@ -1548,16 +1554,15 @@ class Backdrop extends DivModule {
   }
   destroy() {
     super.destroy();
-    this.#opts.onDestroy();
+    this.opts.onDestroy();
   }
 }
 class Content extends DivModule {
-  #callbacked = false;
-  #destroyListener;
-  #opts;
   constructor(opts) {
     super("wok-ui-drawer-content", ANIMATION_PROVISION);
-    this.#opts = opts;
+    this.opts = opts;
+    this.callbacked = false;
+    this.leaveAnimating = false;
     this.el.addEventListener("click", (e) => e.stopPropagation());
     if (opts.placement === "left") {
       this.el.classList.add("left");
@@ -1568,7 +1573,7 @@ class Content extends DivModule {
     } else {
       this.el.classList.add("right");
     }
-    this.#enter().catch(showWarning);
+    this.enter().catch(showWarning);
     if (opts.replaceByBody) {
       this.addChild(...buildSubModules(opts.body));
       return;
@@ -1594,49 +1599,48 @@ class Content extends DivModule {
       children: opts.body
     });
   }
-  #enter() {
-    if (this.#opts.placement === "left") {
+  enter() {
+    if (this.opts.placement === "left") {
       return animate({ el: this.el, animation: Animation.SLIDE_LEFT });
-    } else if (this.#opts.placement === "top") {
+    } else if (this.opts.placement === "top") {
       return animate({ el: this.el, animation: Animation.SLIDE_TOP });
-    } else if (this.#opts.placement === "bottom") {
+    } else if (this.opts.placement === "bottom") {
       return animate({ el: this.el, animation: Animation.SLIDE_BOTTOM });
     } else {
       return animate({ el: this.el, animation: Animation.SLIDE_RIGHT });
     }
   }
-  #leaveAnimating = false;
-  async #leave() {
-    this.#leaveAnimating = true;
+  async leave() {
+    this.leaveAnimating = true;
     try {
-      if (this.#opts.placement === "left") {
+      if (this.opts.placement === "left") {
         await animate({ el: this.el, animation: Animation.SLIDE_LEFT, reverse: true });
-      } else if (this.#opts.placement === "top") {
+      } else if (this.opts.placement === "top") {
         await animate({ el: this.el, animation: Animation.SLIDE_TOP, reverse: true });
-      } else if (this.#opts.placement === "bottom") {
+      } else if (this.opts.placement === "bottom") {
         await animate({ el: this.el, animation: Animation.SLIDE_BOTTOM, reverse: true });
       } else {
         await animate({ el: this.el, animation: Animation.SLIDE_RIGHT, reverse: true });
       }
     } finally {
-      this.#leaveAnimating = false;
+      this.leaveAnimating = false;
     }
   }
   onDestroy(listener) {
-    this.#destroyListener = listener;
+    this.destroyListener = listener;
   }
   destroy() {
-    if (this.#leaveAnimating) {
+    if (this.leaveAnimating) {
       return;
     }
-    this.#leave().then(() => {
+    this.leave().then(() => {
       super.destroy();
-      if (this.#destroyListener) {
-        this.#destroyListener();
+      if (this.destroyListener) {
+        this.destroyListener();
       }
-      if (this.#opts.onClose && !this.#callbacked) {
-        this.#opts.onClose();
-        this.#callbacked = true;
+      if (this.opts.onClose && !this.callbacked) {
+        this.opts.onClose();
+        this.callbacked = true;
       }
     });
   }
@@ -1674,28 +1678,7 @@ class Cell extends Module {
   constructor(opts) {
     super(document.createElement("td"));
     const content = opts.col.setting.content(opts.data, opts.rowIdx);
-    if (content instanceof Promise) {
-      this.el.innerText = "\u52A0\u8F7D\u4E2D...";
-      content.then((res) => {
-        this.el.innerText = "";
-        if (typeof res === "string") {
-          this.el.innerText = res;
-        } else {
-          this.addChild(res);
-        }
-      }).catch((e) => {
-        this.el.innerText = "";
-        this.addChild(
-          new Text({
-            text: "\u52A0\u8F7D\u5931\u8D25",
-            color: getColor().danger
-          })
-        );
-        showWarning(e);
-      });
-    } else {
-      this.addChild(content);
-    }
+    this.addChild(content);
   }
 }
 
@@ -1762,13 +1745,12 @@ class FormInput extends Module {
 }
 
 class Form extends Module {
-  #opts;
   constructor(opts) {
     const form = document.createElement("form");
     form.noValidate = true;
     form.autocomplete = opts.autocomplete ? "on" : "off";
     super(form);
-    this.#opts = opts;
+    this.opts = opts;
     this.addChild(...buildSubModules(opts.children));
     form.addEventListener("submit", (ev) => {
       ev.preventDefault();
@@ -1776,7 +1758,7 @@ class Form extends Module {
     });
   }
   submit() {
-    if (!this.#opts.onSubmit) {
+    if (!this.opts.onSubmit) {
       return;
     }
     const invalidInputs = this.find((m) => m instanceof FormInput).filter(
@@ -1786,7 +1768,7 @@ class Form extends Module {
       invalidInputs[0].scrollIntoViewIfInvisible();
       return;
     }
-    this.#opts.onSubmit();
+    this.opts.onSubmit();
   }
 }
 
@@ -1811,7 +1793,7 @@ class Checkbox extends Module {
     super(input);
     input.value = opts.value;
     this.value = opts.value;
-    this.#input = input;
+    this.__input = input;
     if (opts.disabled) {
       input.disabled = opts.disabled;
     }
@@ -1824,61 +1806,59 @@ class Checkbox extends Module {
       });
     }
   }
-  #input;
   setStatus(status) {
     if (status === this.getStatus()) {
       return;
     }
     switch (status) {
       case "checked":
-        this.#input.checked = true;
-        this.#input.indeterminate = false;
+        this.__input.checked = true;
+        this.__input.indeterminate = false;
         break;
       case "unchecked":
-        this.#input.checked = false;
-        this.#input.indeterminate = false;
+        this.__input.checked = false;
+        this.__input.indeterminate = false;
         break;
       case "indeterminate":
-        this.#input.checked = false;
-        this.#input.indeterminate = true;
+        this.__input.checked = false;
+        this.__input.indeterminate = true;
         break;
     }
   }
   getStatus() {
-    if (this.#input.checked) {
+    if (this.__input.checked) {
       return "checked";
     }
-    if (this.#input.indeterminate) {
+    if (this.__input.indeterminate) {
       return "indeterminate";
     }
     return "unchecked";
   }
   isChecked() {
-    return this.#input.checked;
+    return this.__input.checked;
   }
   setDisabled(disabled) {
-    this.#input.disabled = disabled;
+    this.__input.disabled = disabled;
   }
 }
 
 var checkboxGroup = '';
 
 class CheckboxGroup extends FormInput {
-  #values = [];
-  #disabled = false;
-  #opts;
   constructor(opts) {
     super(document.createElement("div"));
-    this.#opts = opts;
+    this.opts = opts;
+    this.__values = [];
+    this.__disabled = false;
     this.el.classList.add("wok-ui-checkbox-group");
     if (opts.inline) {
       this.el.classList.add("inline");
     }
     if (opts.value) {
-      this.#values = [...opts.value];
+      this.__values = [...opts.value];
     }
     if (opts.disabled) {
-      this.#disabled = true;
+      this.__disabled = true;
     }
     this.addChild(
       ...opts.options.map(
@@ -1888,19 +1868,19 @@ class CheckboxGroup extends FormInput {
           children: [
             new Checkbox({
               value: opt.value,
-              status: this.#values.includes(opt.value) ? "checked" : "unchecked",
-              disabled: this.#disabled,
+              status: this.__values.includes(opt.value) ? "checked" : "unchecked",
+              disabled: this.__disabled,
               onChange: (status) => {
                 if (status === "checked") {
-                  if (!this.#values.includes(opt.value)) {
-                    this.#values.push(opt.value);
-                    this.#handleChange();
+                  if (!this.__values.includes(opt.value)) {
+                    this.__values.push(opt.value);
+                    this.handleChange();
                   }
                 } else {
-                  const idx = this.#values.indexOf(opt.value);
+                  const idx = this.__values.indexOf(opt.value);
                   if (idx !== -1) {
-                    this.#values.splice(idx, 1);
-                    this.#handleChange();
+                    this.__values.splice(idx, 1);
+                    this.handleChange();
                   }
                 }
               }
@@ -1911,51 +1891,51 @@ class CheckboxGroup extends FormInput {
       )
     );
   }
-  #handleChange() {
-    if (this.#opts.onChange) {
-      this.#opts.onChange(this.#values);
+  handleChange() {
+    if (this.opts.onChange) {
+      this.opts.onChange(this.__values);
     }
     this.validate();
   }
-  #validate() {
-    if (!this.#values.length) {
-      if (this.#opts.required) {
+  __validate() {
+    if (!this.__values.length) {
+      if (this.opts.required) {
         return {
           valid: false,
-          msg: typeof this.#opts.required === "string" ? this.#opts.required : getI18n().buildMsg("form-err-must-check")
+          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
         };
       } else {
         return { valid: true };
       }
     }
-    if (typeof this.#opts.minSelected === "number") {
-      if (this.#values.length < this.#opts.minSelected) {
+    if (typeof this.opts.minSelected === "number") {
+      if (this.__values.length < this.opts.minSelected) {
         return {
           valid: false,
-          msg: getI18n().buildMsg("form-err-min-select", `${this.#opts.minSelected}`)
+          msg: getI18n().buildMsg("form-err-min-select", `${this.opts.minSelected}`)
         };
       }
-    } else if (this.#opts.minSelected) {
-      if (this.#values.length < this.#opts.minSelected.minSelected) {
-        return { valid: false, msg: this.#opts.minSelected.errMsg };
+    } else if (this.opts.minSelected) {
+      if (this.__values.length < this.opts.minSelected.minSelected) {
+        return { valid: false, msg: this.opts.minSelected.errMsg };
       }
     }
-    if (typeof this.#opts.maxSelected === "number") {
-      if (this.#values.length > this.#opts.maxSelected) {
+    if (typeof this.opts.maxSelected === "number") {
+      if (this.__values.length > this.opts.maxSelected) {
         return {
           valid: false,
-          msg: getI18n().buildMsg("form-err-max-select", `${this.#opts.maxSelected}`)
+          msg: getI18n().buildMsg("form-err-max-select", `${this.opts.maxSelected}`)
         };
       }
-    } else if (this.#opts.maxSelected) {
-      if (this.#values.length > this.#opts.maxSelected.maxSelected) {
-        return { valid: false, msg: this.#opts.maxSelected.errMsg };
+    } else if (this.opts.maxSelected) {
+      if (this.__values.length > this.opts.maxSelected.maxSelected) {
+        return { valid: false, msg: this.opts.maxSelected.errMsg };
       }
     }
     return { valid: true };
   }
   validate() {
-    const res = this.#validate();
+    const res = this.__validate();
     this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (!res.valid) {
       this.addChild(new InvalidFeedback(res.msg));
@@ -1963,9 +1943,9 @@ class CheckboxGroup extends FormInput {
     return res.valid;
   }
   setDisabled(disabled) {
-    if (this.#disabled !== disabled) {
-      this.#disabled = disabled;
-      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.#disabled));
+    if (this.__disabled !== disabled) {
+      this.__disabled = disabled;
+      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.__disabled));
     }
   }
 }
@@ -1973,26 +1953,25 @@ class CheckboxGroup extends FormInput {
 var boolCheckbox = '';
 
 class BoolCheckbox extends FormInput {
-  #value = false;
-  #disabled = false;
-  #opts;
   constructor(opts) {
     super(document.createElement("label"));
-    this.#opts = opts;
+    this.opts = opts;
+    this.__value = false;
+    this.__disabled = false;
     if (opts.value) {
-      this.#value = opts.value;
+      this.__value = opts.value;
     }
     this.addChild({
       classNames: ["wok-ui-bool-checkbox"],
       children: [
         new Checkbox({
           value: "",
-          status: this.#value ? "checked" : "unchecked",
-          disabled: this.#disabled,
+          status: this.__value ? "checked" : "unchecked",
+          disabled: this.__disabled,
           onChange: (status) => {
-            this.#value = status === "checked";
-            if (this.#opts.onChange) {
-              this.#opts.onChange(this.#value);
+            this.__value = status === "checked";
+            if (this.opts.onChange) {
+              this.opts.onChange(this.__value);
             }
             this.validate();
           }
@@ -2001,18 +1980,18 @@ class BoolCheckbox extends FormInput {
       ]
     });
   }
-  #validate() {
-    if (this.#opts.required && !this.#value) {
+  __validate() {
+    if (this.opts.required && !this.__value) {
       return {
         valid: false,
-        msg: typeof this.#opts.required === "string" ? this.#opts.required : getI18n().buildMsg("form-err-must-check")
+        msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
       };
     } else {
       return { valid: true };
     }
   }
   validate() {
-    const res = this.#validate();
+    const res = this.__validate();
     this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (!res.valid) {
       this.addChild(new InvalidFeedback(res.msg));
@@ -2020,9 +1999,9 @@ class BoolCheckbox extends FormInput {
     return res.valid;
   }
   setDisabled(disabled) {
-    if (this.#disabled !== disabled) {
-      this.#disabled = disabled;
-      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.#disabled));
+    if (this.__disabled !== disabled) {
+      this.__disabled = disabled;
+      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.__disabled));
     }
   }
 }
@@ -2036,7 +2015,6 @@ function generateId() {
 var radio = '';
 
 class Radio extends Module {
-  #input;
   constructor(opts) {
     const input = document.createElement("input");
     input.type = "radio";
@@ -2044,7 +2022,7 @@ class Radio extends Module {
     input.value = opts.value;
     input.classList.add("wok-ui-radio");
     super(input);
-    this.#input = input;
+    this.input = input;
     if (opts.checked) {
       input.checked = true;
     }
@@ -2060,32 +2038,30 @@ class Radio extends Module {
     }
   }
   isChecked() {
-    return this.#input.checked;
+    return this.input.checked;
   }
   setChecked(checked) {
-    if (this.#input.checked !== checked) {
-      this.#input.checked = checked;
+    if (this.input.checked !== checked) {
+      this.input.checked = checked;
     }
   }
   getValue() {
-    return this.#input.value;
+    return this.input.value;
   }
   setDisabled(disabled) {
-    this.#input.disabled = disabled;
+    this.input.disabled = disabled;
   }
 }
 
 var radioGroup = '';
 
 class RadioGroup extends FormInput {
-  #name;
-  #value = "";
-  #opts;
   constructor(opts) {
     super(document.createElement("div"));
-    this.#opts = opts;
+    this.opts = opts;
+    this.value = "";
     this.el.classList.add("wok-ui-radio-group");
-    this.#name = generateId();
+    this.name = generateId();
     if (opts.inline) {
       this.el.classList.add("inline");
     }
@@ -2095,14 +2071,14 @@ class RadioGroup extends FormInput {
           tag: "label",
           children: [
             new Radio({
-              name: this.#name,
+              name: this.name,
               value: opt.value,
               checked: opts.value === opt.value,
               disabled: opts.disabled,
               onChecked: () => {
-                this.#value = opt.value;
-                if (this.#opts.onChange) {
-                  this.#opts.onChange(this.#value);
+                this.value = opt.value;
+                if (this.opts.onChange) {
+                  this.opts.onChange(this.value);
                 }
                 this.validate();
               }
@@ -2113,12 +2089,12 @@ class RadioGroup extends FormInput {
       )
     );
   }
-  #validate() {
-    if (!this.#value) {
-      if (this.#opts.required) {
+  __validate() {
+    if (!this.value) {
+      if (this.opts.required) {
         return {
           valid: false,
-          msg: typeof this.#opts.required === "string" ? this.#opts.required : getI18n().buildMsg("form-err-must-check")
+          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
         };
       } else {
         return { valid: true };
@@ -2127,7 +2103,7 @@ class RadioGroup extends FormInput {
     return { valid: true };
   }
   validate() {
-    const res = this.#validate();
+    const res = this.__validate();
     this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (!res.valid) {
       this.addChild(new InvalidFeedback(res.msg));
@@ -2144,8 +2120,9 @@ var style$4 = '';
 class TextInput extends FormInput {
   constructor(opts) {
     super(document.createElement("div"));
-    this.#composing = false;
-    this.#opts = opts;
+    this.opts = opts;
+    this.composing = false;
+    this.opts = opts;
     this.input = document.createElement("input");
     this.input.type = "text";
     this.input.classList.add("wok-ui-input");
@@ -2182,81 +2159,79 @@ class TextInput extends FormInput {
     if (opts.disabled) {
       this.input.disabled = true;
     }
-    this.input.addEventListener("compositionstart", () => this.#composing = true);
+    this.input.addEventListener("compositionstart", () => this.composing = true);
     this.input.addEventListener("compositionend", () => {
-      this.#composing = false;
-      this.#handleChange();
+      this.composing = false;
+      this.handleChange();
     });
     this.input.addEventListener("input", () => {
-      if (this.#composing) {
+      if (this.composing) {
         return;
       }
-      this.#handleChange();
+      this.handleChange();
     });
     if (opts.onBlur) {
       this.input.addEventListener("blur", opts.onBlur);
     }
   }
-  #composing;
-  #opts;
   mount(parentEl) {
     super.mount(parentEl);
-    if (this.#opts.autofocus) {
+    if (this.opts.autofocus) {
       setTimeout(() => this.input.focus(), 0);
     }
   }
   focus() {
     this.input.focus();
   }
-  #handleChange() {
-    if (this.#opts.onChange) {
-      this.#opts.onChange(this.input.value);
+  handleChange() {
+    if (this.opts.onChange) {
+      this.opts.onChange(this.input.value);
     }
     this.validate();
   }
-  #validate(val) {
-    if (this.#opts.required) {
+  __validate(val) {
+    if (this.opts.required) {
       if (!val) {
         return {
           valid: false,
-          msg: typeof this.#opts.required === "string" ? this.#opts.required : getI18n().buildMsg("form-err-required")
+          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-required")
         };
       }
     }
     if (!val) {
       return { valid: true };
     }
-    if (typeof this.#opts.minLength === "number") {
-      if (val.length < this.#opts.minLength) {
+    if (typeof this.opts.minLength === "number") {
+      if (val.length < this.opts.minLength) {
         return {
           valid: false,
-          msg: getI18n().buildMsg("form-err-min-length", `${this.#opts.minLength}`)
+          msg: getI18n().buildMsg("form-err-min-length", `${this.opts.minLength}`)
         };
       }
-    } else if (this.#opts.minLength) {
-      if (val.length < this.#opts.minLength.minLength) {
-        return { valid: false, msg: this.#opts.minLength.errMsg };
+    } else if (this.opts.minLength) {
+      if (val.length < this.opts.minLength.minLength) {
+        return { valid: false, msg: this.opts.minLength.errMsg };
       }
     }
-    if (typeof this.#opts.maxLength === "number") {
-      if (val.length > this.#opts.maxLength) {
+    if (typeof this.opts.maxLength === "number") {
+      if (val.length > this.opts.maxLength) {
         return {
           valid: false,
-          msg: getI18n().buildMsg("form-err-max-length", `${this.#opts.maxLength}`)
+          msg: getI18n().buildMsg("form-err-max-length", `${this.opts.maxLength}`)
         };
       }
-    } else if (this.#opts.maxLength) {
-      if (val.length > this.#opts.maxLength.maxLength) {
-        return { valid: false, msg: this.#opts.maxLength.errMsg };
+    } else if (this.opts.maxLength) {
+      if (val.length > this.opts.maxLength.maxLength) {
+        return { valid: false, msg: this.opts.maxLength.errMsg };
       }
     }
-    if (this.#opts.validator) {
-      return this.#opts.validator(val);
+    if (this.opts.validator) {
+      return this.opts.validator(val);
     }
     return { valid: true };
   }
   validate() {
-    const validateRes = this.#validate(this.input.value);
+    const validateRes = this.__validate(this.input.value);
     this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (validateRes.valid) {
       this.input.classList.remove("invalid");
@@ -2455,148 +2430,144 @@ class NumberInput extends TextInput {
 }
 
 class TextArea extends FormInput {
-  #composing = false;
-  #textarea;
-  #opts;
-  constructor(opts) {
+  constructor(textAreaopts) {
     super(document.createElement("div"));
-    this.#opts = opts;
-    this.#textarea = document.createElement("textarea");
-    this.#textarea.classList.add("wok-ui-input");
+    this.textAreaopts = textAreaopts;
+    this.composing = false;
+    this.textareaEl = document.createElement("textarea");
+    this.textareaEl.classList.add("wok-ui-input");
     const size = getSize();
-    switch (opts.size) {
+    switch (textAreaopts.size) {
       case "lg":
-        this.#textarea.style.setProperty("--input-font-size", `${size.textLg}px`);
+        this.textareaEl.style.setProperty("--input-font-size", `${size.textLg}px`);
         break;
       case "sm":
-        this.#textarea.style.setProperty("--input-font-size", `${size.textSm}px`);
+        this.textareaEl.style.setProperty("--input-font-size", `${size.textSm}px`);
         break;
       default:
-        this.#textarea.style.setProperty("--input-font-size", `${size.text}px`);
+        this.textareaEl.style.setProperty("--input-font-size", `${size.text}px`);
         break;
     }
-    this.addChild(this.#textarea);
-    this.#textarea.rows = opts.rows && opts.rows > 0 ? opts.rows : 3;
-    if (typeof opts.minLength === "number") {
-      this.#textarea.minLength = opts.minLength;
-    } else if (opts.minLength) {
-      this.#textarea.minLength = opts.minLength.minLength;
+    this.addChild(this.textareaEl);
+    this.textareaEl.rows = textAreaopts.rows && textAreaopts.rows > 0 ? textAreaopts.rows : 3;
+    if (typeof textAreaopts.minLength === "number") {
+      this.textareaEl.minLength = textAreaopts.minLength;
+    } else if (textAreaopts.minLength) {
+      this.textareaEl.minLength = textAreaopts.minLength.minLength;
     }
-    if (typeof opts.maxLength === "number") {
-      this.#textarea.maxLength = opts.maxLength;
-    } else if (opts.maxLength) {
-      this.#textarea.maxLength = opts.maxLength.maxLength;
+    if (typeof textAreaopts.maxLength === "number") {
+      this.textareaEl.maxLength = textAreaopts.maxLength;
+    } else if (textAreaopts.maxLength) {
+      this.textareaEl.maxLength = textAreaopts.maxLength.maxLength;
     }
-    if (opts.required) {
-      this.#textarea.required = true;
+    if (textAreaopts.required) {
+      this.textareaEl.required = true;
     }
-    if (opts.value) {
-      this.#textarea.value = opts.value;
+    if (textAreaopts.value) {
+      this.textareaEl.value = textAreaopts.value;
     }
-    if (opts.disabled) {
-      this.#textarea.disabled = true;
+    if (textAreaopts.disabled) {
+      this.textareaEl.disabled = true;
     }
-    if (opts.placeholder) {
-      this.#textarea.placeholder = opts.placeholder;
+    if (textAreaopts.placeholder) {
+      this.textareaEl.placeholder = textAreaopts.placeholder;
     }
-    this.#textarea.addEventListener("compositionstart", () => this.#composing = true);
-    this.#textarea.addEventListener("compositionend", () => {
-      this.#composing = false;
-      this.#handleChange();
+    this.textareaEl.addEventListener("compositionstart", () => this.composing = true);
+    this.textareaEl.addEventListener("compositionend", () => {
+      this.composing = false;
+      this.handleChange();
     });
-    this.#textarea.addEventListener("input", () => {
-      if (this.#composing) {
+    this.textareaEl.addEventListener("input", () => {
+      if (this.composing) {
         return;
       }
-      this.#handleChange();
+      this.handleChange();
     });
-    if (opts.onBlur) {
-      const { onBlur } = opts;
-      this.#textarea.addEventListener("blur", () => onBlur());
+    if (textAreaopts.onBlur) {
+      const { onBlur } = textAreaopts;
+      this.textareaEl.addEventListener("blur", () => onBlur());
     }
   }
-  #handleChange() {
-    if (this.#opts.onChange) {
-      this.#opts.onChange(this.#textarea.value);
+  handleChange() {
+    if (this.textAreaopts.onChange) {
+      this.textAreaopts.onChange(this.textareaEl.value);
     }
     this.validate();
   }
-  #validate(val) {
-    if (this.#opts.required) {
+  __validate(val) {
+    if (this.textAreaopts.required) {
       if (!val) {
         return {
           valid: false,
-          msg: typeof this.#opts.required === "string" ? this.#opts.required : getI18n().buildMsg("form-err-required")
+          msg: typeof this.textAreaopts.required === "string" ? this.textAreaopts.required : getI18n().buildMsg("form-err-required")
         };
       }
     }
     if (!val) {
       return { valid: true };
     }
-    if (typeof this.#opts.minLength === "number") {
-      if (val.length < this.#opts.minLength) {
+    if (typeof this.textAreaopts.minLength === "number") {
+      if (val.length < this.textAreaopts.minLength) {
         return {
           valid: false,
-          msg: getI18n().buildMsg("form-err-min-length", `${this.#opts.minLength}`)
+          msg: getI18n().buildMsg("form-err-min-length", `${this.textAreaopts.minLength}`)
         };
       }
-    } else if (this.#opts.minLength) {
-      if (val.length < this.#opts.minLength.minLength) {
-        return { valid: false, msg: this.#opts.minLength.errMsg };
+    } else if (this.textAreaopts.minLength) {
+      if (val.length < this.textAreaopts.minLength.minLength) {
+        return { valid: false, msg: this.textAreaopts.minLength.errMsg };
       }
     }
-    if (typeof this.#opts.maxLength === "number") {
-      if (val.length > this.#opts.maxLength) {
+    if (typeof this.textAreaopts.maxLength === "number") {
+      if (val.length > this.textAreaopts.maxLength) {
         return {
           valid: false,
-          msg: getI18n().buildMsg("form-err-max-length", `${this.#opts.maxLength}`)
+          msg: getI18n().buildMsg("form-err-max-length", `${this.textAreaopts.maxLength}`)
         };
       }
-    } else if (this.#opts.maxLength) {
-      if (val.length > this.#opts.maxLength.maxLength) {
-        return { valid: false, msg: this.#opts.maxLength.errMsg };
+    } else if (this.textAreaopts.maxLength) {
+      if (val.length > this.textAreaopts.maxLength.maxLength) {
+        return { valid: false, msg: this.textAreaopts.maxLength.errMsg };
       }
     }
-    if (this.#opts.validator) {
-      return this.#opts.validator(val);
+    if (this.textAreaopts.validator) {
+      return this.textAreaopts.validator(val);
     }
     return { valid: true };
   }
   validate() {
-    const validateRes = this.#validate(this.#textarea.value);
+    const validateRes = this.__validate(this.textareaEl.value);
     this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (validateRes.valid) {
-      this.#textarea.classList.remove("invalid");
+      this.textareaEl.classList.remove("invalid");
     } else {
-      this.#textarea.classList.add("invalid");
+      this.textareaEl.classList.add("invalid");
       this.addChild(new InvalidFeedback(validateRes.msg));
     }
     return validateRes.valid;
   }
   setDisabled(disabled) {
-    this.#textarea.disabled = disabled;
+    this.textareaEl.disabled = disabled;
   }
 }
 
 var style$3 = '';
 
 class Select extends FormInput {
-  #select;
-  #opts;
   constructor(opts) {
     super(document.createElement("div"));
-    this.#opts = opts;
+    this.opts = opts;
     this.addChild({
       tag: "select",
       classNames: ["wok-ui-select"],
       postHandle: (el) => {
-        this.#select = el;
+        this.select = el;
         if (opts.value) {
-          this.#select.value = opts.value;
+          this.select.value = opts.value;
         }
-        this.#select.addEventListener("change", (ev) => {
-          if (this.#opts.onChange) {
-            this.#opts.onChange(this.#select.value);
+        this.select.addEventListener("change", (ev) => {
+          if (this.opts.onChange) {
+            this.opts.onChange(this.select.value);
           }
           this.validate();
         });
@@ -2610,86 +2581,85 @@ class Select extends FormInput {
     const size = getSize();
     switch (opts.size) {
       case "lg":
-        this.#select.style.setProperty("--select-font-size", `${size.textLg}px`);
+        this.select.style.setProperty("--select-font-size", `${size.textLg}px`);
         break;
       case "sm":
-        this.#select.style.setProperty("--select-font-size", `${size.textSm}px`);
+        this.select.style.setProperty("--select-font-size", `${size.textSm}px`);
         break;
       default:
-        this.#select.style.setProperty("--select-font-size", `${size.text}px`);
+        this.select.style.setProperty("--select-font-size", `${size.text}px`);
         break;
     }
   }
-  #validate(val) {
-    if (this.#opts.required) {
+  __validate(val) {
+    if (this.opts.required) {
       if (!val) {
         return {
           valid: false,
-          msg: typeof this.#opts.required === "string" ? this.#opts.required : getI18n().buildMsg("form-err-required")
+          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-required")
         };
       }
     }
     return { valid: true };
   }
   validate() {
-    const validateRes = this.#validate(this.#select.value);
+    const validateRes = this.__validate(this.select.value);
     this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (validateRes.valid) {
-      this.#select.classList.remove("invalid");
+      this.select.classList.remove("invalid");
     } else {
-      this.#select.classList.add("invalid");
+      this.select.classList.add("invalid");
       this.addChild(new InvalidFeedback(validateRes.msg));
     }
     return validateRes.valid;
   }
   setDisabled(disabled) {
-    this.#select.disabled = disabled;
+    this.select.disabled = disabled;
   }
 }
 
 var style$2 = '';
 
 class Range extends FormInput {
-  #input;
   constructor(opts) {
     super(document.createElement("div"));
-    this.#input = document.createElement("input");
-    this.#input.classList.add("wok-ui-range");
-    this.#input.type = "range";
-    this.#input.min = `${opts.min}`;
-    this.#input.max = `${opts.max}`;
+    this.input = document.createElement("input");
+    this.input.classList.add("wok-ui-range");
+    this.input.type = "range";
+    this.input.min = `${opts.min}`;
+    this.input.max = `${opts.max}`;
     if (typeof opts.step === "number") {
-      this.#input.step = `${opts.step}`;
+      this.input.step = `${opts.step}`;
     } else {
-      this.#input.step = "1";
+      this.input.step = "1";
     }
-    this.#input.value = `${opts.value}`;
+    this.input.value = `${opts.value}`;
     if (!opts.showValue) {
-      this.addChild(this.#input);
-      this.#input.addEventListener("change", () => {
-        this.#input.title = this.#input.value;
+      this.addChild(this.input);
+      this.input.addEventListener("change", () => {
+        this.input.title = this.input.value;
         if (opts.onChange) {
-          opts.onChange(parseInt(this.#input.value));
+          opts.onChange(parseInt(this.input.value));
         }
       });
       return;
     }
     const text = opts.showValue ? new Text(`${opts.value}`) : void 0;
-    this.#input.addEventListener("change", () => {
-      this.#input.title = this.#input.value;
+    this.input.addEventListener("change", () => {
+      this.input.title = this.input.value;
       if (text) {
-        text.setText(this.#input.value);
+        text.setText(this.input.value);
       }
       if (opts.onChange) {
-        opts.onChange(parseInt(this.#input.value));
+        opts.onChange(parseInt(this.input.value));
       }
     });
     if (!text) {
-      this.addChild(this.#input);
+      this.addChild(this.input);
     } else {
       this.addChild(
         new HSplitBox({
-          left: this.#input,
+          left: this.input,
           right: text,
           gap: rem(0.5),
           fixedSide: "right"
@@ -2701,7 +2671,7 @@ class Range extends FormInput {
     return true;
   }
   setDisabled(disabled) {
-    this.#input.disabled = disabled;
+    this.input.disabled = disabled;
   }
 }
 
@@ -2711,8 +2681,6 @@ class TableColumn {
   }
 }
 class TableCheckboxColumn extends TableColumn {
-  #checkAllBox;
-  #boxes = [];
   constructor(opts) {
     let checkAllBox = void 0;
     if (!opts.name) {
@@ -2723,9 +2691,9 @@ class TableCheckboxColumn extends TableColumn {
             return;
           }
           if (checkAllBox.isChecked()) {
-            this.#boxes.forEach((b) => b.setStatus("checked"));
+            this.boxes.forEach((b) => b.setStatus("checked"));
           } else {
-            this.#boxes.forEach((b) => b.setStatus("unchecked"));
+            this.boxes.forEach((b) => b.setStatus("unchecked"));
           }
           if (opts.onChange) {
             opts.onChange(this.getCheckedValues());
@@ -2747,43 +2715,44 @@ class TableCheckboxColumn extends TableColumn {
             if (opts.onChange) {
               opts.onChange(checkedValues);
             }
-            this.#updateCheckAllBox();
+            this.updateCheckAllBox();
           }
         });
-        this.#boxes.push(box);
+        this.boxes.push(box);
         return box;
       },
       width: 30
     });
-    this.#checkAllBox = checkAllBox;
+    this.boxes = [];
+    this.checkAllBox = checkAllBox;
   }
-  #updateCheckAllBox() {
-    if (!this.#checkAllBox) {
+  updateCheckAllBox() {
+    if (!this.checkAllBox) {
       return;
     }
     const checkedValues = this.getCheckedValues();
-    if (checkedValues.length === this.#boxes.length) {
-      this.#checkAllBox.setStatus("checked");
+    if (checkedValues.length === this.boxes.length) {
+      this.checkAllBox.setStatus("checked");
     } else if (checkedValues.length === 0) {
-      this.#checkAllBox.setStatus("unchecked");
+      this.checkAllBox.setStatus("unchecked");
     } else {
-      this.#checkAllBox.setStatus("indeterminate");
+      this.checkAllBox.setStatus("indeterminate");
     }
   }
   getCheckedValues() {
-    return this.#boxes.filter((b) => b.isChecked()).map((b) => b.value);
+    return this.boxes.filter((b) => b.isChecked()).map((b) => b.value);
   }
   checkAll() {
-    if (this.#checkAllBox) {
-      this.#checkAllBox.setStatus("checked");
+    if (this.checkAllBox) {
+      this.checkAllBox.setStatus("checked");
     }
-    this.#boxes.forEach((b) => b.setStatus("checked"));
+    this.boxes.forEach((b) => b.setStatus("checked"));
   }
   uncheckAll() {
-    if (this.#checkAllBox) {
-      this.#checkAllBox.setStatus("unchecked");
+    if (this.checkAllBox) {
+      this.checkAllBox.setStatus("unchecked");
     }
-    this.#boxes.forEach((b) => b.setStatus("unchecked"));
+    this.boxes.forEach((b) => b.setStatus("unchecked"));
   }
 }
 class TableIndexColumn extends TableColumn {
@@ -2886,16 +2855,16 @@ class CachedModule extends DivModule {
   constructor(key, module) {
     super();
     this.key = key;
+    this.scrollTop = 0;
+    this.title = "";
     this.addChild(module);
   }
-  #scrollTop = 0;
-  #title = "";
   cacheScrollTop() {
-    this.#scrollTop = window.scrollY;
+    this.scrollTop = window.scrollY;
   }
   hide() {
     this.el.style.display = "none";
-    this.#title = document.title;
+    this.title = document.title;
     this.find(() => true).forEach((m) => {
       const mm = m;
       if (mm.onPageHide) {
@@ -2905,12 +2874,12 @@ class CachedModule extends DivModule {
   }
   show() {
     this.el.style.display = "block";
-    if (this.#title) {
-      document.title = this.#title;
+    if (this.title) {
+      document.title = this.title;
     }
-    if (this.#scrollTop) {
+    if (this.scrollTop) {
       setTimeout(() => {
-        window.scrollTo({ top: this.#scrollTop, behavior: "instant" });
+        window.scrollTo({ top: this.scrollTop, behavior: "instant" });
       }, 0);
     }
     this.find(() => true).forEach((m) => {
@@ -2922,18 +2891,15 @@ class CachedModule extends DivModule {
   }
 }
 class Router extends Module {
-  #paths = [];
-  #defaultPathInfo;
-  #currentPath = "";
-  #pathVars = {};
-  #query = {};
-  #currentModule;
-  #cacheLimit = 10;
-  #scrollListener;
   constructor(options) {
     super(document.createElement("div"));
+    this.paths = [];
+    this.currentPath = "";
+    this.pathVars = {};
+    this.query = {};
+    this.cacheLimit = 10;
     if (options.cacheLimit && options.cacheLimit >= 1) {
-      this.#cacheLimit = options.cacheLimit;
+      this.cacheLimit = options.cacheLimit;
     }
     options.rules.flatMap((rule) => {
       if (!rule.alias) {
@@ -2963,113 +2929,112 @@ class Router extends Module {
       ];
     }).forEach((pathInfo) => {
       if (pathInfo.pathRule === "*") {
-        if (this.#defaultPathInfo) {
+        if (this.defaultPathInfo) {
           throw new Error("\u9ED8\u8BA4\u8DEF\u5F84\u91CD\u590D\uFF0C\u914D\u7F6E\u4E86\u591A\u4E2A\u8DEF\u5F84\u4E3A * \u7684\u8DEF\u7531");
         }
-        this.#defaultPathInfo = pathInfo;
+        this.defaultPathInfo = pathInfo;
         return;
       }
-      const existPath = this.#paths.find((p) => isPathRuleEquals(p.parts, pathInfo.parts));
+      const existPath = this.paths.find((p) => isPathRuleEquals(p.parts, pathInfo.parts));
       if (existPath) {
         throw new Error(`\u8DEF\u5F84\u89C4\u5219\u91CD\u590D\uFF1A${pathInfo.pathRule} \uFF0C${existPath.pathRule}`);
       }
-      this.#paths.push(pathInfo);
+      this.paths.push(pathInfo);
     });
-    this.#scrollListener = () => {
-      if (this.#currentModule && this.#currentModule instanceof CachedModule) {
-        this.#currentModule.cacheScrollTop();
+    this.scrollListener = () => {
+      if (this.currentModule && this.currentModule instanceof CachedModule) {
+        this.currentModule.cacheScrollTop();
       }
     };
-    window.addEventListener("scroll", this.#scrollListener);
+    window.addEventListener("scroll", this.scrollListener);
   }
   handleUrl() {
     const parRes = this.parseCurrentUrl();
-    this.#currentPath = parRes.path;
-    this.#query = parRes.query || {};
-    const targetPath = this.#paths.find((p) => {
-      const res = matchPath(this.#currentPath, p.parts);
+    this.currentPath = parRes.path;
+    this.query = parRes.query || {};
+    const targetPath = this.paths.find((p) => {
+      const res = matchPath(this.currentPath, p.parts);
       if (res.matched) {
-        this.#pathVars = res.vars || {};
+        this.pathVars = res.vars || {};
         return true;
       } else {
         return false;
       }
     });
-    if (this.#currentModule) {
-      if (this.#currentModule instanceof CachedModule) {
-        this.#currentModule.hide();
+    if (this.currentModule) {
+      if (this.currentModule instanceof CachedModule) {
+        this.currentModule.hide();
       } else {
-        this.#currentModule.destroy();
+        this.currentModule.destroy();
       }
     }
     if (!targetPath) {
-      if (this.#defaultPathInfo) {
-        this.#handleModule(this.#defaultPathInfo.module).then((m) => {
+      if (this.defaultPathInfo) {
+        this.handleModule(this.defaultPathInfo.module).then((m) => {
           this.addChild(m);
-          this.#currentModule = m;
+          this.currentModule = m;
         }).catch(showWarning);
       } else {
-        showWarning("\u8DEF\u5F84\u672A\u8BBE\u7F6E\uFF1A" + this.#currentPath);
+        showWarning("\u8DEF\u5F84\u672A\u8BBE\u7F6E\uFF1A" + this.currentPath);
       }
     } else if (targetPath.cache) {
       const key = JSON.stringify(parRes);
       const cachedModule = this.getChildren().filter((c) => c instanceof CachedModule).map((c) => c).find((c) => c.key === key);
       if (cachedModule) {
         cachedModule.show();
-        this.#currentModule = cachedModule;
+        this.currentModule = cachedModule;
         return;
       }
-      this.#handleModule(targetPath.module).then((m) => {
+      this.handleModule(targetPath.module).then((m) => {
         const newCachedModule = new CachedModule(key, m);
         this.addChild(newCachedModule);
-        this.#currentModule = newCachedModule;
+        this.currentModule = newCachedModule;
         const cachedModules = this.getChildren().filter((c) => c instanceof CachedModule).map((c) => c);
-        if (cachedModules.length > this.#cacheLimit) {
+        if (cachedModules.length > this.cacheLimit) {
           this.removeChild(cachedModules[0]);
         }
       }).catch(showWarning);
     } else {
-      this.#handleModule(targetPath.module).then((m) => {
+      this.handleModule(targetPath.module).then((m) => {
         this.addChild(m);
-        this.#currentModule = m;
+        this.currentModule = m;
       }).catch(showWarning);
     }
   }
-  async #handleModule(module) {
+  async handleModule(module) {
     return module();
   }
   getRouterInfo() {
     return {
-      path: this.#currentPath,
-      query: this.#query
+      path: this.currentPath,
+      query: this.query
     };
   }
   getParam(paramName) {
-    const val = this.#query[paramName];
+    const val = this.query[paramName];
     if (!val) {
       return "";
     }
     return typeof val === "string" ? val : val[0] || "";
   }
   getParamVals(paramName) {
-    const val = this.#query[paramName];
+    const val = this.query[paramName];
     return typeof val === "string" ? [val] : val;
   }
   getPathVar(varName) {
-    return this.#pathVars[varName] || "";
+    return this.pathVars[varName] || "";
   }
   destroy() {
-    window.removeEventListener("scroll", this.#scrollListener);
+    window.removeEventListener("scroll", this.scrollListener);
     super.destroy();
   }
 }
 
 class HashRouter extends Router {
-  #listener;
   constructor(rules, cacheLimit) {
     super({ rules, cacheLimit });
-    this.#listener = () => this.handleUrl();
-    window.addEventListener("hashchange", this.#listener);
+    this.listener = () => this.handleUrl();
+    window.addEventListener("hashchange", this.listener);
     setTimeout(() => this.handleUrl(), 0);
   }
   parseCurrentUrl() {
@@ -3111,7 +3076,7 @@ class HashRouter extends Router {
     location.replace(this.buildUrl(path));
   }
   destroy() {
-    window.removeEventListener("hashchange", this.#listener);
+    window.removeEventListener("hashchange", this.listener);
     super.destroy();
   }
 }
@@ -3265,15 +3230,14 @@ function getRouter() {
 var style = '';
 
 class Dropdown extends DivModule {
-  #removeCloseListener;
   constructor(opts) {
     super("wok-ui-dropdown");
     this.el.addEventListener("click", (ev) => {
       if (this.el.classList.contains("open")) {
-        this.#close();
+        this.close();
       } else {
         this.el.classList.add("open");
-        setTimeout(() => this.#addCloseListener(), 0);
+        setTimeout(() => this.addCloseListener(), 0);
       }
     });
     this.addChild(...buildSubModules(opts.content));
@@ -3293,7 +3257,7 @@ class Dropdown extends DivModule {
                 if (item.disabled) {
                   return;
                 }
-                this.#close();
+                this.close();
                 if (item.callback)
                   item.callback();
               }
@@ -3313,7 +3277,7 @@ class Dropdown extends DivModule {
       });
     }
   }
-  #addCloseListener() {
+  addCloseListener() {
     const closeListener = (ev) => {
       ev.stopPropagation();
       const target = ev.target;
@@ -3321,7 +3285,7 @@ class Dropdown extends DivModule {
         return;
       }
       if (this.el.classList.contains("open")) {
-        this.#close();
+        this.close();
       }
     };
     let parent = this.el.parentElement;
@@ -3331,19 +3295,19 @@ class Dropdown extends DivModule {
       parent.addEventListener("click", closeListener);
       parent = parent.parentElement;
     }
-    this.#removeCloseListener = () => parentList.forEach((p) => p.removeEventListener("click", closeListener));
+    this.__removeCloseListener = () => parentList.forEach((p) => p.removeEventListener("click", closeListener));
   }
-  #close() {
+  close() {
     this.el.classList.remove("open");
-    if (this.#removeCloseListener) {
-      this.#removeCloseListener();
-      this.#removeCloseListener = void 0;
+    if (this.__removeCloseListener) {
+      this.__removeCloseListener();
+      this.__removeCloseListener = void 0;
       return;
     }
   }
   destroy() {
-    if (this.#removeCloseListener) {
-      this.#removeCloseListener();
+    if (this.__removeCloseListener) {
+      this.__removeCloseListener();
     }
     super.destroy();
   }

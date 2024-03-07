@@ -1,5 +1,4 @@
-import { ConvertibleModule, Module } from '../module';
-import { CachedModule } from './cached-module';
+import { Module } from '../module';
 /**
  * 响应式尺寸,分隔点信息:
  * xs : <576px
@@ -40,7 +39,16 @@ export declare enum ResponsiveBreakPoint {
  * 当缩放达到分隔点临界值, ResposiveSize 发生变化时, 会调用 buildContent 重新进行渲染.
  */
 export declare abstract class ResponsiveModule extends Module {
-    #private;
+    /**
+     * 页面大小调整的监听器.
+     */
+    private readonly __resizeListener;
+    private __respSize;
+    private __pendingRender;
+    /**
+     * 缓存的模块
+     */
+    private __cachedModules;
     /**
      * 构造器.
      * @param el
@@ -64,9 +72,10 @@ export declare abstract class ResponsiveModule extends Module {
      * @param force 是否强制渲染,如果为 false ,则在尺寸信息不变化的情况下不会渲染
      */
     protected render(force?: boolean): void;
+    private __render;
     /**
      * 缓存一个模块，返回的是一个特殊的模块，能够复用，避免重新渲染.
-     * 被缓存的模块将会和响应式模块销毁的时候一起被销毁，也可以通过 removeCache 主要将其销毁.
+     * 被缓存的模块将会和全量渲染模块销毁的时候一起被销毁，也可以通过 removeCache 方法主要将其销毁.
      * @param opts
      */
     protected cacheModule(opts: {
@@ -78,10 +87,10 @@ export declare abstract class ResponsiveModule extends Module {
          * 要缓存的模块，一个函数，仅首次执行，如果查询到缓存结果，则不执行
          * @returns
          */
-        module: () => Exclude<ConvertibleModule, () => Module>;
-    }): CachedModule;
+        module: () => Module;
+    }): Module;
     /**
-     * 删除缓存模块
+     * 删除缓存
      * @param key
      */
     protected removeCache(key: string): void;
@@ -89,5 +98,5 @@ export declare abstract class ResponsiveModule extends Module {
      * 清理掉所有的缓存
      */
     protected clearCaches(): void;
-    destroyed(): void;
+    destroy(): void;
 }
