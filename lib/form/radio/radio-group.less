@@ -6,7 +6,7 @@
   &.inline {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.5rem 1rem;
     & > .invalid-feedback {
       width: 100% !important;
     }
@@ -19,5 +19,8 @@
     & > input {
       flex-shrink: 0;
     }
+  }
+  .invalid-feedback {
+    padding-top: 0 !important;
   }
 }

@@ -77,11 +77,39 @@ export class CheckboxGroup extends FormInput {
                     this.__values.push(opt.value)
                     this.handleChange()
                   }
+                  // 达到上限后，将还没有选择的禁用
+                  if (opts.maxSelected) {
+                    const maxSelected =
+                      typeof opts.maxSelected === 'number'
+                        ? opts.maxSelected
+                        : opts.maxSelected.maxSelected
+                    if (this.__values.length >= maxSelected) {
+                      this.find<Checkbox>(m => m instanceof Checkbox).forEach(box => {
+                        if (!box.isChecked()) {
+                          box.setDisabled(true)
+                        }
+                      })
+                    }
+                  }
                 } else {
                   const idx = this.__values.indexOf(opt.value)
                   if (idx !== -1) {
                     this.__values.splice(idx, 1)
                     this.handleChange()
+                  }
+                  // 减小后，低于上限，将所有选项解除禁用
+                  if (opts.maxSelected) {
+                    const maxSelected =
+                      typeof opts.maxSelected === 'number'
+                        ? opts.maxSelected
+                        : opts.maxSelected.maxSelected
+                    if (this.__values.length < maxSelected) {
+                      this.find<Checkbox>(m => m instanceof Checkbox).forEach(box => {
+                        if (!box.isChecked()) {
+                          box.setDisabled(false)
+                        }
+                      })
+                    }
                   }
                 }
               }
