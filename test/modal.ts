@@ -81,11 +81,13 @@ class Page extends DivModule {
             onClick(ev) {
               showModal({
                 title: '第一层模态框',
+                width: 800,
                 body: new Link({
                   content: '点击弹出第二层',
                   onClick(ev) {
                     showModal({
                       title: '第二层模态框',
+                      width: 500,
                       body: '实际开发中不能嵌套太多，否则难以维护',
                       onClose: () => showWarning('第二层关闭')
                     })
