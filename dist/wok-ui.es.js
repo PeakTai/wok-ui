@@ -1261,14 +1261,32 @@ class SvgIcon extends DivModule {
   }
 }
 
+const CACHE_MAP = /* @__PURE__ */ new Map();
+async function getSvgCodeFromCache(url) {
+  const val = CACHE_MAP.get(url);
+  if (val) {
+    return val;
+  }
+  const promise = fetch(url).then(async (res) => {
+    if (res.status !== 200) {
+      throw new Error(`Failed to fetch icon, status code: ${res.status}, url\uFF1A${url}`);
+    }
+    const contentType = res.headers.get("Content-Type");
+    if (!contentType || contentType.toLowerCase() !== "image/svg+xml") {
+      throw new Error(`Failed to fetch icon, incorrect type\uFF1A${contentType}`);
+    }
+    const code = await res.text();
+    CACHE_MAP.set(url, code);
+    return code;
+  });
+  CACHE_MAP.set(url, promise);
+  return promise;
+}
 class RemoteSvgIcon extends DivModule {
   constructor(iconUrl) {
     super("wok-ui-svg-icon");
-    fetch(iconUrl).then(async (res) => {
-      if (res.status !== 200) {
-        throw new Error(`\u8BF7\u6C42\u56FE\u6807\u5931\u8D25\uFF0C\u72B6\u6001\u7801\uFF1A${res.status}\uFF0C\u5730\u5740\uFF1A${iconUrl}`);
-      }
-      this.el.innerHTML = await res.text();
+    getSvgCodeFromCache(iconUrl).then((code) => {
+      this.el.innerHTML = code;
       const svg = this.el.querySelector("svg");
       if (svg) {
         svg.setAttribute("fill", "currentColor");
