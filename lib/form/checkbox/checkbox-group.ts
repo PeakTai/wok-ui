@@ -1,6 +1,5 @@
 import { getI18n } from '../../i18n'
-import { createDomModule } from '../../module'
-import { Text } from '../../text'
+import { ConvertibleModule, createDomModule } from '../../module'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
 import { InvalidFeedback } from '../invalid-feedback'
@@ -21,7 +20,7 @@ export interface CheckboxGroupOpts {
   /**
    * 选项
    */
-  options: Array<{ label: string; value: string }>
+  options: Array<{ label: ConvertibleModule; value: string }>
   /**
    * 是否必填. 可自定义错误信息
    */
@@ -114,7 +113,7 @@ export class CheckboxGroup extends FormInput {
                 }
               }
             }),
-            new Text(opt.label)
+            opt.label
           ]
         })
       )

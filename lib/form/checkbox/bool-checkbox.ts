@@ -1,4 +1,5 @@
 import { getI18n } from '../../i18n'
+import { ConvertibleModule } from '../../module'
 import { Text } from '../../text'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
@@ -20,7 +21,7 @@ export interface BoolCheckboxOpts {
   /**
    * 勾选框的标题
    */
-  label: string
+  label: ConvertibleModule
   /**
    * 是否禁用
    */
@@ -58,7 +59,7 @@ export class BoolCheckbox extends FormInput {
             this.validate()
           }
         }),
-        new Text(opts.label)
+        opts.label
       ]
     })
   }

@@ -8,6 +8,7 @@ import {
   FullRenderingModule,
   HBox,
   LargeTitle,
+  Link,
   NumberInput,
   PrimaryBodyText,
   RadioGroup,
@@ -190,7 +191,7 @@ class Page extends FullRenderingModule {
           new BoolCheckbox({
             required: true,
             value: this.form.aggree,
-            label: '同意隐私协议条款',
+            label: { children: ['同意隐私协议条款， ', new Link({ content: '查看隐私协议' })] },
             onChange: value => (this.form.aggree = value)
           }),
           new Spacer(),
