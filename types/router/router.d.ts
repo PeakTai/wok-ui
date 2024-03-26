@@ -59,6 +59,11 @@ export declare abstract class Router extends Module {
      * 容器滚动监听器
      */
     private scrollListener;
+    /**
+     * 忽略滚动标记，如果为 true 则不要记录位置信息，在浏览器后退的情况下会有一次将滚动位置重置，
+     * 必须要避免这次，否则影响缓存页面的位置恢复
+     */
+    protected ignoreScroll: boolean;
     constructor(options: {
         rules: RouterRule[];
         cacheLimit?: number;

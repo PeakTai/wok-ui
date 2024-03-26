@@ -2892,12 +2892,11 @@ class CachedModule extends DivModule {
   constructor(key, module) {
     super();
     this.key = key;
-    this.scrollTop = 0;
     this.title = "";
     this.addChild(module);
   }
-  cacheScrollTop() {
-    this.scrollTop = window.scrollY;
+  cacheScroll() {
+    this.scrollPos = { left: window.scrollX, top: window.scrollY };
   }
   hide() {
     this.el.style.display = "none";
@@ -2914,9 +2913,10 @@ class CachedModule extends DivModule {
     if (this.title) {
       document.title = this.title;
     }
-    if (this.scrollTop) {
+    if (this.scrollPos) {
+      const { left, top } = this.scrollPos;
       setTimeout(() => {
-        window.scrollTo({ top: this.scrollTop, behavior: "instant" });
+        window.scrollTo({ left, top, behavior: "instant" });
       }, 0);
     }
     this.find(() => true).forEach((m) => {
@@ -2935,6 +2935,7 @@ class Router extends Module {
     this.pathVars = {};
     this.query = {};
     this.cacheLimit = 10;
+    this.ignoreScroll = false;
     if (options.cacheLimit && options.cacheLimit >= 1) {
       this.cacheLimit = options.cacheLimit;
     }
@@ -2979,9 +2980,15 @@ class Router extends Module {
       this.paths.push(pathInfo);
     });
     this.scrollListener = () => {
-      if (this.currentModule && this.currentModule instanceof CachedModule) {
-        this.currentModule.cacheScrollTop();
-      }
+      setTimeout(() => {
+        if (this.ignoreScroll) {
+          this.ignoreScroll = false;
+          return;
+        }
+        if (this.currentModule && this.currentModule instanceof CachedModule) {
+          this.currentModule.cacheScroll();
+        }
+      }, 0);
     };
     window.addEventListener("scroll", this.scrollListener);
   }
@@ -3005,6 +3012,7 @@ class Router extends Module {
         this.currentModule.destroy();
       }
     }
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" });
     if (!targetPath) {
       if (this.defaultPathInfo) {
         this.handleModule(this.defaultPathInfo.module).then((m) => {
@@ -3012,7 +3020,7 @@ class Router extends Module {
           this.currentModule = m;
         }).catch(showWarning);
       } else {
-        showWarning("\u8DEF\u5F84\u672A\u8BBE\u7F6E\uFF1A" + this.currentPath);
+        showWarning("Path not set\uFF1A" + this.currentPath);
       }
     } else if (targetPath.cache) {
       const key = JSON.stringify(parRes);
@@ -3070,7 +3078,11 @@ class Router extends Module {
 class HashRouter extends Router {
   constructor(rules, cacheLimit) {
     super({ rules, cacheLimit });
-    this.listener = () => this.handleUrl();
+    this.listener = (e) => {
+      e.preventDefault();
+      this.ignoreScroll = true;
+      this.handleUrl();
+    };
     window.addEventListener("hashchange", this.listener);
     setTimeout(() => this.handleUrl(), 0);
   }
@@ -3126,7 +3138,10 @@ class HistoryRouter extends Router {
     if (this.base && !pathname.startsWith(this.base)) {
       throw new Error("\u65E0\u6CD5\u521B\u5EFA\u8DEF\u7531\uFF0C\u5F53\u524D\u8DEF\u5F84\u4E0D\u5728\u8BBE\u5B9A\u7684 base \u4E0B");
     }
-    this.listener = () => this.handleUrl();
+    this.listener = () => {
+      this.ignoreScroll = true;
+      this.handleUrl();
+    };
     window.addEventListener("popstate", this.listener);
     setTimeout(() => this.handleUrl(), 0);
   }
