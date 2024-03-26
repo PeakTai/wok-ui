@@ -5,11 +5,15 @@ import { Router, RouterRule } from './router'
  * 哈希路由.
  */
 export class HashRouter extends Router {
-  private readonly listener: () => void
+  private readonly listener: (e: Event) => void
 
   constructor(rules: RouterRule[], cacheLimit?: number) {
     super({ rules, cacheLimit })
-    this.listener = () => this.handleUrl()
+    this.listener = (e: Event) => {
+      e.preventDefault()
+      this.ignoreScroll = true
+      this.handleUrl()
+    }
     window.addEventListener('hashchange', this.listener)
     // 异步执行第一次链接处理，为的是在构造完成后执行
     // 否则未造成成功就执行，配置的路由组件如果对路由实例有依赖就会出错

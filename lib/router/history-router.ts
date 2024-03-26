@@ -15,7 +15,10 @@ export class HistoryRouter extends Router {
     if (this.base && !pathname.startsWith(this.base)) {
       throw new Error('无法创建路由，当前路径不在设定的 base 下')
     }
-    this.listener = () => this.handleUrl()
+    this.listener = () => {
+      this.ignoreScroll = true
+      this.handleUrl()
+    }
     window.addEventListener('popstate', this.listener)
     // 异步执行第一次链接处理，为的是在构造完成后执行
     // 否则未造成成功就执行，配置的路由组件如果对路由实例有依赖就会出错

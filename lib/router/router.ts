@@ -40,7 +40,7 @@ interface PathInfo {
  * 缓存模块，不会真正的销毁，可重复使用.
  */
 class CachedModule extends DivModule {
-  private scrollTop = 0
+  private scrollPos?: { left: number; top: number }
   private title = ''
 
   constructor(readonly key: string, module: Module) {
@@ -48,8 +48,8 @@ class CachedModule extends DivModule {
     this.addChild(module)
   }
 
-  cacheScrollTop() {
-    this.scrollTop = window.scrollY
+  cacheScroll() {
+    this.scrollPos = { left: window.scrollX, top: window.scrollY }
   }
 
   hide() {
@@ -68,9 +68,10 @@ class CachedModule extends DivModule {
     if (this.title) {
       document.title = this.title
     }
-    if (this.scrollTop) {
+    if (this.scrollPos) {
+      const { left, top } = this.scrollPos
       setTimeout(() => {
-        window.scrollTo({ top: this.scrollTop, behavior: 'instant' as ScrollBehavior })
+        window.scrollTo({ left, top, behavior: 'instant' as ScrollBehavior })
       }, 0)
     }
     this.find(() => true).forEach(m => {
@@ -116,6 +117,11 @@ export abstract class Router extends Module {
    * 容器滚动监听器
    */
   private scrollListener: () => void
+  /**
+   * 忽略滚动标记，如果为 true 则不要记录位置信息，在浏览器后退的情况下会有一次将滚动位置重置，
+   * 必须要避免这次，否则影响缓存页面的位置恢复
+   */
+  protected ignoreScroll = false
 
   constructor(options: { rules: RouterRule[]; cacheLimit?: number }) {
     super(document.createElement('div'))
@@ -166,9 +172,15 @@ export abstract class Router extends Module {
       })
     // 缓存位置
     this.scrollListener = () => {
-      if (this.currentModule && this.currentModule instanceof CachedModule) {
-        this.currentModule.cacheScrollTop()
-      }
+      setTimeout(() => {
+        if (this.ignoreScroll) {
+          this.ignoreScroll = false
+          return
+        }
+        if (this.currentModule && this.currentModule instanceof CachedModule) {
+          this.currentModule.cacheScroll()
+        }
+      }, 0)
     }
     window.addEventListener('scroll', this.scrollListener)
   }
@@ -187,6 +199,7 @@ export abstract class Router extends Module {
         return false
       }
     })
+
     // 清理或隐藏掉现在的模块
     if (this.currentModule) {
       if (this.currentModule instanceof CachedModule) {
@@ -195,6 +208,9 @@ export abstract class Router extends Module {
         this.currentModule.destroy()
       }
     }
+    // 重置页面滚动位置，一般切换地址，位置都会重置
+    // 但是实测部分移动端浏览器不会，反而将下个页面顶起，主动重置一次可以避免
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' as ScrollBehavior })
     if (!targetPath) {
       if (this.defaultPathInfo) {
         this.handleModule(this.defaultPathInfo.module)
@@ -204,7 +220,7 @@ export abstract class Router extends Module {
           })
           .catch(showWarning)
       } else {
-        showWarning('路径未设置：' + this.currentPath)
+        showWarning('Path not set：' + this.currentPath)
       }
     } else if (targetPath.cache) {
       const key = JSON.stringify(parRes)
@@ -294,7 +310,6 @@ export abstract class Router extends Module {
   getPathVar(varName: string): string {
     return this.pathVars[varName] || ''
   }
-
   destroy(): void {
     window.removeEventListener('scroll', this.scrollListener)
     super.destroy()

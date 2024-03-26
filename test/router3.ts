@@ -2,6 +2,7 @@ import {
   FullRenderingModule,
   LargeTitle,
   PrimaryBodyText,
+  RouterLink,
   Spacer,
   getRouter,
   showSuccess,
@@ -19,7 +20,7 @@ class Page extends FullRenderingModule {
     setTimeout(() => {
       this.loading = false
       this.render()
-    }, 3000)
+    }, 1000)
   }
 
   protected buildContent(): void {
@@ -40,6 +41,7 @@ class Page extends FullRenderingModule {
     this.addChild(
       new LargeTitle('路由缓存测试'),
       new Spacer(),
+      new Spacer(),
       new PrimaryBodyText(
         `当前参数是：${JSON.stringify(
           getRouter().getRouterInfo().query
@@ -48,8 +50,17 @@ class Page extends FullRenderingModule {
       new Spacer(),
       new PrimaryBodyText(
         '由于整个页面是缓存的，再次进入到当前页面将不会重新渲染，前提是参数相同，不同的参数缓存不复用'
-      )
+      ),
+      new Spacer()
     )
+
+    for (let i = 0; i < 100; i++) {
+      this.addChild(
+        `测试滚动位置，当前位置： ${i + 1} `,
+        new RouterLink({ path: 'router1', content: '返回上层' }),
+        new Spacer()
+      )
+    }
   }
 
   // 生命周期测试
