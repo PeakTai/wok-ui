@@ -1,3 +1,4 @@
+import { ConvertibleModule } from '../../module';
 import { FormInput } from '../form-input';
 export interface RadioGroupOpts {
     /**
@@ -12,7 +13,7 @@ export interface RadioGroupOpts {
      * 选项
      */
     options: Array<{
-        label: string;
+        label: ConvertibleModule;
         value: string;
     }>;
     /**

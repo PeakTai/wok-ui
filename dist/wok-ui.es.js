@@ -1922,7 +1922,7 @@ class CheckboxGroup extends FormInput {
                 }
               }
             }),
-            new Text(opt.label)
+            opt.label
           ]
         })
       )
@@ -2013,7 +2013,7 @@ class BoolCheckbox extends FormInput {
             this.validate();
           }
         }),
-        new Text(opts.label)
+        opts.label
       ]
     });
   }
@@ -2120,7 +2120,7 @@ class RadioGroup extends FormInput {
                 this.validate();
               }
             }),
-            new Text(opt.label)
+            opt.label
           ]
         })
       )

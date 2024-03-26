@@ -1,3 +1,4 @@
+import { ConvertibleModule } from '../../module';
 import { FormInput } from '../form-input';
 /**
  * 布尔勾选框选项
@@ -14,7 +15,7 @@ export interface BoolCheckboxOpts {
     /**
      * 勾选框的标题
      */
-    label: string;
+    label: ConvertibleModule;
     /**
      * 是否禁用
      */
