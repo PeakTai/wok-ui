@@ -66,32 +66,30 @@ export class Dropdown extends DivModule {
     // 内容
     this.addChild(...buildSubModules(opts.content))
     const menusAlign = opts.menusAlign || 'left'
-    // 菜单
-    if (Array.isArray(opts.menus)) {
+    // 菜单，判定类型，再做处理
+    // DropdownMenuItem[] 和 SubModulesOpt 很接近，只能依赖于一些特殊的独有属性来区分
+    if (
+      Array.isArray(opts.menus) &&
+      opts.menus[0] &&
+      typeof (opts.menus[0] as any).label === 'string'
+    ) {
+      const menus = opts.menus as DropdownMenuItem[]
       this.addChild({
         classNames: ['wok-ui-dropdown-menu', menusAlign],
         onClick(ev) {
           ev.stopPropagation()
         },
-        children: opts.menus.map((item: any) => {
-          if (item.label) {
-            item as DropdownMenuItem
-            return createDomModule({
-              classNames: ['wok-ui-dropdown-item', item.disabled ? 'disabled' : ''],
-              innerText: item.label,
-              onClick: ev => {
-                if (item.disabled) {
-                  return
-                }
-                this.close()
-                if (item.callback) item.callback()
-              }
-            })
-          } else {
-            item as ConvertibleModule
-            return createDomModule(item)
+        children: menus.map(item => ({
+          classNames: ['wok-ui-dropdown-item', item.disabled ? 'disabled' : ''],
+          innerText: item.label,
+          onClick: ev => {
+            if (item.disabled) {
+              return
+            }
+            this.close()
+            if (item.callback) item.callback()
           }
-        })
+        }))
       })
     } else {
       this.addChild({
@@ -99,7 +97,7 @@ export class Dropdown extends DivModule {
         onClick(ev) {
           ev.stopPropagation()
         },
-        children: opts.menus
+        children: opts.menus as SubModulesOpt
       })
     }
   }
