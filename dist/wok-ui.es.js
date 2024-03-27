@@ -3294,30 +3294,25 @@ class Dropdown extends DivModule {
     });
     this.addChild(...buildSubModules(opts.content));
     const menusAlign = opts.menusAlign || "left";
-    if (Array.isArray(opts.menus)) {
+    if (Array.isArray(opts.menus) && opts.menus[0] && typeof opts.menus[0].label === "string") {
+      const menus = opts.menus;
       this.addChild({
         classNames: ["wok-ui-dropdown-menu", menusAlign],
         onClick(ev) {
           ev.stopPropagation();
         },
-        children: opts.menus.map((item) => {
-          if (item.label) {
-            return createDomModule({
-              classNames: ["wok-ui-dropdown-item", item.disabled ? "disabled" : ""],
-              innerText: item.label,
-              onClick: (ev) => {
-                if (item.disabled) {
-                  return;
-                }
-                this.close();
-                if (item.callback)
-                  item.callback();
-              }
-            });
-          } else {
-            return createDomModule(item);
+        children: menus.map((item) => ({
+          classNames: ["wok-ui-dropdown-item", item.disabled ? "disabled" : ""],
+          innerText: item.label,
+          onClick: (ev) => {
+            if (item.disabled) {
+              return;
+            }
+            this.close();
+            if (item.callback)
+              item.callback();
           }
-        })
+        }))
       });
     } else {
       this.addChild({
