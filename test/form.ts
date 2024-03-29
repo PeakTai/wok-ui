@@ -43,6 +43,7 @@ class Page extends FullRenderingModule {
     district: '徐家汇',
     street: '',
     edudition: '',
+    skills: ['Java', 'Html', 'Css', 'Javascript'],
     aggree: false,
     score: 5,
     color: ''
