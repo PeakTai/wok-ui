@@ -54,6 +54,10 @@ export declare class CheckboxGroup extends FormInput {
     private __values;
     private __disabled;
     constructor(opts: CheckboxGroupOpts);
+    /**
+     * 更新勾选框状态，如果达到限制则禁用
+     */
+    private updateCheckboxStatus;
     private handleChange;
     private __validate;
     validate(): boolean;

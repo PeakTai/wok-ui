@@ -1893,32 +1893,14 @@ class CheckboxGroup extends FormInput {
                     this.__values.push(opt.value);
                     this.handleChange();
                   }
-                  if (opts.maxSelected) {
-                    const maxSelected = typeof opts.maxSelected === "number" ? opts.maxSelected : opts.maxSelected.maxSelected;
-                    if (this.__values.length >= maxSelected) {
-                      this.find((m) => m instanceof Checkbox).forEach((box) => {
-                        if (!box.isChecked()) {
-                          box.setDisabled(true);
-                        }
-                      });
-                    }
-                  }
+                  this.updateCheckboxStatus();
                 } else {
                   const idx = this.__values.indexOf(opt.value);
                   if (idx !== -1) {
                     this.__values.splice(idx, 1);
                     this.handleChange();
                   }
-                  if (opts.maxSelected) {
-                    const maxSelected = typeof opts.maxSelected === "number" ? opts.maxSelected : opts.maxSelected.maxSelected;
-                    if (this.__values.length < maxSelected) {
-                      this.find((m) => m instanceof Checkbox).forEach((box) => {
-                        if (!box.isChecked()) {
-                          box.setDisabled(false);
-                        }
-                      });
-                    }
-                  }
+                  this.updateCheckboxStatus();
                 }
               }
             }),
@@ -1927,6 +1909,26 @@ class CheckboxGroup extends FormInput {
         })
       )
     );
+    this.updateCheckboxStatus();
+  }
+  updateCheckboxStatus() {
+    if (!this.opts.maxSelected) {
+      return;
+    }
+    const maxSelected = typeof this.opts.maxSelected === "number" ? this.opts.maxSelected : this.opts.maxSelected.maxSelected;
+    if (this.__values.length >= maxSelected) {
+      this.find((m) => m instanceof Checkbox).forEach((box) => {
+        if (!box.isChecked()) {
+          box.setDisabled(true);
+        }
+      });
+    } else {
+      this.find((m) => m instanceof Checkbox).forEach((box) => {
+        if (!box.isChecked()) {
+          box.setDisabled(false);
+        }
+      });
+    }
   }
   handleChange() {
     if (this.opts.onChange) {
