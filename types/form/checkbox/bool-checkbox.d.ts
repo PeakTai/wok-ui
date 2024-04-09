@@ -36,6 +36,7 @@ export declare class BoolCheckbox extends FormInput {
     private __disabled;
     constructor(opts: BoolCheckboxOpts);
     private __validate;
+    isChecked(): boolean;
     validate(): boolean;
     setDisabled(disabled: boolean): void;
 }

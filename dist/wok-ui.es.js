@@ -2039,6 +2039,9 @@ class BoolCheckbox extends FormInput {
       return { valid: true };
     }
   }
+  isChecked() {
+    return this.__value;
+  }
   validate() {
     const res = this.__validate();
     this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
