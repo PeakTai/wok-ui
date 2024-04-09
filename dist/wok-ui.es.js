@@ -1405,7 +1405,12 @@ class Backdrop$1 extends DivModule {
     }
     return res;
   }
+  mount(parentEl) {
+    super.mount(parentEl);
+    document.body.classList.add("wok-ui-modal-lock-scroll");
+  }
   destroy() {
+    document.body.classList.remove("wok-ui-modal-lock-scroll");
     super.destroy();
     this.opts.onDestroy();
   }
@@ -1569,7 +1574,12 @@ class Backdrop extends DivModule {
     });
     this.addChild(content);
   }
+  mount(parentEl) {
+    super.mount(parentEl);
+    document.body.classList.add("wok-ui-drawer-lock-scroll");
+  }
   destroy() {
+    document.body.classList.remove("wok-ui-drawer-lock-scroll");
     super.destroy();
     this.opts.onDestroy();
   }
