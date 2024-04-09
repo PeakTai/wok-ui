@@ -1,6 +1,5 @@
 import { getI18n } from '../../i18n'
 import { ConvertibleModule } from '../../module'
-import { Text } from '../../text'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
 import { InvalidFeedback } from '../invalid-feedback'
@@ -76,6 +75,10 @@ export class BoolCheckbox extends FormInput {
     } else {
       return { valid: true }
     }
+  }
+
+  isChecked() {
+    return this.__value
   }
 
   validate(): boolean {
