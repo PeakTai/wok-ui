@@ -52,7 +52,13 @@ class Backdrop extends DivModule {
     this.addChild(content)
   }
 
+  mount(parentEl: Element): void {
+    super.mount(parentEl)
+    document.body.classList.add('wok-ui-drawer-lock-scroll')
+  }
+
   destroy(): void {
+    document.body.classList.remove('wok-ui-drawer-lock-scroll')
     super.destroy()
     this.opts.onDestroy()
   }

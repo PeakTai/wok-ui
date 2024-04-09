@@ -105,7 +105,11 @@ class Page extends DivModule {
             }
           })
         ]
-      })
+      }),
+      // 垫高，测试滚动锁定，当抽屉弹出时，页面将不能滚动
+      {
+        style: { height: '1500px' }
+      }
     )
   }
 }

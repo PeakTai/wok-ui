@@ -2,7 +2,7 @@ import { ANIMATION_PROVISION, Animation, animate } from '../animation'
 import { Button } from '../button'
 import { getI18n } from '../i18n'
 import { showWarning } from '../message'
-import { DivModule, Module, SubModulesOpt } from '../module'
+import { ConvertibleModule, DivModule, Module, SubModulesOpt } from '../module'
 import './style.less'
 /**
  * 模态框选项
@@ -53,7 +53,7 @@ export interface ModalOptions {
   /**
    * 自定义脚部，优先级高于按钮.
    */
-  footer?: Module
+  footer?: ConvertibleModule
   /**
    * 自定义圆角大小.
    */
@@ -113,7 +113,13 @@ class Backdrop extends DivModule {
     return res
   }
 
+  mount(parentEl: Element): void {
+    super.mount(parentEl)
+    document.body.classList.add('wok-ui-modal-lock-scroll')
+  }
+
   destroy(): void {
+    document.body.classList.remove('wok-ui-modal-lock-scroll')
     super.destroy()
     this.opts.onDestroy()
   }

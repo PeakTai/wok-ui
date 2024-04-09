@@ -1,4 +1,4 @@
-import { Module, SubModulesOpt } from '../module';
+import { ConvertibleModule, SubModulesOpt } from '../module';
 /**
  * 模态框选项
  */
@@ -48,7 +48,7 @@ export interface ModalOptions {
     /**
      * 自定义脚部，优先级高于按钮.
      */
-    footer?: Module;
+    footer?: ConvertibleModule;
     /**
      * 自定义圆角大小.
      */

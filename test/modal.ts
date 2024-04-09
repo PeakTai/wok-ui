@@ -98,6 +98,21 @@ class Page extends DivModule {
             }
           }),
           new Button({
+            text: '自定义脚部内容',
+            onClick: () =>
+              showModal({
+                title: '标题',
+                body: '主体内容',
+                footer: {
+                  style: {
+                    padding: '1rem',
+                    borderTop: '1px dashed grey'
+                  },
+                  innerText: '自定义脚部内容'
+                }
+              })
+          }),
+          new Button({
             text: '完全自定义内容',
             onClick(ev) {
               const modal = showModal({
@@ -172,7 +187,11 @@ class Page extends DivModule {
             }
           })
         ]
-      })
+      }),
+      // 垫高，测试滚动锁定，当模态框弹出时，页面将不能滚动
+      {
+        style: { height: '1500px' }
+      }
     )
   }
 }
