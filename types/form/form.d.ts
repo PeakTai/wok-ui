@@ -13,10 +13,16 @@ export interface FormOpts {
      * 子元素.
      */
     children: SubModulesOpt;
+    /**
+     * 校验反馈信息的模式：
+     *
+     * inline 内联，默认模式，反馈信息会显示成输入框的后面，一般情况下都会换行
+     * tooltip 反馈信息以悬浮提示的形式展示在输入框底部
+     */
+    feedbackMode?: 'inline' | 'tooltip';
 }
 /**
  * 表单.
- * <FD> 表单绑定的数据类型
  */
 export declare class Form extends Module {
     private readonly opts;

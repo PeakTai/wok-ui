@@ -11,7 +11,11 @@ const enUS = {
   "form-err-max-select": "Up to {} option(s) can be selected.",
   "form-err-min-select": "Please select at least {} option(s).",
   "form-err-max-length": "You can enter up to {} character(s).",
-  "form-err-min-length": "Please enter at least {} character(s)."
+  "form-err-min-length": "Please enter at least {} character(s).",
+  "form-err-min-size": "The file size must be greater than {}",
+  "form-err-max-size": "The file size must not exceed {}",
+  "form-err-max-files-select": "You can select up to {} file(s)",
+  "form-err-min-files-select": "Please select at least {} file(s)"
 };
 
 function parseLangTag(tag) {
@@ -129,7 +133,11 @@ const zhCN = {
   "form-err-max-select": "\u6700\u591A\u53EF\u4EE5\u9009\u62E9 {} \u4E2A\u9009\u9879",
   "form-err-min-select": "\u8BF7\u81F3\u5C11\u9009\u62E9 {} \u4E2A\u9009\u9879",
   "form-err-max-length": "\u6700\u591A\u53EF\u4EE5\u586B\u5199 {} \u4E2A\u5B57\u7B26",
-  "form-err-min-length": "\u8BF7\u586B\u5199\u81F3\u5C11 {} \u4E2A\u5B57\u7B26"
+  "form-err-min-length": "\u8BF7\u586B\u5199\u81F3\u5C11 {} \u4E2A\u5B57\u7B26",
+  "form-err-min-size": "\u6587\u4EF6\u5927\u5C0F\u4E0D\u5F97\u5C0F\u4E8E {}",
+  "form-err-max-size": "\u6587\u4EF6\u5927\u5C0F\u4E0D\u5F97\u5927\u4E8E {}",
+  "form-err-max-files-select": "\u6700\u591A\u53EF\u4EE5\u9009\u62E9 {} \u4E2A\u6587\u4EF6",
+  "form-err-min-files-select": "\u8BF7\u81F3\u5C11\u9009\u62E9 {} \u4E2A\u6587\u4EF6"
 };
 
 let I18N;
@@ -884,7 +892,7 @@ class HSpacer extends DivModule {
   }
 }
 
-var style$8 = '';
+var style$9 = '';
 
 class Button extends Module {
   constructor(opts) {
@@ -1240,7 +1248,7 @@ function showConfirm(msg) {
 
 var toast = '';
 
-var style$7 = '';
+var style$8 = '';
 
 class SvgIcon extends DivModule {
   constructor(svgHtml) {
@@ -1377,7 +1385,7 @@ function showSuccess(text) {
   showToast({ type: "success", text });
 }
 
-var style$6 = '';
+var style$7 = '';
 
 class Backdrop$1 extends DivModule {
   constructor(opts) {
@@ -1553,7 +1561,7 @@ async function closeAllModals() {
   }
 }
 
-var style$5 = '';
+var style$6 = '';
 
 class Backdrop extends DivModule {
   constructor(opts) {
@@ -1769,405 +1777,41 @@ class Table extends DivModule {
 }
 
 class FormInput extends Module {
-}
-
-class Form extends Module {
-  constructor(opts) {
-    const form = document.createElement("form");
-    form.noValidate = true;
-    form.autocomplete = opts.autocomplete ? "on" : "off";
-    super(form);
-    this.opts = opts;
-    this.addChild(...buildSubModules(opts.children));
-    form.addEventListener("submit", (ev) => {
-      ev.preventDefault();
-      this.submit();
-    });
+  constructor(elOrClass) {
+    var __super = (...args) => {
+      super(...args);
+    };
+    if (elOrClass) {
+      if (typeof elOrClass === "string") {
+        __super(document.createElement("div"));
+        this.el.classList.add(elOrClass);
+      } else {
+        __super(elOrClass);
+      }
+    } else {
+      __super(document.createElement("div"));
+    }
+    this.el.classList.add("wok-ui-form-input");
   }
-  submit() {
-    if (!this.opts.onSubmit) {
-      return;
+  showInvalidFeedback(errMsg) {
+    this.hideInvalidFeedback();
+    this.addChild(this.__feedback = new InvalidFeedback(errMsg));
+  }
+  hideInvalidFeedback() {
+    if (this.__feedback) {
+      this.__feedback.destroy();
+      this.__feedback = void 0;
     }
-    const invalidInputs = this.find((m) => m instanceof FormInput).filter(
-      (m) => !m.validate()
-    );
-    if (invalidInputs.length) {
-      invalidInputs[0].scrollIntoViewIfInvisible();
-      return;
-    }
-    this.opts.onSubmit();
   }
 }
-
 class InvalidFeedback extends DivModule {
   constructor(errMsg) {
-    super();
-    this.el.classList.add("invalid-feedback");
+    super("invalid-feedback");
     this.el.innerText = errMsg;
-    this.el.style.paddingTop = "0.5rem";
-    this.el.style.lineHeight = "1";
-    this.el.style.color = getColor().danger;
   }
 }
 
-var checkbox = '';
-
-class Checkbox extends Module {
-  constructor(opts) {
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.classList.add("wok-ui-checkbox");
-    super(input);
-    input.value = opts.value;
-    this.value = opts.value;
-    this.__input = input;
-    if (opts.disabled) {
-      input.disabled = opts.disabled;
-    }
-    this.setStatus(opts.status || "unchecked");
-    if (opts.onChange) {
-      const { onChange } = opts;
-      this.el.addEventListener("change", (ev) => {
-        ev.stopPropagation();
-        onChange(this.getStatus());
-      });
-    }
-  }
-  setStatus(status) {
-    if (status === this.getStatus()) {
-      return;
-    }
-    switch (status) {
-      case "checked":
-        this.__input.checked = true;
-        this.__input.indeterminate = false;
-        break;
-      case "unchecked":
-        this.__input.checked = false;
-        this.__input.indeterminate = false;
-        break;
-      case "indeterminate":
-        this.__input.checked = false;
-        this.__input.indeterminate = true;
-        break;
-    }
-  }
-  getStatus() {
-    if (this.__input.checked) {
-      return "checked";
-    }
-    if (this.__input.indeterminate) {
-      return "indeterminate";
-    }
-    return "unchecked";
-  }
-  isChecked() {
-    return this.__input.checked;
-  }
-  setDisabled(disabled) {
-    this.__input.disabled = disabled;
-  }
-}
-
-var checkboxGroup = '';
-
-class CheckboxGroup extends FormInput {
-  constructor(opts) {
-    super(document.createElement("div"));
-    this.opts = opts;
-    this.__values = [];
-    this.__disabled = false;
-    this.el.classList.add("wok-ui-checkbox-group");
-    if (opts.inline) {
-      this.el.classList.add("inline");
-    }
-    if (opts.value) {
-      this.__values = [...opts.value];
-    }
-    if (opts.disabled) {
-      this.__disabled = true;
-    }
-    this.addChild(
-      ...opts.options.map(
-        (opt) => createDomModule({
-          tag: "label",
-          classNames: ["item"],
-          children: [
-            new Checkbox({
-              value: opt.value,
-              status: this.__values.includes(opt.value) ? "checked" : "unchecked",
-              disabled: this.__disabled,
-              onChange: (status) => {
-                if (status === "checked") {
-                  if (!this.__values.includes(opt.value)) {
-                    this.__values.push(opt.value);
-                    this.handleChange();
-                  }
-                  this.updateCheckboxStatus();
-                } else {
-                  const idx = this.__values.indexOf(opt.value);
-                  if (idx !== -1) {
-                    this.__values.splice(idx, 1);
-                    this.handleChange();
-                  }
-                  this.updateCheckboxStatus();
-                }
-              }
-            }),
-            opt.label
-          ]
-        })
-      )
-    );
-    this.updateCheckboxStatus();
-  }
-  updateCheckboxStatus() {
-    if (!this.opts.maxSelected) {
-      return;
-    }
-    const maxSelected = typeof this.opts.maxSelected === "number" ? this.opts.maxSelected : this.opts.maxSelected.maxSelected;
-    if (this.__values.length >= maxSelected) {
-      this.find((m) => m instanceof Checkbox).forEach((box) => {
-        if (!box.isChecked()) {
-          box.setDisabled(true);
-        }
-      });
-    } else {
-      this.find((m) => m instanceof Checkbox).forEach((box) => {
-        if (!box.isChecked()) {
-          box.setDisabled(false);
-        }
-      });
-    }
-  }
-  handleChange() {
-    if (this.opts.onChange) {
-      this.opts.onChange(this.__values);
-    }
-    this.validate();
-  }
-  __validate() {
-    if (!this.__values.length) {
-      if (this.opts.required) {
-        return {
-          valid: false,
-          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
-        };
-      } else {
-        return { valid: true };
-      }
-    }
-    if (typeof this.opts.minSelected === "number") {
-      if (this.__values.length < this.opts.minSelected) {
-        return {
-          valid: false,
-          msg: getI18n().buildMsg("form-err-min-select", `${this.opts.minSelected}`)
-        };
-      }
-    } else if (this.opts.minSelected) {
-      if (this.__values.length < this.opts.minSelected.minSelected) {
-        return { valid: false, msg: this.opts.minSelected.errMsg };
-      }
-    }
-    if (typeof this.opts.maxSelected === "number") {
-      if (this.__values.length > this.opts.maxSelected) {
-        return {
-          valid: false,
-          msg: getI18n().buildMsg("form-err-max-select", `${this.opts.maxSelected}`)
-        };
-      }
-    } else if (this.opts.maxSelected) {
-      if (this.__values.length > this.opts.maxSelected.maxSelected) {
-        return { valid: false, msg: this.opts.maxSelected.errMsg };
-      }
-    }
-    return { valid: true };
-  }
-  validate() {
-    const res = this.__validate();
-    this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
-    if (!res.valid) {
-      this.addChild(new InvalidFeedback(res.msg));
-    }
-    return res.valid;
-  }
-  setDisabled(disabled) {
-    if (this.__disabled !== disabled) {
-      this.__disabled = disabled;
-      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.__disabled));
-    }
-  }
-}
-
-var boolCheckbox = '';
-
-class BoolCheckbox extends FormInput {
-  constructor(opts) {
-    super(document.createElement("label"));
-    this.opts = opts;
-    this.__value = false;
-    this.__disabled = false;
-    if (opts.value) {
-      this.__value = opts.value;
-    }
-    this.addChild({
-      classNames: ["wok-ui-bool-checkbox"],
-      children: [
-        new Checkbox({
-          value: "",
-          status: this.__value ? "checked" : "unchecked",
-          disabled: this.__disabled,
-          onChange: (status) => {
-            this.__value = status === "checked";
-            if (this.opts.onChange) {
-              this.opts.onChange(this.__value);
-            }
-            this.validate();
-          }
-        }),
-        opts.label
-      ]
-    });
-  }
-  __validate() {
-    if (this.opts.required && !this.__value) {
-      return {
-        valid: false,
-        msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
-      };
-    } else {
-      return { valid: true };
-    }
-  }
-  isChecked() {
-    return this.__value;
-  }
-  validate() {
-    const res = this.__validate();
-    this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
-    if (!res.valid) {
-      this.addChild(new InvalidFeedback(res.msg));
-    }
-    return res.valid;
-  }
-  setDisabled(disabled) {
-    if (this.__disabled !== disabled) {
-      this.__disabled = disabled;
-      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.__disabled));
-    }
-  }
-}
-
-function generateId() {
-  const timestamp = new Date().getTime();
-  const random = Math.floor(Math.random() * 1e8);
-  return `${timestamp.toString(36)}${random.toString(36)}`;
-}
-
-var radio = '';
-
-class Radio extends Module {
-  constructor(opts) {
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = opts.name;
-    input.value = opts.value;
-    input.classList.add("wok-ui-radio");
-    super(input);
-    this.input = input;
-    if (opts.checked) {
-      input.checked = true;
-    }
-    if (opts.disabled) {
-      input.disabled = true;
-    }
-    if (opts.onChecked) {
-      input.onchange = () => {
-        if (input.checked && opts.onChecked) {
-          opts.onChecked();
-        }
-      };
-    }
-  }
-  isChecked() {
-    return this.input.checked;
-  }
-  setChecked(checked) {
-    if (this.input.checked !== checked) {
-      this.input.checked = checked;
-    }
-  }
-  getValue() {
-    return this.input.value;
-  }
-  setDisabled(disabled) {
-    this.input.disabled = disabled;
-  }
-}
-
-var radioGroup = '';
-
-class RadioGroup extends FormInput {
-  constructor(opts) {
-    super(document.createElement("div"));
-    this.opts = opts;
-    this.value = "";
-    this.el.classList.add("wok-ui-radio-group");
-    this.name = generateId();
-    if (opts.inline) {
-      this.el.classList.add("inline");
-    }
-    this.addChild(
-      ...opts.options.map(
-        (opt) => createDomModule({
-          tag: "label",
-          children: [
-            new Radio({
-              name: this.name,
-              value: opt.value,
-              checked: opts.value === opt.value,
-              disabled: opts.disabled,
-              onChecked: () => {
-                this.value = opt.value;
-                if (this.opts.onChange) {
-                  this.opts.onChange(this.value);
-                }
-                this.validate();
-              }
-            }),
-            opt.label
-          ]
-        })
-      )
-    );
-  }
-  __validate() {
-    if (!this.value) {
-      if (this.opts.required) {
-        return {
-          valid: false,
-          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
-        };
-      } else {
-        return { valid: true };
-      }
-    }
-    return { valid: true };
-  }
-  validate() {
-    const res = this.__validate();
-    this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
-    if (!res.valid) {
-      this.addChild(new InvalidFeedback(res.msg));
-    }
-    return res.valid;
-  }
-  setDisabled(disabled) {
-    this.find((m) => m instanceof Radio).map((m) => m).forEach((m) => m.setDisabled(disabled));
-  }
-}
-
-var style$4 = '';
+var style$5 = '';
 
 class TextInput extends FormInput {
   constructor(opts) {
@@ -2284,12 +1928,12 @@ class TextInput extends FormInput {
   }
   validate() {
     const validateRes = this.__validate(this.input.value);
-    this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (validateRes.valid) {
       this.input.classList.remove("invalid");
+      this.hideInvalidFeedback();
     } else {
       this.input.classList.add("invalid");
-      this.addChild(new InvalidFeedback(validateRes.msg));
+      this.showInvalidFeedback(validateRes.msg);
     }
     return validateRes.valid;
   }
@@ -2589,17 +2233,543 @@ class TextArea extends FormInput {
   }
   validate() {
     const validateRes = this.__validate(this.textareaEl.value);
-    this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (validateRes.valid) {
       this.textareaEl.classList.remove("invalid");
+      this.hideInvalidFeedback();
     } else {
       this.textareaEl.classList.add("invalid");
-      this.addChild(new InvalidFeedback(validateRes.msg));
+      this.showInvalidFeedback(validateRes.msg);
     }
     return validateRes.valid;
   }
   setDisabled(disabled) {
     this.textareaEl.disabled = disabled;
+  }
+}
+
+class FileInput extends FormInput {
+  constructor(opts) {
+    super(document.createElement("div"));
+    this.opts = opts;
+    this.input = document.createElement("input");
+    this.input.classList.add("wok-ui-input");
+    this.input.type = "file";
+    this.input.accept = opts.accept || "*";
+    this.input.multiple = !!opts.multiple;
+    const size = getSize();
+    switch (opts.size) {
+      case "lg":
+        this.input.style.setProperty("--input-font-size", `${size.textLg}px`);
+        break;
+      case "sm":
+        this.input.style.setProperty("--input-font-size", `${size.textSm}px`);
+        break;
+      default:
+        this.input.style.setProperty("--input-font-size", `${size.text}px`);
+        break;
+    }
+    this.input.onchange = () => this.handleChange();
+    this.addChild(this.input);
+  }
+  __validate() {
+    const { files } = this.input;
+    if (this.opts.required) {
+      if (!files || !files.length) {
+        return {
+          valid: false,
+          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-required")
+        };
+      }
+    }
+    if (!files || !files.length) {
+      return { valid: true };
+    }
+    if (typeof this.opts.minSelected === "number") {
+      if (files.length < this.opts.minSelected) {
+        return {
+          valid: false,
+          msg: getI18n().buildMsg("form-err-min-files-select", `${this.opts.minSelected}`)
+        };
+      }
+    } else if (this.opts.minSelected) {
+      if (files.length < this.opts.minSelected.minSelected) {
+        return { valid: false, msg: this.opts.minSelected.errMsg };
+      }
+    }
+    if (this.opts.multiple) {
+      if (typeof this.opts.maxSelected === "number") {
+        if (files.length > this.opts.maxSelected) {
+          return {
+            valid: false,
+            msg: getI18n().buildMsg("form-err-max-files-select", `${this.opts.maxSelected}`)
+          };
+        }
+      } else if (this.opts.maxSelected) {
+        if (files.length > this.opts.maxSelected.maxSelected) {
+          return { valid: false, msg: this.opts.maxSelected.errMsg };
+        }
+      }
+    }
+    let totalSize = 0;
+    for (const file of files) {
+      totalSize += file.size;
+    }
+    if (typeof this.opts.minSize === "number") {
+      if (totalSize < this.opts.minSize) {
+        return { valid: false, msg: getI18n().buildMsg("form-err-min-size", this.formatFileSize(this.opts.minSize)) };
+      }
+    } else if (this.opts.minSize) {
+      if (totalSize < this.opts.minSize.minSize) {
+        return { valid: false, msg: this.opts.minSize.errMsg };
+      }
+    }
+    if (typeof this.opts.maxSize === "number") {
+      if (totalSize > this.opts.maxSize) {
+        return { valid: false, msg: getI18n().buildMsg("form-err-max-size", this.formatFileSize(this.opts.maxSize)) };
+      }
+    } else if (this.opts.maxSize) {
+      if (totalSize > this.opts.maxSize.maxSize) {
+        return { valid: false, msg: this.opts.maxSize.errMsg };
+      }
+    }
+    if (this.opts.validator) {
+      return this.opts.validator(files);
+    }
+    return { valid: true };
+  }
+  handleChange() {
+    if (this.opts.onChange) {
+      this.opts.onChange(this.input.files);
+    }
+    this.validate();
+  }
+  validate() {
+    const validateRes = this.__validate();
+    if (validateRes.valid) {
+      this.input.classList.remove("invalid");
+      this.hideInvalidFeedback();
+    } else {
+      this.input.classList.add("invalid");
+      this.showInvalidFeedback(validateRes.msg);
+    }
+    return validateRes.valid;
+  }
+  formatFileSize(size) {
+    if (size < 1024) {
+      return `${this.formatSizeNumber(size)}B`;
+    } else if (size < 1024 * 1024) {
+      return `${this.formatSizeNumber(size / 1024)}KB`;
+    } else if (size < 1024 * 1024 * 1024) {
+      return `${this.formatSizeNumber(size / (1024 * 1024))}MB`;
+    } else {
+      return `${this.formatSizeNumber(size / (1024 * 1024 * 1024))}GB`;
+    }
+  }
+  formatSizeNumber(size) {
+    const s = size.toFixed(2);
+    if (s.endsWith(".00")) {
+      return s.substring(0, s.length - 3);
+    } else if (s.endsWith("0")) {
+      return s.substring(0, s.length - 1);
+    } else {
+      return s;
+    }
+  }
+}
+
+var style$4 = '';
+
+class Form extends Module {
+  constructor(opts) {
+    const form = document.createElement("form");
+    form.classList.add("wok-ui-form");
+    form.noValidate = true;
+    form.autocomplete = opts.autocomplete ? "on" : "off";
+    super(form);
+    this.opts = opts;
+    if (opts.feedbackMode === "tooltip") {
+      form.classList.add("feedback-tooltip");
+    } else {
+      form.classList.add("feedback-inline");
+    }
+    this.addChild(...buildSubModules(opts.children));
+    form.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      this.submit();
+    });
+  }
+  submit() {
+    if (!this.opts.onSubmit) {
+      return;
+    }
+    const invalidInputs = this.find((m) => m instanceof FormInput).filter(
+      (m) => !m.validate()
+    );
+    if (invalidInputs.length) {
+      invalidInputs[0].scrollIntoViewIfInvisible();
+      if (invalidInputs[0] instanceof TextInput) {
+        invalidInputs[0].focus();
+      }
+      return;
+    }
+    this.opts.onSubmit();
+  }
+}
+
+var checkbox = '';
+
+class Checkbox extends Module {
+  constructor(opts) {
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.classList.add("wok-ui-checkbox");
+    super(input);
+    input.value = opts.value;
+    this.value = opts.value;
+    this.__input = input;
+    if (opts.disabled) {
+      input.disabled = opts.disabled;
+    }
+    this.setStatus(opts.status || "unchecked");
+    if (opts.onChange) {
+      const { onChange } = opts;
+      this.el.addEventListener("change", (ev) => {
+        ev.stopPropagation();
+        onChange(this.getStatus());
+      });
+    }
+  }
+  setStatus(status) {
+    if (status === this.getStatus()) {
+      return;
+    }
+    switch (status) {
+      case "checked":
+        this.__input.checked = true;
+        this.__input.indeterminate = false;
+        break;
+      case "unchecked":
+        this.__input.checked = false;
+        this.__input.indeterminate = false;
+        break;
+      case "indeterminate":
+        this.__input.checked = false;
+        this.__input.indeterminate = true;
+        break;
+    }
+  }
+  getStatus() {
+    if (this.__input.checked) {
+      return "checked";
+    }
+    if (this.__input.indeterminate) {
+      return "indeterminate";
+    }
+    return "unchecked";
+  }
+  isChecked() {
+    return this.__input.checked;
+  }
+  setDisabled(disabled) {
+    this.__input.disabled = disabled;
+  }
+}
+
+var checkboxGroup = '';
+
+class CheckboxGroup extends FormInput {
+  constructor(opts) {
+    super();
+    this.opts = opts;
+    this.__values = [];
+    this.__disabled = false;
+    if (opts.value) {
+      this.__values = [...opts.value];
+    }
+    if (opts.disabled) {
+      this.__disabled = true;
+    }
+    this.addChild({
+      classNames: ["wok-ui-checkbox-group", opts.inline ? "inline" : ""],
+      children: opts.options.map(
+        (opt) => createDomModule({
+          tag: "label",
+          classNames: ["item"],
+          children: [
+            new Checkbox({
+              value: opt.value,
+              status: this.__values.includes(opt.value) ? "checked" : "unchecked",
+              disabled: this.__disabled,
+              onChange: (status) => {
+                if (status === "checked") {
+                  if (!this.__values.includes(opt.value)) {
+                    this.__values.push(opt.value);
+                    this.handleChange();
+                  }
+                  this.updateCheckboxStatus();
+                } else {
+                  const idx = this.__values.indexOf(opt.value);
+                  if (idx !== -1) {
+                    this.__values.splice(idx, 1);
+                    this.handleChange();
+                  }
+                  this.updateCheckboxStatus();
+                }
+              }
+            }),
+            opt.label
+          ]
+        })
+      )
+    });
+    this.updateCheckboxStatus();
+  }
+  updateCheckboxStatus() {
+    if (!this.opts.maxSelected) {
+      return;
+    }
+    const maxSelected = typeof this.opts.maxSelected === "number" ? this.opts.maxSelected : this.opts.maxSelected.maxSelected;
+    if (this.__values.length >= maxSelected) {
+      this.find((m) => m instanceof Checkbox).forEach((box) => {
+        if (!box.isChecked()) {
+          box.setDisabled(true);
+        }
+      });
+    } else {
+      this.find((m) => m instanceof Checkbox).forEach((box) => {
+        if (!box.isChecked()) {
+          box.setDisabled(false);
+        }
+      });
+    }
+  }
+  handleChange() {
+    if (this.opts.onChange) {
+      this.opts.onChange(this.__values);
+    }
+    this.validate();
+  }
+  __validate() {
+    if (!this.__values.length) {
+      if (this.opts.required) {
+        return {
+          valid: false,
+          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
+        };
+      } else {
+        return { valid: true };
+      }
+    }
+    if (typeof this.opts.minSelected === "number") {
+      if (this.__values.length < this.opts.minSelected) {
+        return {
+          valid: false,
+          msg: getI18n().buildMsg("form-err-min-select", `${this.opts.minSelected}`)
+        };
+      }
+    } else if (this.opts.minSelected) {
+      if (this.__values.length < this.opts.minSelected.minSelected) {
+        return { valid: false, msg: this.opts.minSelected.errMsg };
+      }
+    }
+    if (typeof this.opts.maxSelected === "number") {
+      if (this.__values.length > this.opts.maxSelected) {
+        return {
+          valid: false,
+          msg: getI18n().buildMsg("form-err-max-select", `${this.opts.maxSelected}`)
+        };
+      }
+    } else if (this.opts.maxSelected) {
+      if (this.__values.length > this.opts.maxSelected.maxSelected) {
+        return { valid: false, msg: this.opts.maxSelected.errMsg };
+      }
+    }
+    return { valid: true };
+  }
+  validate() {
+    const res = this.__validate();
+    if (!res.valid) {
+      this.showInvalidFeedback(res.msg);
+    } else {
+      this.hideInvalidFeedback();
+    }
+    return res.valid;
+  }
+  setDisabled(disabled) {
+    if (this.__disabled !== disabled) {
+      this.__disabled = disabled;
+      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.__disabled));
+    }
+  }
+}
+
+var boolCheckbox = '';
+
+class BoolCheckbox extends FormInput {
+  constructor(opts) {
+    super(document.createElement("label"));
+    this.opts = opts;
+    this.__value = false;
+    this.__disabled = false;
+    if (opts.value) {
+      this.__value = opts.value;
+    }
+    this.addChild({
+      classNames: ["wok-ui-bool-checkbox"],
+      children: [
+        new Checkbox({
+          value: "",
+          status: this.__value ? "checked" : "unchecked",
+          disabled: this.__disabled,
+          onChange: (status) => {
+            this.__value = status === "checked";
+            if (this.opts.onChange) {
+              this.opts.onChange(this.__value);
+            }
+            this.validate();
+          }
+        }),
+        opts.label
+      ]
+    });
+  }
+  __validate() {
+    if (this.opts.required && !this.__value) {
+      return {
+        valid: false,
+        msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
+      };
+    } else {
+      return { valid: true };
+    }
+  }
+  isChecked() {
+    return this.__value;
+  }
+  validate() {
+    const res = this.__validate();
+    if (!res.valid) {
+      this.showInvalidFeedback(res.msg);
+    } else {
+      this.hideInvalidFeedback();
+    }
+    return res.valid;
+  }
+  setDisabled(disabled) {
+    if (this.__disabled !== disabled) {
+      this.__disabled = disabled;
+      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.__disabled));
+    }
+  }
+}
+
+function generateId() {
+  const timestamp = new Date().getTime();
+  const random = Math.floor(Math.random() * 1e8);
+  return `${timestamp.toString(36)}${random.toString(36)}`;
+}
+
+var radio = '';
+
+class Radio extends Module {
+  constructor(opts) {
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = opts.name;
+    input.value = opts.value;
+    input.classList.add("wok-ui-radio");
+    super(input);
+    this.input = input;
+    if (opts.checked) {
+      input.checked = true;
+    }
+    if (opts.disabled) {
+      input.disabled = true;
+    }
+    if (opts.onChecked) {
+      input.onchange = () => {
+        if (input.checked && opts.onChecked) {
+          opts.onChecked();
+        }
+      };
+    }
+  }
+  isChecked() {
+    return this.input.checked;
+  }
+  setChecked(checked) {
+    if (this.input.checked !== checked) {
+      this.input.checked = checked;
+    }
+  }
+  getValue() {
+    return this.input.value;
+  }
+  setDisabled(disabled) {
+    this.input.disabled = disabled;
+  }
+}
+
+var radioGroup = '';
+
+class RadioGroup extends FormInput {
+  constructor(opts) {
+    super(document.createElement("div"));
+    this.opts = opts;
+    this.value = "";
+    this.el.classList.add("wok-ui-radio-group");
+    this.name = generateId();
+    if (opts.inline) {
+      this.el.classList.add("inline");
+    }
+    this.addChild(
+      ...opts.options.map(
+        (opt) => createDomModule({
+          tag: "label",
+          children: [
+            new Radio({
+              name: this.name,
+              value: opt.value,
+              checked: opts.value === opt.value,
+              disabled: opts.disabled,
+              onChecked: () => {
+                this.value = opt.value;
+                if (this.opts.onChange) {
+                  this.opts.onChange(this.value);
+                }
+                this.validate();
+              }
+            }),
+            opt.label
+          ]
+        })
+      )
+    );
+  }
+  __validate() {
+    if (!this.value) {
+      if (this.opts.required) {
+        return {
+          valid: false,
+          msg: typeof this.opts.required === "string" ? this.opts.required : getI18n().buildMsg("form-err-must-check")
+        };
+      } else {
+        return { valid: true };
+      }
+    }
+    return { valid: true };
+  }
+  validate() {
+    const res = this.__validate();
+    if (!res.valid) {
+      this.showInvalidFeedback(res.msg);
+    } else {
+      this.hideInvalidFeedback();
+    }
+    return res.valid;
+  }
+  setDisabled(disabled) {
+    this.find((m) => m instanceof Radio).map((m) => m).forEach((m) => m.setDisabled(disabled));
   }
 }
 
@@ -2656,12 +2826,12 @@ class Select extends FormInput {
   }
   validate() {
     const validateRes = this.__validate(this.select.value);
-    this.getChildren().filter((m) => m instanceof InvalidFeedback).forEach((m) => m.destroy());
     if (validateRes.valid) {
       this.select.classList.remove("invalid");
+      this.hideInvalidFeedback();
     } else {
       this.select.classList.add("invalid");
-      this.addChild(new InvalidFeedback(validateRes.msg));
+      this.showInvalidFeedback(validateRes.msg);
     }
     return validateRes.valid;
   }
@@ -3381,4 +3551,4 @@ class Dropup extends Dropdown {
   }
 }
 
-export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, Form, FormInput, FullRenderingModule, Grid, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
+export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, HBox, HSpacer, HSplitBox, I18n, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
