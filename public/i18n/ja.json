@@ -1,0 +1,17 @@
+{
+  "cancel": "キャンセル",
+  "confirm": "確認",
+  "form-err-required": "この項目を入力してください",
+  "form-err-must-check": "この項目をチェックしてください",
+  "form-err-number": "数字を入力してください",
+  "form-err-min": "{} より小さい値を入力しないでください",
+  "form-err-max": "{} より大きい値を入力しないでください",
+  "form-err-max-select": "{} 個以内のオプションを選択してください",
+  "form-err-min-select": "{} 個以上のオプションを選択してください",
+  "form-err-max-length": "{} 文字以内で入力してください",
+  "form-err-min-length": "{} 文字以上で入力してください",
+  "form-err-min-size": "ファイルのサイズは {} より小さくならないでください",
+  "form-err-max-size": "ファイルのサイズは {} より大きくならないでください",
+  "form-err-max-files-select": "{} 個以内のファイルを選択してください",
+  "form-err-min-files-select": "{} 個以上のファイルを選択してください"
+}

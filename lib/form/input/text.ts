@@ -1,7 +1,6 @@
 import { getI18n } from '../../i18n'
 import { getSize } from '../../size'
 import { FormInput } from '../form-input'
-import { InvalidFeedback } from '../invalid-feedback'
 
 export type ValidateResult = { valid: true } | { valid: false; msg: string }
 
@@ -191,14 +190,12 @@ export class TextInput extends FormInput {
   validate(): boolean {
     const validateRes = this.__validate(this.input.value)
     // 根据是否有效，显示反馈信息
-    this.getChildren()
-      .filter(m => m instanceof InvalidFeedback)
-      .forEach(m => m.destroy())
     if (validateRes.valid) {
       this.input.classList.remove('invalid')
+      this.hideInvalidFeedback()
     } else {
       this.input.classList.add('invalid')
-      this.addChild(new InvalidFeedback(validateRes.msg))
+      this.showInvalidFeedback(validateRes.msg)
     }
     return validateRes.valid
   }

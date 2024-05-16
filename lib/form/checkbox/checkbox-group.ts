@@ -2,7 +2,6 @@ import { getI18n } from '../../i18n'
 import { ConvertibleModule, createDomModule } from '../../module'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
-import { InvalidFeedback } from '../invalid-feedback'
 import { Checkbox } from './checkbox'
 import './checkbox-group.less'
 /**
@@ -49,19 +48,16 @@ export class CheckboxGroup extends FormInput {
   private __values: string[] = []
   private __disabled = false
   constructor(private readonly opts: CheckboxGroupOpts) {
-    super(document.createElement('div'))
-    this.el.classList.add('wok-ui-checkbox-group')
-    if (opts.inline) {
-      this.el.classList.add('inline')
-    }
+    super()
     if (opts.value) {
       this.__values = [...opts.value]
     }
     if (opts.disabled) {
       this.__disabled = true
     }
-    this.addChild(
-      ...opts.options.map(opt =>
+    this.addChild({
+      classNames: ['wok-ui-checkbox-group', opts.inline ? 'inline' : ''],
+      children: opts.options.map(opt =>
         createDomModule({
           tag: 'label',
           classNames: ['item'],
@@ -91,7 +87,7 @@ export class CheckboxGroup extends FormInput {
           ]
         })
       )
-    )
+    })
     this.updateCheckboxStatus()
   }
   /**
@@ -173,11 +169,10 @@ export class CheckboxGroup extends FormInput {
 
   validate(): boolean {
     const res = this.__validate()
-    this.getChildren()
-      .filter(m => m instanceof InvalidFeedback)
-      .forEach(m => m.destroy())
     if (!res.valid) {
-      this.addChild(new InvalidFeedback(res.msg))
+      this.showInvalidFeedback(res.msg)
+    } else {
+      this.hideInvalidFeedback()
     }
     return res.valid
   }

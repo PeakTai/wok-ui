@@ -1,0 +1,30 @@
+.wok-ui-form {
+
+  &.feedback-inline {
+    .wok-ui-form-input>.invalid-feedback {
+      padding-top: 0.5rem;
+      line-height: 1;
+      color: var(--color-danger);
+    }
+  }
+
+  &.feedback-tooltip {
+    .wok-ui-form-input {
+      position: relative;
+
+      &>.invalid-feedback {
+        position: absolute;
+        top: calc(100% + 2px);
+        left: 0;
+        max-width: 100%;
+        padding: 0.5rem;
+        line-height: 1;
+        background-color: var(--color-danger);
+        color: white;
+        border-radius: var(--size-border-radius);
+        pointer-events: none;
+        z-index: 1;
+      }
+    }
+  }
+}

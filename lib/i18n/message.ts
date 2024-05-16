@@ -31,7 +31,7 @@ export interface I18nMessages {
    */
   'form-err-max': string
   /**
-   * 表单错误信息：最多选项 x 项
+   * 表单错误信息：最多选择 x 项
    */
   'form-err-max-select': string
   /**
@@ -46,4 +46,20 @@ export interface I18nMessages {
    * 表单错误信息：最小长度，最少输入 x 个字符
    */
   'form-err-min-length': string
+  /**
+   * 表单错误信息：最多选择 x 个文件
+   */
+  'form-err-max-files-select': string
+  /**
+   * 表单错误信息：至少选择 x 个文件
+   */
+  'form-err-min-files-select': string
+  /**
+   * 表单错误信息：文件大小不得小于 x
+   */
+  'form-err-min-size': string
+  /**
+   * 表单错误信息：文件大小不得大于 x
+   */
+  'form-err-max-size': string
 }

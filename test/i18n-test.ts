@@ -65,7 +65,7 @@ class Page extends FullRenderingModule {
             text: getExtI18n().buildMsg('switchToCustomLanguage'),
             onClick: ev =>
               i18n
-                .setLang('tibt')
+                .setLang('ja')
                 .then(() => this.render())
                 .catch(showWarning)
           })

@@ -4,13 +4,13 @@ import {
   CheckboxGroup,
   ColorInput,
   DateInput,
+  FileInput,
   Form,
   FullRenderingModule,
   HBox,
   LargeTitle,
   Link,
   NumberInput,
-  PrimaryBodyText,
   RadioGroup,
   Range,
   Select,
@@ -25,6 +25,10 @@ import {
 import { TestLayout } from './layout'
 
 class Page extends FullRenderingModule {
+  private readonly setting = {
+    autoComplete: false,
+    feedbackTooltip: false
+  }
   private form: {
     name: string
     age?: number
@@ -37,17 +41,18 @@ class Page extends FullRenderingModule {
     score: number
     color: string
     intro?: string
+    files: string[]
   } = {
-    name: '',
-    age: 30,
-    district: '徐家汇',
-    street: '',
-    edudition: '',
-    skills: ['Java', 'Html', 'Css', 'Javascript'],
-    aggree: false,
-    score: 5,
-    color: ''
-  }
+      name: '',
+      age: 30,
+      district: '徐家汇',
+      street: '',
+      edudition: '',
+      skills: ['Java', 'Html', 'Css', 'Javascript'],
+      aggree: false,
+      score: 5,
+      color: '', files: []
+    }
 
   constructor() {
     super()
@@ -59,10 +64,34 @@ class Page extends FullRenderingModule {
     this.addChild(
       new LargeTitle('表单'),
       new Spacer(20),
+      new HBox({
+        gap: rem(1), children: [
+          new BoolCheckbox({
+            label: '自动完成',
+            value: this.setting.autoComplete,
+            onChange: (value) => {
+              this.setting.autoComplete = value
+              this.render()
+            },
+          }),
+          new BoolCheckbox({
+            label: '悬浮显示反馈信息',
+            value: this.setting.feedbackTooltip,
+            onChange: (value) => {
+              this.setting.feedbackTooltip = value
+              this.render()
+            },
+          })
+        ]
+      }),
+      createDomModule({ tag: 'hr' }),
+      new Spacer(20),
       new Form({
+        autocomplete: this.setting.autoComplete,
+        feedbackMode: this.setting.feedbackTooltip ? 'tooltip' : 'inline',
         onSubmit: () => this.handleSubmit(),
         children: [
-          new PrimaryBodyText('姓名'),
+          '姓名',
           new Spacer('sm'),
           new TextInput({
             autofocus: true,
@@ -80,7 +109,7 @@ class Page extends FullRenderingModule {
             }
           }),
           new Spacer(),
-          new PrimaryBodyText('年龄'),
+          '年龄',
           new Spacer('sm'),
           new NumberInput({
             value: this.form.age,
@@ -91,7 +120,7 @@ class Page extends FullRenderingModule {
             onChange: val => (this.form.age = val)
           }),
           new Spacer(),
-          new PrimaryBodyText('入职日期 (必须先输入姓名) '),
+          '入职日期 (必须先输入姓名) ',
           new Spacer('sm'),
           (entryDataInput = new DateInput({
             value: this.form.entryDate,
@@ -103,7 +132,7 @@ class Page extends FullRenderingModule {
             onChange: val => (this.form.entryDate = val)
           })),
           new Spacer(),
-          new PrimaryBodyText('个人介绍，100-500字'),
+          '个人介绍，100-500字',
           new Spacer('sm'),
           new TextArea({
             value: this.form.intro,
@@ -114,7 +143,7 @@ class Page extends FullRenderingModule {
             onChange: val => (this.form.intro = val)
           }),
           new Spacer(),
-          new PrimaryBodyText('行政区'),
+          '行政区',
           new Spacer('sm'),
           new Select({
             value: this.form.district,
@@ -135,11 +164,11 @@ class Page extends FullRenderingModule {
             }
           }),
           new Spacer(),
-          new PrimaryBodyText('街道'),
+          '街道',
           new Spacer('sm'),
           (streetSelect = this.buildStreetSelect()),
           new Spacer(),
-          new PrimaryBodyText('颜色偏好'),
+          '颜色偏好',
           new Spacer('sm'),
           new ColorInput({
             value: this.form.color,
@@ -147,7 +176,7 @@ class Page extends FullRenderingModule {
             onChange: val => (this.form.color = val)
           }),
           new Spacer(),
-          new PrimaryBodyText('受教育程度'),
+          '受教育程度',
           new Spacer('sm'),
           new RadioGroup({
             value: this.form.edudition,
@@ -162,7 +191,7 @@ class Page extends FullRenderingModule {
             onChange: val => (this.form.edudition = val)
           }),
           new Spacer(),
-          new PrimaryBodyText('技能（选择1-3个）'),
+          '技能（选择1-3个）',
           new Spacer('sm'),
           new CheckboxGroup({
             value: this.form.skills,
@@ -185,9 +214,24 @@ class Page extends FullRenderingModule {
             onChange: vals => (this.form.skills = vals)
           }),
           new Spacer(),
-          new PrimaryBodyText('服务评分'),
+          '服务评分',
           new Spacer('sm'),
           new Range({ min: 1, max: 10, showValue: true, value: this.form.score }),
+          new Spacer(),
+          '入职资料（相关证件扫描文件）', new Spacer('sm'),
+          new FileInput({
+            multiple: true,
+            minSize: 1024 * 1024,
+            maxSize: 1024 * 1024 * 10,
+            minSelected: 2, maxSelected: 5,
+            onChange: files => {
+              if (files) {
+                this.form.files = Array.from(files).map(f => f.name)
+              } else {
+                this.form.files = []
+              }
+            },
+          }),
           new Spacer(),
           new BoolCheckbox({
             required: true,
@@ -220,11 +264,11 @@ class Page extends FullRenderingModule {
       value: this.form.street,
       options: this.form.district
         ? [
-            { label: `-- 请选择 --`, value: '' },
-            { label: `${this.form.district}-街道一`, value: '街道一' },
-            { label: `${this.form.district}-街道二`, value: '街道二' },
-            { label: `${this.form.district}-街道三`, value: '街道三' }
-          ]
+          { label: `-- 请选择 --`, value: '' },
+          { label: `${this.form.district}-街道一`, value: '街道一' },
+          { label: `${this.form.district}-街道二`, value: '街道二' },
+          { label: `${this.form.district}-街道三`, value: '街道三' }
+        ]
         : [{ label: `-- 请选择 --`, value: '' }],
       onChange: val => {
         if (val) {

@@ -2,7 +2,6 @@ import { getI18n } from '../../i18n'
 import { getSize } from '../../size'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
-import { InvalidFeedback } from '../invalid-feedback'
 import './style.less'
 
 export interface SelectOpts {
@@ -90,14 +89,12 @@ export class Select extends FormInput {
   validate(): boolean {
     const validateRes = this.__validate(this.select.value)
     // 根据是否有效，显示反馈信息
-    this.getChildren()
-      .filter(m => m instanceof InvalidFeedback)
-      .forEach(m => m.destroy())
     if (validateRes.valid) {
       this.select.classList.remove('invalid')
+      this.hideInvalidFeedback()
     } else {
       this.select.classList.add('invalid')
-      this.addChild(new InvalidFeedback(validateRes.msg))
+      this.showInvalidFeedback(validateRes.msg)
     }
     return validateRes.valid
   }

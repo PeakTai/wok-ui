@@ -3,7 +3,6 @@ import { ConvertibleModule, createDomModule } from '../../module'
 import { generateId } from '../../utils/id'
 import { FormInput } from '../form-input'
 import { ValidateResult } from '../input'
-import { InvalidFeedback } from '../invalid-feedback'
 import { Radio } from './radio'
 import './radio-group.less'
 
@@ -88,11 +87,10 @@ export class RadioGroup extends FormInput {
 
   validate(): boolean {
     const res = this.__validate()
-    this.getChildren()
-      .filter(m => m instanceof InvalidFeedback)
-      .forEach(m => m.destroy())
     if (!res.valid) {
-      this.addChild(new InvalidFeedback(res.msg))
+      this.showInvalidFeedback(res.msg)
+    }else{
+      this.hideInvalidFeedback()
     }
     return res.valid
   }

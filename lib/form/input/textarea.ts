@@ -1,7 +1,6 @@
 import { getI18n } from '../../i18n'
 import { getSize } from '../../size'
 import { FormInput } from '../form-input'
-import { InvalidFeedback } from '../invalid-feedback'
 import { TextInputOpts, ValidateResult } from './text'
 
 /**
@@ -132,14 +131,12 @@ export class TextArea extends FormInput {
   validate(): boolean {
     const validateRes = this.__validate(this.textareaEl.value)
     // 根据是否有效，显示反馈信息
-    this.getChildren()
-      .filter(m => m instanceof InvalidFeedback)
-      .forEach(m => m.destroy())
     if (validateRes.valid) {
       this.textareaEl.classList.remove('invalid')
+      this.hideInvalidFeedback()
     } else {
       this.textareaEl.classList.add('invalid')
-      this.addChild(new InvalidFeedback(validateRes.msg))
+      this.showInvalidFeedback(validateRes.msg)
     }
     return validateRes.valid
   }

@@ -41,7 +41,7 @@ export async function initI18n() {
   }
   const i18n = getI18n()
   // 基础库添加新的语言，设置为异步加载
-  i18n.setMsgs('Tibt', () => fetch('/wok-ui/i18n/tibt.json').then(res => res.json()))
+  i18n.setMsgs('ja', () => fetch('/wok-ui/i18n/ja.json').then(res => res.json()))
 
   // 先加载默认语言，实际开发中默认语言也可以直接写代码文件中打包集成，减少一次请求
   // 反正无论如何也要有一个默认语言的数据，多一次请求网络代价还要更大一些
@@ -53,7 +53,7 @@ export async function initI18n() {
 
   // 扩展部分设置异步加载其它语言，在需要时才会去拉取数据
   extI18n.setMsgs('zh-CN', () => fetch('/wok-ui/i18n/ext-zh-cn.json').then(res => res.json()))
-  extI18n.setMsgs('tibt', () => fetch('/wok-ui/i18n/ext-tibt.json').then(res => res.json()))
+  extI18n.setMsgs('ja', () => fetch('/wok-ui/i18n/ext-ja.json').then(res => res.json()))
 
   // 设置完所有语言，切换到合适的语言
   // 这里使用浏览器设置的语言列表，实际项目中也有可能会使用用户在平台中设置的语言
