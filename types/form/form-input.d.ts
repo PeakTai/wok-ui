@@ -3,7 +3,6 @@ import { Module } from '../module';
  * 表单输入
  */
 export declare abstract class FormInput extends Module {
-    private __feedback?;
     constructor(elOrClass?: HTMLElement | string);
     /**
      * 校验，如果校验不通过，会有提示

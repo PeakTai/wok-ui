@@ -1776,38 +1776,33 @@ class Table extends DivModule {
   }
 }
 
+class InvalidFeedback extends DivModule {
+  constructor(errMsg) {
+    super("invalid-feedback");
+    this.el.innerText = errMsg;
+  }
+}
+
 class FormInput extends Module {
   constructor(elOrClass) {
-    var __super = (...args) => {
-      super(...args);
-    };
     if (elOrClass) {
       if (typeof elOrClass === "string") {
-        __super(document.createElement("div"));
+        super(document.createElement("div"));
         this.el.classList.add(elOrClass);
       } else {
-        __super(elOrClass);
+        super(elOrClass);
       }
     } else {
-      __super(document.createElement("div"));
+      super(document.createElement("div"));
     }
     this.el.classList.add("wok-ui-form-input");
   }
   showInvalidFeedback(errMsg) {
     this.hideInvalidFeedback();
-    this.addChild(this.__feedback = new InvalidFeedback(errMsg));
+    this.addChild(new InvalidFeedback(errMsg));
   }
   hideInvalidFeedback() {
-    if (this.__feedback) {
-      this.__feedback.destroy();
-      this.__feedback = void 0;
-    }
-  }
-}
-class InvalidFeedback extends DivModule {
-  constructor(errMsg) {
-    super("invalid-feedback");
-    this.el.innerText = errMsg;
+    this.getChildren().filter((m) => m instanceof InvalidFeedback).map((m) => m).forEach((m) => m.destroy());
   }
 }
 
@@ -3551,4 +3546,4 @@ class Dropup extends Dropdown {
   }
 }
 
-export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, HBox, HSpacer, HSplitBox, I18n, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
+export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
