@@ -75,6 +75,7 @@ Form 类型对于 children 参数的类型没有强约束，可以是任何模�
 | DateInput     | 日期输入框                                       |
 | ColorInput    | 颜色输入框                                       |
 | NumberInput   | 数字输入框                                       |
+| FileInput     | 文件输入框                                       |
 | TextArea      | 多行文本                                         |
 | RadioGroup    | 单选框组                                         |
 | CheckboxGroup | 多选框组                                         |
@@ -90,7 +91,7 @@ Form 类型对于 children 参数的类型没有强约束，可以是任何模�
 
 ```ts
 class Uploader extends FormInput {
-  #file?: File
+  private file?: File
 
   constructor(
     private readonly opts: {
@@ -111,16 +112,16 @@ class Uploader extends FormInput {
         const input = el as HTMLInputElement
         input.onchange = e => {
           // 处理 change 回调
-          this.#file = input.files && input.files.length ? input.files[0] : undefined
-          this.#handleChange()
+          this.file = input.files && input.files.length ? input.files[0] : undefined
+          this.handleChange()
         }
       }
     })
   }
 
-  #handleChange() {
+  private handleChange() {
     if (this.opts.onChange) {
-      this.opts.onChange(this.#file)
+      this.opts.onChange(this.file)
     }
     this.validate()
   }
@@ -128,8 +129,8 @@ class Uploader extends FormInput {
   /**
    * 内部校验，仅校验值
    */
-  #validate(): { valid: boolean; errmsg?: string } {
-    if (!this.#file) {
+  private __validate(): { valid: false; errmsg: string } | { valid: true } {
+    if (!this.file) {
       if (this.opts.required) {
         return { valid: false, errmsg: '文件必填' }
       } else {
@@ -137,27 +138,26 @@ class Uploader extends FormInput {
       }
     }
     if (typeof this.opts.max === 'number') {
-      if (this.#file.size > this.opts.max) {
+      if (this.file.size > this.opts.max) {
         return { valid: false, errmsg: '文件过大' }
       }
     }
     return { valid: true }
   }
   /**
-   * 实现 FormInput 的 validate 方法
+   * 实现 FormInput 的 validate 方法，校验并反馈
    * @returns
    */
   validate(): boolean {
-    const res = this.#validate()
-    // 统一根据结果调整样式
-    // 利用内置的表单错误提示模块 InvalidFeedback 来展示错误信息
-    // 这里先清理掉已经存在的，后面再重新添加
-    this.find<InvalidFeedback>(m => m instanceof InvalidFeedback).forEach(m => m.destroy)
+    const res = this.__validate()
+    // 使用父类 FormInput 提供的
+    // hideInvalidFeedback 和 showInvalidFeedback 方法来展示反馈信息
     if (res.valid) {
       this.el.classList.remove('invalid')
+      this.hideInvalidFeedback()
     } else {
       this.el.classList.add('invalid')
-      this.addChild(new InvalidFeedback(res.errmsg || ''))
+      this.showInvalidFeedback(res.errmsg)
     }
     return res.valid
   }
