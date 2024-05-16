@@ -1,11 +1,11 @@
-import { DivModule, Module } from '../module'
+import { Module } from '../module';
+import { InvalidFeedback } from './Invalid-feedback';
 
 /**
  * 表单输入
  */
 export abstract class FormInput extends Module {
 
-  private __feedback?: InvalidFeedback
   constructor(elOrClass?: HTMLElement | string) {
     if (elOrClass) {
       if (typeof elOrClass === 'string') {
@@ -29,23 +29,12 @@ export abstract class FormInput extends Module {
    */
   protected showInvalidFeedback(errMsg: string) {
     this.hideInvalidFeedback()
-    this.addChild(this.__feedback = new InvalidFeedback(errMsg))
+    this.addChild(new InvalidFeedback(errMsg))
   }
   /**
    * 隐藏校验无效的反馈信息
    */
   protected hideInvalidFeedback() {
-    if (this.__feedback) {
-      this.__feedback.destroy()
-      this.__feedback = undefined
-    }
-  }
-}
-
-
-class InvalidFeedback extends DivModule {
-  constructor(errMsg: string) {
-    super('invalid-feedback')
-    this.el.innerText = errMsg
+    this.getChildren().filter(m => m instanceof InvalidFeedback).map(m => m as InvalidFeedback).forEach(m => m.destroy())
   }
 }
