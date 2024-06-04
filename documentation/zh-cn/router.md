@@ -196,6 +196,26 @@ initRouter({
 缓存会根据参数来处理的，同一个路由，参数不同则会缓存不同的页面，比如 /list?q=1 和 /list?q=2 是两个页面。缓存实际上是通过保留原页面的对象和 dom 元素来实现的，所以尽可能将上限设置低一些，缓存太多的
 页面会导致内存占用过高，页面卡顿甚至崩溃。
 
+路由实例提供了三个方法来清理页面缓存。
+
+| 方法                   | 说明                       |
+| :--------------------- | :------------------------- |
+| removeCurrentPageCache | 清除当前页面的缓存         |
+| removeCacheByPath      | 删除指定路径下的所有缓存   |
+| removeCache            | 通过自定义的规则来删除缓存 |
+
+
+下面是示例：
+
+```ts
+// 删除当前页面下的缓存
+getRouter().removeCurrentPageCache()
+// 删除路径 /list 下的所有缓存
+getRouter().removeCacheByPath('list')
+// 自定义过滤函数，删除 /list 路径下，参数 q 为 2 的缓存
+getRouter().removeCache(route => route.query && route.query.q === '2')
+```
+
 ## 生命周期
 
 每个页面都是有生命周期的，当路由进入时，页面模块被挂载，路由切换到其它页面时，
