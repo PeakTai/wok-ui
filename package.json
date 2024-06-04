@@ -1,7 +1,7 @@
 {
   "name": "wok-ui",
   "private": false,
-  "version": "0.7.1",
+  "version": "0.7.2",
   "packageManager": "pnpm@8.9.0",
   "description": "wok-ui 是一个前端 UI 组件库，简洁易用，响应式设计，无第三方依赖。wok-ui is a front-end UI component library that is simple and easy to use, responsive design, and no third party dependencies.",
   "keywords": [
