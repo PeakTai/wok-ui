@@ -29,6 +29,13 @@ export interface RouterRule {
    */
   cache?: boolean
 }
+/**
+ * 页面路由信息
+ */
+export interface Route {
+  path: string
+  query?: Query
+}
 
 interface PathInfo {
   pathRule: string
@@ -42,6 +49,7 @@ interface PathInfo {
 class CachedModule extends DivModule {
   private scrollPos?: { left: number; top: number }
   private title = ''
+  private canceled?: true
 
   constructor(readonly key: string, module: Module) {
     super()
@@ -51,8 +59,18 @@ class CachedModule extends DivModule {
   cacheScroll() {
     this.scrollPos = { left: window.scrollX, top: window.scrollY }
   }
+  /**
+   * 取消缓存，取消后，再当页面被隐藏时模块销毁
+   */
+  cancel() {
+    this.canceled = true
+  }
 
   hide() {
+    if (this.canceled) {
+      this.destroy()
+      return
+    }
     this.el.style.display = 'none'
     this.title = document.title
     this.find(() => true).forEach(m => {
@@ -266,16 +284,67 @@ export abstract class Router extends Module {
   /**
    * 解析当前的地址.
    */
-  protected abstract parseCurrentUrl(): { path: string; query?: Query }
+  protected abstract parseCurrentUrl(): Route
   /**
    * 获取当前路由信息
    * @returns
    */
-  getRouterInfo() {
+  getRouterInfo(): Route {
     return {
       path: this.currentPath,
       query: this.query
     }
+  }
+  /**
+   * 清除当前页面的缓存
+   */
+  removeCurrentPageCache() {
+    if (!this.currentModule) {
+      return
+    }
+    if (this.currentModule instanceof CachedModule) {
+      this.currentModule.cancel()
+    }
+  }
+  /**
+   * 删除某个路径下的缓存
+   * @param path 路径
+   */
+  removeCacheByPath(path: string) {
+    this.getChildren()
+      .filter(c => c instanceof CachedModule)
+      .map(c => c as CachedModule)
+      .filter(c => {
+        const route = JSON.parse(c.key) as Route
+        return route.path === path
+      })
+      .forEach(c => {
+        if (c === this.currentModule) {
+          c.cancel()
+        } else {
+          c.destroy()
+        }
+      })
+  }
+  /**
+   * 清除匹配指定规则的页面的缓存
+   * @param filter 过滤器，匹配要被清理的页面
+   */
+  removeCache(filter: (route: Route) => void) {
+    this.getChildren()
+      .filter(c => c instanceof CachedModule)
+      .map(c => c as CachedModule)
+      .filter(c => {
+        const route = JSON.parse(c.key) as Route
+        return filter(route)
+      })
+      .forEach(c => {
+        if (c === this.currentModule) {
+          c.cancel()
+        } else {
+          c.destroy()
+        }
+      })
   }
 
   abstract buildUrl(path: string | { path: string; query: Query }): string
