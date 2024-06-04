@@ -27,6 +27,13 @@ export interface RouterRule {
     cache?: boolean;
 }
 /**
+ * 页面路由信息
+ */
+export interface Route {
+    path: string;
+    query?: Query;
+}
+/**
  * 路由，用于模拟页面跳转，而不刷新页面.路由本身也是一个模块，切换页面实际上就是动态的切换路由中的子模块.
  */
 export declare abstract class Router extends Module {
@@ -73,18 +80,26 @@ export declare abstract class Router extends Module {
     /**
      * 解析当前的地址.
      */
-    protected abstract parseCurrentUrl(): {
-        path: string;
-        query?: Query;
-    };
+    protected abstract parseCurrentUrl(): Route;
     /**
      * 获取当前路由信息
      * @returns
      */
-    getRouterInfo(): {
-        path: string;
-        query: Query;
-    };
+    getRouterInfo(): Route;
+    /**
+     * 清除当前页面的缓存
+     */
+    removeCurrentPageCache(): void;
+    /**
+     * 删除某个路径下的缓存
+     * @param path 路径
+     */
+    removeCacheByPath(path: string): void;
+    /**
+     * 清除匹配指定规则的页面的缓存
+     * @param filter 过滤器，匹配要被清理的页面
+     */
+    removeCache(filter: (route: Route) => void): void;
     abstract buildUrl(path: string | {
         path: string;
         query: Query;

@@ -3078,7 +3078,14 @@ class CachedModule extends DivModule {
   cacheScroll() {
     this.scrollPos = { left: window.scrollX, top: window.scrollY };
   }
+  cancel() {
+    this.canceled = true;
+  }
   hide() {
+    if (this.canceled) {
+      this.destroy();
+      return;
+    }
     this.el.style.display = "none";
     this.title = document.title;
     this.find(() => true).forEach((m) => {
@@ -3234,6 +3241,38 @@ class Router extends Module {
       path: this.currentPath,
       query: this.query
     };
+  }
+  removeCurrentPageCache() {
+    if (!this.currentModule) {
+      return;
+    }
+    if (this.currentModule instanceof CachedModule) {
+      this.currentModule.cancel();
+    }
+  }
+  removeCacheByPath(path) {
+    this.getChildren().filter((c) => c instanceof CachedModule).map((c) => c).filter((c) => {
+      const route = JSON.parse(c.key);
+      return route.path === path;
+    }).forEach((c) => {
+      if (c === this.currentModule) {
+        c.cancel();
+      } else {
+        c.destroy();
+      }
+    });
+  }
+  removeCache(filter) {
+    this.getChildren().filter((c) => c instanceof CachedModule).map((c) => c).filter((c) => {
+      const route = JSON.parse(c.key);
+      return filter(route);
+    }).forEach((c) => {
+      if (c === this.currentModule) {
+        c.cancel();
+      } else {
+        c.destroy();
+      }
+    });
   }
   getParam(paramName) {
     const val = this.query[paramName];
