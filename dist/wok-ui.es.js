@@ -658,6 +658,7 @@ class ResponsiveModule extends Module {
     }
   }
   destroy() {
+    window.removeEventListener("resize", this.__resizeListener);
     this.clearCaches();
     super.destroy();
   }
