@@ -171,6 +171,7 @@ export abstract class ResponsiveModule extends Module {
   }
 
   destroy(): void {
+    window.removeEventListener('resize', this.__resizeListener)
     this.clearCaches()
     super.destroy()
   }
