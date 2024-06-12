@@ -95,6 +95,9 @@ export function showToast(opts: {
    */
   duration?: number
 }) {
+  if (!opts.text) {
+    return
+  }
   let duration = 3000
   if (opts.duration && opts.duration > 0) {
     duration = opts.duration
