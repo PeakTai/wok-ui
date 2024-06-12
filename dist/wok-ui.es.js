@@ -1160,21 +1160,22 @@ class VBox extends DivModule {
 
 var loading$1 = '';
 
+class Loading extends DivModule {
+  constructor(msg) {
+    super("wok-ui-loading");
+    this.addChild({
+      classNames: ["loading-spinner"],
+      innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>`
+    });
+    if (msg) {
+      this.addChild(new PrimaryBodyText(msg));
+    }
+  }
+}
 let loading;
 function showLoading(msg) {
   hideLoading();
-  loading = createDomModule({
-    classNames: ["wok-ui-loading"],
-    children(addChild) {
-      addChild({
-        classNames: ["loading-spinner"],
-        innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>`
-      });
-      if (msg) {
-        addChild(new PrimaryBodyText(msg));
-      }
-    }
-  });
+  loading = new Loading(msg);
   loading.mount(document.body);
 }
 function hideLoading() {
@@ -1360,6 +1361,9 @@ class Toast extends DivModule {
 }
 let oven;
 function showToast(opts) {
+  if (!opts.text) {
+    return;
+  }
   let duration = 3e3;
   if (opts.duration && opts.duration > 0) {
     duration = opts.duration;
