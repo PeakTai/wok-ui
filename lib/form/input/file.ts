@@ -1,7 +1,10 @@
-import { getSize } from '../../size';
-import { FormInput } from '../form-input';
-import { ValidateResult } from './text';
 import { getI18n } from '../../i18n'
+import { SvgIcon } from '../../icon'
+import { HBox } from '../../layout'
+import { FullRenderingModule } from '../../render'
+import { getSize, rem } from '../../size'
+import { FormInput } from '../form-input'
+import { ValidateResult } from './text'
 /**
  * 文件输入框选项
  */
@@ -11,8 +14,8 @@ export interface FileInputOpts {
    */
   required?: boolean | string
   /**
-  * 尺寸
-  */
+   * 尺寸
+   */
   size?: 'sm' | 'default' | 'lg'
   /**
    * 接收类型，默认值为 *（所有）
@@ -23,8 +26,8 @@ export interface FileInputOpts {
    */
   multiple?: boolean
   /**
-  * 最小选择数量，多选时才有效
-  */
+   * 最小选择数量，多选时才有效
+   */
   minSelected?: number | { minSelected: number; errMsg: string }
   /**
    * 最大选择数量，多选时才有效
@@ -51,33 +54,85 @@ export interface FileInputOpts {
    */
   onChange?: (files: FileList | null) => void
 }
+
+class IconUpload extends SvgIcon {
+  constructor() {
+    // Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
+    super(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M288 109.3V352c0 17.7-14.3 32-32 32s-32-14.3-32-32V109.3l-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352H192c0 35.3 28.7 64 64 64s64-28.7 64-64H448c35.3 0 64 28.7 64 64v32c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V416c0-35.3 28.7-64 64-64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/></svg>'
+    )
+  }
+}
+
+/**
+ * 占位信息
+ */
+class Placeholder extends FullRenderingModule {
+  constructor(private readonly input: HTMLInputElement) {
+    super()
+    this.el.style.overflow = 'hidden'
+    this.el.style.textOverflow = 'ellipsis'
+    this.el.style.wordBreak = 'keep-all'
+    this.el.style.whiteSpace = 'nowrap'
+    input.addEventListener('change', () => this.render())
+    this.buildContent()
+  }
+
+  protected buildContent(): void {
+    if (!this.input.files || !this.input.files.length) {
+      this.el.title = ''
+      this.addChild(
+        new HBox({
+          gap: rem(0.5),
+          align: 'center',
+          children: [new IconUpload(), getI18n().buildMsg('choose-file')]
+        })
+      )
+      return
+    }
+    const info = Array.from(this.input.files)
+      .map(f => f.name)
+      .join(',')
+    this.el.title = info
+    this.addChild(info)
+  }
+}
 /**
  * 文件输入框
  */
 export class FileInput extends FormInput {
   private readonly input: HTMLInputElement
+
   constructor(private readonly opts: FileInputOpts) {
     super(document.createElement('div'))
+    // 构建 input 输入框
     this.input = document.createElement('input')
-    this.input.classList.add('wok-ui-input')
     this.input.type = 'file'
     this.input.accept = opts.accept || '*'
     this.input.multiple = !!opts.multiple
-    // 尺寸
-    const size = getSize()
-    switch (opts.size) {
-      case 'lg':
-        this.input.style.setProperty('--input-font-size', `${size.textLg}px`)
-        break
-      case 'sm':
-        this.input.style.setProperty('--input-font-size', `${size.textSm}px`)
-        break
-      default:
-        this.input.style.setProperty('--input-font-size', `${size.text}px`)
-        break
-    }
-    this.input.onchange = () => this.handleChange()
-    this.addChild(this.input)
+    this.input.style.display = 'none'
+    this.input.addEventListener('change', () => this.handleChange())
+    this.addChild({
+      tag: 'label',
+      classNames: 'wok-ui-input',
+      style: { cursor: 'pointer' },
+      preHandle: el => {
+        // 尺寸
+        const size = getSize()
+        switch (this.opts.size) {
+          case 'lg':
+            el.style.setProperty('--input-font-size', `${size.textLg}px`)
+            break
+          case 'sm':
+            el.style.setProperty('--input-font-size', `${size.textSm}px`)
+            break
+          default:
+            el.style.setProperty('--input-font-size', `${size.text}px`)
+            break
+        }
+      },
+      children: [new Placeholder(this.input), this.input]
+    })
   }
 
   private __validate(): ValidateResult {
@@ -131,7 +186,10 @@ export class FileInput extends FormInput {
     // 最小尺寸
     if (typeof this.opts.minSize === 'number') {
       if (totalSize < this.opts.minSize) {
-        return { valid: false, msg: getI18n().buildMsg('form-err-min-size', this.formatFileSize(this.opts.minSize)) }
+        return {
+          valid: false,
+          msg: getI18n().buildMsg('form-err-min-size', this.formatFileSize(this.opts.minSize))
+        }
       }
     } else if (this.opts.minSize) {
       if (totalSize < this.opts.minSize.minSize) {
@@ -141,7 +199,10 @@ export class FileInput extends FormInput {
     // 最大尺寸
     if (typeof this.opts.maxSize === 'number') {
       if (totalSize > this.opts.maxSize) {
-        return { valid: false, msg: getI18n().buildMsg('form-err-max-size', this.formatFileSize(this.opts.maxSize)) }
+        return {
+          valid: false,
+          msg: getI18n().buildMsg('form-err-max-size', this.formatFileSize(this.opts.maxSize))
+        }
       }
     } else if (this.opts.maxSize) {
       if (totalSize > this.opts.maxSize.maxSize) {
@@ -176,10 +237,10 @@ export class FileInput extends FormInput {
   }
 
   /**
- * 格式化文件大小
- * @param size
- * @returns
- */
+   * 格式化文件大小
+   * @param size
+   * @returns
+   */
   private formatFileSize(size: number): string {
     if (size < 1024) {
       return `${this.formatSizeNumber(size)}B`

@@ -15,5 +15,6 @@ export const zhCN: I18nMessages = {
   'form-err-min-size': '文件大小不得小于 {}',
   'form-err-max-size': '文件大小不得大于 {}',
   'form-err-max-files-select': '最多可以选择 {} 个文件',
-  'form-err-min-files-select': '请至少选择 {} 个文件'
+  'form-err-min-files-select': '请至少选择 {} 个文件',
+  'choose-file': '请选择文件'
 }

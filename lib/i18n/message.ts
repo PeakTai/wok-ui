@@ -11,6 +11,10 @@ export interface I18nMessages {
    */
   confirm: string
   /**
+   * 请选择文件
+   */
+  'choose-file': string
+  /**
    * 表单错误信息：必填
    */
   'form-err-required': string
