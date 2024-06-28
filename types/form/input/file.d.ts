@@ -9,8 +9,8 @@ export interface FileInputOpts {
      */
     required?: boolean | string;
     /**
-    * 尺寸
-    */
+     * 尺寸
+     */
     size?: 'sm' | 'default' | 'lg';
     /**
      * 接收类型，默认值为 *（所有）
@@ -21,8 +21,8 @@ export interface FileInputOpts {
      */
     multiple?: boolean;
     /**
-    * 最小选择数量，多选时才有效
-    */
+     * 最小选择数量，多选时才有效
+     */
     minSelected?: number | {
         minSelected: number;
         errMsg: string;
@@ -72,10 +72,10 @@ export declare class FileInput extends FormInput {
     private handleChange;
     validate(): boolean;
     /**
-   * 格式化文件大小
-   * @param size
-   * @returns
-   */
+     * 格式化文件大小
+     * @param size
+     * @returns
+     */
     private formatFileSize;
     private formatSizeNumber;
 }

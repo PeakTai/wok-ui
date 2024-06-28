@@ -15,7 +15,8 @@ const enUS = {
   "form-err-min-size": "The file size must be greater than {}",
   "form-err-max-size": "The file size must not exceed {}",
   "form-err-max-files-select": "You can select up to {} file(s)",
-  "form-err-min-files-select": "Please select at least {} file(s)"
+  "form-err-min-files-select": "Please select at least {} file(s)",
+  "choose-file": "Choose file"
 };
 
 function parseLangTag(tag) {
@@ -137,7 +138,8 @@ const zhCN = {
   "form-err-min-size": "\u6587\u4EF6\u5927\u5C0F\u4E0D\u5F97\u5C0F\u4E8E {}",
   "form-err-max-size": "\u6587\u4EF6\u5927\u5C0F\u4E0D\u5F97\u5927\u4E8E {}",
   "form-err-max-files-select": "\u6700\u591A\u53EF\u4EE5\u9009\u62E9 {} \u4E2A\u6587\u4EF6",
-  "form-err-min-files-select": "\u8BF7\u81F3\u5C11\u9009\u62E9 {} \u4E2A\u6587\u4EF6"
+  "form-err-min-files-select": "\u8BF7\u81F3\u5C11\u9009\u62E9 {} \u4E2A\u6587\u4EF6",
+  "choose-file": "\u8BF7\u9009\u62E9\u6587\u4EF6"
 };
 
 let I18N;
@@ -2247,29 +2249,71 @@ class TextArea extends FormInput {
   }
 }
 
+class IconUpload extends SvgIcon {
+  constructor() {
+    super(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M288 109.3V352c0 17.7-14.3 32-32 32s-32-14.3-32-32V109.3l-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352H192c0 35.3 28.7 64 64 64s64-28.7 64-64H448c35.3 0 64 28.7 64 64v32c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V416c0-35.3 28.7-64 64-64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/></svg>'
+    );
+  }
+}
+class Placeholder extends FullRenderingModule {
+  constructor(input) {
+    super();
+    this.input = input;
+    this.el.style.overflow = "hidden";
+    this.el.style.textOverflow = "ellipsis";
+    this.el.style.wordBreak = "keep-all";
+    this.el.style.whiteSpace = "nowrap";
+    input.addEventListener("change", () => this.render());
+    this.buildContent();
+  }
+  buildContent() {
+    if (!this.input.files || !this.input.files.length) {
+      this.el.title = "";
+      this.addChild(
+        new HBox({
+          gap: rem(0.5),
+          align: "center",
+          children: [new IconUpload(), getI18n().buildMsg("choose-file")]
+        })
+      );
+      return;
+    }
+    const info = Array.from(this.input.files).map((f) => f.name).join(",");
+    this.el.title = info;
+    this.addChild(info);
+  }
+}
 class FileInput extends FormInput {
   constructor(opts) {
     super(document.createElement("div"));
     this.opts = opts;
     this.input = document.createElement("input");
-    this.input.classList.add("wok-ui-input");
     this.input.type = "file";
     this.input.accept = opts.accept || "*";
     this.input.multiple = !!opts.multiple;
-    const size = getSize();
-    switch (opts.size) {
-      case "lg":
-        this.input.style.setProperty("--input-font-size", `${size.textLg}px`);
-        break;
-      case "sm":
-        this.input.style.setProperty("--input-font-size", `${size.textSm}px`);
-        break;
-      default:
-        this.input.style.setProperty("--input-font-size", `${size.text}px`);
-        break;
-    }
-    this.input.onchange = () => this.handleChange();
-    this.addChild(this.input);
+    this.input.style.display = "none";
+    this.input.addEventListener("change", () => this.handleChange());
+    this.addChild({
+      tag: "label",
+      classNames: "wok-ui-input",
+      style: { cursor: "pointer" },
+      preHandle: (el) => {
+        const size = getSize();
+        switch (this.opts.size) {
+          case "lg":
+            el.style.setProperty("--input-font-size", `${size.textLg}px`);
+            break;
+          case "sm":
+            el.style.setProperty("--input-font-size", `${size.textSm}px`);
+            break;
+          default:
+            el.style.setProperty("--input-font-size", `${size.text}px`);
+            break;
+        }
+      },
+      children: [new Placeholder(this.input), this.input]
+    });
   }
   __validate() {
     const { files } = this.input;
@@ -2316,7 +2360,10 @@ class FileInput extends FormInput {
     }
     if (typeof this.opts.minSize === "number") {
       if (totalSize < this.opts.minSize) {
-        return { valid: false, msg: getI18n().buildMsg("form-err-min-size", this.formatFileSize(this.opts.minSize)) };
+        return {
+          valid: false,
+          msg: getI18n().buildMsg("form-err-min-size", this.formatFileSize(this.opts.minSize))
+        };
       }
     } else if (this.opts.minSize) {
       if (totalSize < this.opts.minSize.minSize) {
@@ -2325,7 +2372,10 @@ class FileInput extends FormInput {
     }
     if (typeof this.opts.maxSize === "number") {
       if (totalSize > this.opts.maxSize) {
-        return { valid: false, msg: getI18n().buildMsg("form-err-max-size", this.formatFileSize(this.opts.maxSize)) };
+        return {
+          valid: false,
+          msg: getI18n().buildMsg("form-err-max-size", this.formatFileSize(this.opts.maxSize))
+        };
       }
     } else if (this.opts.maxSize) {
       if (totalSize > this.opts.maxSize.maxSize) {
