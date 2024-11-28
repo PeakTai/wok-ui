@@ -7,25 +7,28 @@
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1045;
 
-  & > .wok-ui-drawer-content {
+  &>.wok-ui-drawer-content {
     background-color: white;
     position: absolute;
     overflow-x: hidden;
     overflow-y: auto;
+
     &.top {
       top: 0;
       left: 0;
       right: 0;
-      height: 400px;
-      max-height: 100%;
+      height: auto;
+      max-height: 90%;
     }
+
     &.bottom {
       bottom: 0;
       left: 0;
       right: 0;
-      height: 400px;
-      max-height: 100%;
+      height: auto;
+      max-height: 90%;
     }
+
     &.left {
       top: 0;
       bottom: 0;
@@ -33,6 +36,7 @@
       width: 400px;
       max-width: 100%;
     }
+
     &.right {
       top: 0;
       bottom: 0;
@@ -40,6 +44,7 @@
       width: 400px;
       max-width: 100%;
     }
+
     .header {
       padding: 1rem;
       line-height: 1em;
@@ -51,6 +56,7 @@
       background-color: white;
       font-size: var(--size-text-lg);
       border-bottom: 1px solid var(--color-border);
+
       .title {
         font-weight: bold;
         flex-grow: 1;
@@ -59,12 +65,14 @@
         text-overflow: ellipsis;
         overflow: hidden;
       }
+
       .close {
         padding-left: 0.5em;
         font-size: 1.2em;
         cursor: pointer;
       }
     }
+
     .body {
       padding: 1rem;
     }

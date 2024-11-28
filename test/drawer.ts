@@ -35,6 +35,25 @@ class Page extends DivModule {
             }
           }),
           new Button({
+            text: '顶部弹出抽屉',
+            onClick(ev) {
+              showDrawer({
+                title: '顶部弹出的抽屉',
+                placement: 'top',
+                body: '顶部弹出的抽屉'
+              })
+            }
+          }),
+          new Button({
+            text: '顶部弹出无标题抽屉',
+            onClick(ev) {
+              showDrawer({
+                placement: 'top',
+                body: '顶部弹出无标题的抽屉'
+              })
+            }
+          }),
+          new Button({
             text: '开启多个抽屉',
             onClick(ev) {
               showDrawer({

@@ -75,14 +75,35 @@ export interface ModalOptions {
  * 模态框对象，每次展示模态框后返回一个实例对象，用于关闭打开的模态框.
  */
 export interface Modal {
-  close(): Promise<void>
+  close(): void
 }
 /**
  * 背景.
  */
 class Backdrop extends DivModule {
+  /**
+   * esc 键关闭监听
+   */
+  private escapeCloseListener: (e: KeyboardEvent) => void
+  /**
+   * 文档变化时的关闭监听
+   */
+  private docChangeCloseListener: () => void
+
   constructor(private readonly opts: { onDestroy: () => void }) {
     super('wok-ui-modal')
+    // esc 按键关闭
+    this.escapeCloseListener = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        const children = this.getChildren() as Dialog[]
+        if (children.length) {
+          children[children.length - 1].tryDestroy()
+        }
+      }
+    }
+    document.addEventListener('keydown', this.escapeCloseListener)
+    this.docChangeCloseListener = () => this.empty()
+    window.addEventListener('popstate', this.docChangeCloseListener)
   }
 
   addDialog(dialog: Dialog) {
@@ -94,12 +115,6 @@ class Backdrop extends DivModule {
     this.addChild(dialog)
   }
 
-  async closeAllModals(): Promise<void> {
-    const children = this.getChildren() as Dialog[]
-    for (const child of children) {
-      await child.close()
-    }
-  }
   /**
    * 删除子模块，如果子模块被清空，则自身也销毁.
    * @param moduleOrIndex
@@ -118,7 +133,14 @@ class Backdrop extends DivModule {
     document.body.classList.add('wok-ui-modal-lock-scroll')
   }
 
+  empty(): void {
+    super.empty()
+  }
+
   destroy(): void {
+    // 移除事件监听
+    document.removeEventListener('keydown', this.escapeCloseListener)
+    window.removeEventListener('popstate', this.docChangeCloseListener)
     document.body.classList.remove('wok-ui-modal-lock-scroll')
     super.destroy()
     this.opts.onDestroy()
@@ -133,6 +155,8 @@ class Dialog extends DivModule {
    * 回调标记，目的是防止重复回调，因为关闭有动画，有一个过程，在这个过程中用户重复操作会导致重复回调
    */
   private callbacked = false
+
+  private leaveAnimating = false
 
   private destroyListener?: () => void
 
@@ -153,6 +177,7 @@ class Dialog extends DivModule {
       ev.stopPropagation()
       this.tryDestroy()
     })
+
     // 完全自定义内容，使用 body 替换原本的内容
     if (opts.replaceByBody) {
       this.addChild({
@@ -206,9 +231,7 @@ class Dialog extends DivModule {
                 addChild({
                   classNames: ['close'],
                   innerHTML: '&times;',
-                  onClick: () => {
-                    this.close().catch(showWarning)
-                  }
+                  onClick: () => this.destroy()
                 })
               }
             }
@@ -246,7 +269,7 @@ class Dialog extends DivModule {
                 addChild(
                   new Button({
                     text: typeof cancel === 'string' ? cancel : getI18n().buildMsg('cancel'),
-                    onClick: ev => this.close().catch(showWarning)
+                    onClick: ev => this.destroy()
                   })
                 )
               }
@@ -265,23 +288,39 @@ class Dialog extends DivModule {
       animate({ el: this.el, animation: Animation.SHAKE }).catch(showWarning)
       return
     }
-    this.close().catch(showWarning)
+    this.destroy()
   }
 
   onDestroy(listener: () => void) {
     this.destroyListener = listener
   }
 
-  async close(): Promise<void> {
-    await animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300, reverse: true })
-    this.destroy()
-    if (this.destroyListener) {
-      this.destroyListener()
+  /**
+   * 退场动画.
+   */
+  private async leave() {
+    this.leaveAnimating = true
+    try {
+      await animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300, reverse: true })
+    } finally {
+      this.leaveAnimating = false
     }
-    if (this.opts.onClose && !this.callbacked) {
-      this.opts.onClose()
-      this.callbacked = true
+  }
+
+  destroy(): void {
+    if (this.leaveAnimating) {
+      return
     }
+    this.leave().then(() => {
+      super.destroy()
+      if (this.destroyListener) {
+        this.destroyListener()
+      }
+      if (this.opts.onClose && !this.callbacked) {
+        this.opts.onClose()
+        this.callbacked = true
+      }
+    })
   }
 }
 
@@ -299,15 +338,15 @@ export function showModal(options: ModalOptions): Modal {
   const modal = new Dialog(options)
   backdrop.addDialog(modal)
   return {
-    close: () => modal.close()
+    close: () => modal.destroy()
   }
 }
 
 /**
  * 关闭所有的模态框.
  */
-export async function closeAllModals(): Promise<void> {
+export async function closeAllModals() {
   if (backdrop) {
-    await backdrop.closeAllModals()
+    backdrop.empty()
   }
 }

@@ -32,6 +32,15 @@ export interface Drawer {
 }
 
 class Backdrop extends DivModule {
+  /**
+   * esc 键关闭监听
+   */
+  private escapeCloseListener: (e: KeyboardEvent) => void
+  /**
+   * 文档变化时的关闭监听
+   */
+  private docChangeCloseListener: () => void
+
   constructor(private opts: { onDestroy: () => void }) {
     super('wok-ui-drawer')
     // 每点击一次，关闭一个弹出的抽屉
@@ -41,6 +50,18 @@ class Backdrop extends DivModule {
         children[children.length - 1].destroy()
       }
     })
+    // esc 按键关闭
+    this.escapeCloseListener = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        const children = this.getChildren()
+        if (children.length) {
+          children[children.length - 1].destroy()
+        }
+      }
+    }
+    document.addEventListener('keydown', this.escapeCloseListener)
+    this.docChangeCloseListener = () => this.empty()
+    window.addEventListener('popstate', this.docChangeCloseListener)
   }
 
   addContent(content: Content) {
@@ -58,6 +79,9 @@ class Backdrop extends DivModule {
   }
 
   destroy(): void {
+    // 移除事件监听
+    document.removeEventListener('keydown', this.escapeCloseListener)
+    window.removeEventListener('popstate', this.docChangeCloseListener)
     document.body.classList.remove('wok-ui-drawer-lock-scroll')
     super.destroy()
     this.opts.onDestroy()

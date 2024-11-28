@@ -1398,6 +1398,17 @@ class Backdrop$1 extends DivModule {
   constructor(opts) {
     super("wok-ui-modal");
     this.opts = opts;
+    this.escapeCloseListener = (e) => {
+      if (e.key === "Escape") {
+        const children = this.getChildren();
+        if (children.length) {
+          children[children.length - 1].tryDestroy();
+        }
+      }
+    };
+    document.addEventListener("keydown", this.escapeCloseListener);
+    this.docChangeCloseListener = () => this.empty();
+    window.addEventListener("popstate", this.docChangeCloseListener);
   }
   addDialog(dialog) {
     dialog.onDestroy(() => {
@@ -1406,12 +1417,6 @@ class Backdrop$1 extends DivModule {
       }
     });
     this.addChild(dialog);
-  }
-  async closeAllModals() {
-    const children = this.getChildren();
-    for (const child of children) {
-      await child.close();
-    }
   }
   removeChild(moduleOrIndex) {
     const res = super.removeChild(moduleOrIndex);
@@ -1424,7 +1429,12 @@ class Backdrop$1 extends DivModule {
     super.mount(parentEl);
     document.body.classList.add("wok-ui-modal-lock-scroll");
   }
+  empty() {
+    super.empty();
+  }
   destroy() {
+    document.removeEventListener("keydown", this.escapeCloseListener);
+    window.removeEventListener("popstate", this.docChangeCloseListener);
     document.body.classList.remove("wok-ui-modal-lock-scroll");
     super.destroy();
     this.opts.onDestroy();
@@ -1435,6 +1445,7 @@ class Dialog extends DivModule {
     super("wok-ui-modal-dialog", ANIMATION_PROVISION);
     this.opts = opts;
     this.callbacked = false;
+    this.leaveAnimating = false;
     animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300 }).then(() => {
       if (opts.onShown) {
         opts.onShown();
@@ -1482,9 +1493,7 @@ class Dialog extends DivModule {
                 addChild2({
                   classNames: ["close"],
                   innerHTML: "&times;",
-                  onClick: () => {
-                    this.close().catch(showWarning);
-                  }
+                  onClick: () => this.destroy()
                 });
               }
             }
@@ -1518,7 +1527,7 @@ class Dialog extends DivModule {
                 addChild2(
                   new Button({
                     text: typeof cancel === "string" ? cancel : getI18n().buildMsg("cancel"),
-                    onClick: (ev) => this.close().catch(showWarning)
+                    onClick: (ev) => this.destroy()
                   })
                 );
               }
@@ -1533,21 +1542,33 @@ class Dialog extends DivModule {
       animate({ el: this.el, animation: Animation.SHAKE }).catch(showWarning);
       return;
     }
-    this.close().catch(showWarning);
+    this.destroy();
   }
   onDestroy(listener) {
     this.destroyListener = listener;
   }
-  async close() {
-    await animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300, reverse: true });
-    this.destroy();
-    if (this.destroyListener) {
-      this.destroyListener();
+  async leave() {
+    this.leaveAnimating = true;
+    try {
+      await animate({ el: this.el, animation: Animation.SLIDE_TOP, duration: 300, reverse: true });
+    } finally {
+      this.leaveAnimating = false;
     }
-    if (this.opts.onClose && !this.callbacked) {
-      this.opts.onClose();
-      this.callbacked = true;
+  }
+  destroy() {
+    if (this.leaveAnimating) {
+      return;
     }
+    this.leave().then(() => {
+      super.destroy();
+      if (this.destroyListener) {
+        this.destroyListener();
+      }
+      if (this.opts.onClose && !this.callbacked) {
+        this.opts.onClose();
+        this.callbacked = true;
+      }
+    });
   }
 }
 let backdrop$1;
@@ -1559,12 +1580,12 @@ function showModal(options) {
   const modal = new Dialog(options);
   backdrop$1.addDialog(modal);
   return {
-    close: () => modal.close()
+    close: () => modal.destroy()
   };
 }
 async function closeAllModals() {
   if (backdrop$1) {
-    await backdrop$1.closeAllModals();
+    backdrop$1.empty();
   }
 }
 
@@ -1580,6 +1601,17 @@ class Backdrop extends DivModule {
         children[children.length - 1].destroy();
       }
     });
+    this.escapeCloseListener = (e) => {
+      if (e.key === "Escape") {
+        const children = this.getChildren();
+        if (children.length) {
+          children[children.length - 1].destroy();
+        }
+      }
+    };
+    document.addEventListener("keydown", this.escapeCloseListener);
+    this.docChangeCloseListener = () => this.empty();
+    window.addEventListener("popstate", this.docChangeCloseListener);
   }
   addContent(content) {
     content.onDestroy(() => {
@@ -1594,6 +1626,8 @@ class Backdrop extends DivModule {
     document.body.classList.add("wok-ui-drawer-lock-scroll");
   }
   destroy() {
+    document.removeEventListener("keydown", this.escapeCloseListener);
+    window.removeEventListener("popstate", this.docChangeCloseListener);
     document.body.classList.remove("wok-ui-drawer-lock-scroll");
     super.destroy();
     this.opts.onDestroy();

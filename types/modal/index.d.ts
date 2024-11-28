@@ -70,7 +70,7 @@ export interface ModalOptions {
  * 模态框对象，每次展示模态框后返回一个实例对象，用于关闭打开的模态框.
  */
 export interface Modal {
-    close(): Promise<void>;
+    close(): void;
 }
 /**
  * 显示模态框.
