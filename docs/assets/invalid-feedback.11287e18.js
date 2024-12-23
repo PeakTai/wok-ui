@@ -1,1 +1,0 @@
-import{M as t,D as l,d as a}from"./index.0f65c826.js";class d extends t{}class o extends l{constructor(s){super(),this.el.classList.add("invalid-feedback"),this.el.innerText=s,this.el.style.paddingTop="0.5rem",this.el.style.lineHeight="1",this.el.style.color=a().danger}}export{d as F,o as I};

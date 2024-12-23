@@ -505,36 +505,68 @@ function createDomModule(options) {
   return module;
 }
 
-function proxyCachedModule(module) {
-  const delegate = new Proxy(module, {
-    get(target, p) {
-      if (p === "destroy") {
-        return () => {
-          const parent = target.getParent();
-          if (parent) {
-            parent.removeChild(delegate);
-          }
-          target.el.remove();
-        };
-      }
-      if (p === "destroyThoroughly") {
-        return () => {
-          target.destroy();
-        };
-      }
-      return target[p];
+class Cache {
+  constructor() {
+    this.map = /* @__PURE__ */ new Map();
+  }
+  cache(opts) {
+    const cached = this.map.get(opts.key);
+    if (cached) {
+      return cached;
     }
-  });
-  return delegate;
+    const module = opts.module();
+    const delegate = new Proxy(module, {
+      get(target, p) {
+        if (p === "destroy") {
+          return () => {
+            const parent = target.getParent();
+            if (parent) {
+              parent.removeChild(delegate);
+            }
+            target.el.remove();
+          };
+        }
+        if (p === "destroyThoroughly") {
+          return () => {
+            target.destroy();
+          };
+        }
+        return target[p];
+      }
+    });
+    this.map.set(opts.key, delegate);
+    return delegate;
+  }
+  remove(key) {
+    const module = this.map.get(key);
+    if (module) {
+      const { destroyThoroughly } = module;
+      if (typeof destroyThoroughly === "function") {
+        destroyThoroughly();
+      }
+      this.map.delete(key);
+    }
+  }
+  clear() {
+    for (const key of this.map.keys()) {
+      this.remove(key);
+    }
+  }
 }
+new Cache();
 
 class FullRenderingModule extends Module {
   constructor(rootEl) {
     super(rootEl || document.createElement("div"));
     this.__pendingRender = false;
-    this.__cachedModules = /* @__PURE__ */ new Map();
+    this.__cache = new Cache();
   }
-  render() {
+  render(immediate = false) {
+    if (immediate) {
+      this.empty();
+      this.buildContent();
+      return;
+    }
     this.__pendingRender = true;
     setTimeout(() => {
       if (!this.__pendingRender) {
@@ -550,28 +582,13 @@ class FullRenderingModule extends Module {
     }, 0);
   }
   cacheModule(opts) {
-    const cachedModule = this.__cachedModules.get(opts.key);
-    if (cachedModule) {
-      return cachedModule;
-    }
-    const module = proxyCachedModule(opts.module());
-    this.__cachedModules.set(opts.key, module);
-    return module;
+    return this.__cache.cache(opts);
   }
   removeCache(key) {
-    const module = this.__cachedModules.get(key);
-    if (module) {
-      const { destroyThoroughly } = module;
-      if (typeof destroyThoroughly === "function") {
-        destroyThoroughly();
-      }
-      this.__cachedModules.delete(key);
-    }
+    this.__cache.remove(key);
   }
   clearCaches() {
-    for (const key of this.__cachedModules.keys()) {
-      this.removeCache(key);
-    }
+    this.__cache.clear();
   }
   destroy() {
     this.clearCaches();
@@ -592,13 +609,21 @@ class ResponsiveModule extends Module {
     super(el || document.createElement("div"));
     this.__respSize = "xs";
     this.__pendingRender = false;
-    this.__cachedModules = /* @__PURE__ */ new Map();
+    this.__cache = new Cache();
     this.__resizeListener = () => this.render(false);
     window.addEventListener("resize", this.__resizeListener);
   }
-  render(force = true) {
+  render(force = true, immediate = false) {
+    if (immediate) {
+      this.__render(force);
+      return;
+    }
     this.__pendingRender = true;
     setTimeout(() => {
+      if (!this.__pendingRender) {
+        return;
+      }
+      this.__pendingRender = false;
       try {
         this.__render(force);
       } catch (e) {
@@ -607,10 +632,6 @@ class ResponsiveModule extends Module {
     }, 0);
   }
   __render(force) {
-    if (!this.__pendingRender) {
-      return;
-    }
-    this.__pendingRender = false;
     let size = "xs";
     const windowWidth = window.innerWidth;
     if (windowWidth >= 1400) {
@@ -636,28 +657,13 @@ class ResponsiveModule extends Module {
     }
   }
   cacheModule(opts) {
-    const cachedModule = this.__cachedModules.get(opts.key);
-    if (cachedModule) {
-      return cachedModule;
-    }
-    const module = proxyCachedModule(opts.module());
-    this.__cachedModules.set(opts.key, module);
-    return module;
+    return this.__cache.cache(opts);
   }
   removeCache(key) {
-    const module = this.__cachedModules.get(key);
-    if (module) {
-      const { destroyThoroughly } = module;
-      if (typeof destroyThoroughly === "function") {
-        destroyThoroughly();
-      }
-      this.__cachedModules.delete(key);
-    }
+    this.__cache.remove(key);
   }
   clearCaches() {
-    for (const key of this.__cachedModules.keys()) {
-      this.removeCache(key);
-    }
+    this.__cache.clear();
   }
   destroy() {
     window.removeEventListener("resize", this.__resizeListener);
@@ -3108,6 +3114,53 @@ function buildQueryString(qs) {
   return arr.join("&");
 }
 
+class CachedModule extends DivModule {
+  constructor(key, module) {
+    super();
+    this.key = key;
+    this.title = "";
+    this.addChild(module);
+  }
+  cacheScroll() {
+    this.scrollPos = { left: window.scrollX, top: window.scrollY };
+  }
+  cancel() {
+    this.canceled = true;
+  }
+  hide() {
+    if (this.canceled) {
+      this.destroy();
+      return;
+    }
+    this.el.style.display = "none";
+    this.title = document.title;
+    this.find(() => true).forEach((m) => {
+      const mm = m;
+      if (mm.onPageHide) {
+        mm.onPageHide();
+      }
+    });
+  }
+  show() {
+    this.el.style.display = "block";
+    if (this.title) {
+      document.title = this.title;
+    }
+    if (this.scrollPos) {
+      const { left, top } = this.scrollPos;
+      setTimeout(() => {
+        window.scrollTo({ left, top, behavior: "instant" });
+      }, 0);
+    }
+    this.find(() => true).forEach((m) => {
+      const mm = m;
+      if (mm.onPageShow) {
+        mm.onPageShow();
+      }
+    });
+  }
+}
+
 function parsePathRule(pathRule) {
   const ps = pathRule.split("/").filter((p) => !!p);
   return ps.map((p) => {
@@ -3157,65 +3210,20 @@ function isPathRuleEquals(rule1, rule2) {
   return true;
 }
 
-class CachedModule extends DivModule {
-  constructor(key, module) {
-    super();
-    this.key = key;
-    this.title = "";
-    this.addChild(module);
-  }
-  cacheScroll() {
-    this.scrollPos = { left: window.scrollX, top: window.scrollY };
-  }
-  cancel() {
-    this.canceled = true;
-  }
-  hide() {
-    if (this.canceled) {
-      this.destroy();
-      return;
-    }
-    this.el.style.display = "none";
-    this.title = document.title;
-    this.find(() => true).forEach((m) => {
-      const mm = m;
-      if (mm.onPageHide) {
-        mm.onPageHide();
-      }
-    });
-  }
-  show() {
-    this.el.style.display = "block";
-    if (this.title) {
-      document.title = this.title;
-    }
-    if (this.scrollPos) {
-      const { left, top } = this.scrollPos;
-      setTimeout(() => {
-        window.scrollTo({ left, top, behavior: "instant" });
-      }, 0);
-    }
-    this.find(() => true).forEach((m) => {
-      const mm = m;
-      if (mm.onPageShow) {
-        mm.onPageShow();
-      }
-    });
-  }
-}
 class Router extends Module {
-  constructor(options) {
+  constructor(routerOpts) {
     super(document.createElement("div"));
+    this.routerOpts = routerOpts;
     this.paths = [];
     this.currentPath = "";
     this.pathVars = {};
     this.query = {};
     this.cacheLimit = 10;
     this.ignoreScroll = false;
-    if (options.cacheLimit && options.cacheLimit >= 1) {
-      this.cacheLimit = options.cacheLimit;
+    if (routerOpts.cacheLimit && routerOpts.cacheLimit >= 1) {
+      this.cacheLimit = routerOpts.cacheLimit;
     }
-    options.rules.flatMap((rule) => {
+    routerOpts.rules.flatMap((rule) => {
       if (!rule.alias) {
         return [
           {
@@ -3268,19 +3276,7 @@ class Router extends Module {
     };
     window.addEventListener("scroll", this.scrollListener);
   }
-  handleUrl() {
-    const parRes = this.parseCurrentUrl();
-    this.currentPath = parRes.path;
-    this.query = parRes.query || {};
-    const targetPath = this.paths.find((p) => {
-      const res = matchPath(this.currentPath, p.parts);
-      if (res.matched) {
-        this.pathVars = res.vars || {};
-        return true;
-      } else {
-        return false;
-      }
-    });
+  unloadCurrentModule() {
     if (this.currentModule) {
       if (this.currentModule instanceof CachedModule) {
         this.currentModule.hide();
@@ -3288,42 +3284,79 @@ class Router extends Module {
         this.currentModule.destroy();
       }
     }
-    window.scrollTo({ left: 0, top: 0, behavior: "instant" });
-    if (!targetPath) {
-      if (this.defaultPathInfo) {
-        this.handleModule(this.defaultPathInfo.module).then((m) => {
-          this.addChild(m);
-          this.currentModule = m;
-        }).catch(showWarning);
-      } else {
-        showWarning("Path not set\uFF1A" + this.currentPath);
+  }
+  handleUrl() {
+    this.asyncHandleUrl().catch(showWarning);
+  }
+  async asyncHandleUrl() {
+    const fromRoute = this.getRouterInfo();
+    const toRoute = this.parseCurrentUrl();
+    let isSuccess = true;
+    try {
+      if (this.routerOpts.hooks && this.routerOpts.hooks.beforeEach) {
+        const res = await this.routerOpts.hooks.beforeEach(toRoute, fromRoute);
+        if (!res) {
+          isSuccess = false;
+          return;
+        }
       }
-    } else if (targetPath.cache) {
-      const key = JSON.stringify(parRes);
-      const cachedModule = this.getChildren().filter((c) => c instanceof CachedModule).map((c) => c).find((c) => c.key === key);
-      if (cachedModule) {
-        cachedModule.show();
-        this.currentModule = cachedModule;
-        return;
-      }
-      this.handleModule(targetPath.module).then((m) => {
-        const newCachedModule = new CachedModule(key, m);
+      this.currentPath = toRoute.path;
+      this.query = toRoute.query || {};
+      const targetPath = this.paths.find((p) => {
+        const res = matchPath(this.currentPath, p.parts);
+        if (res.matched) {
+          this.pathVars = res.vars || {};
+          return true;
+        } else {
+          return false;
+        }
+      });
+      window.scrollTo({ left: 0, top: 0, behavior: "instant" });
+      if (!targetPath) {
+        if (this.defaultPathInfo) {
+          const module = await this.defaultPathInfo.module();
+          this.unloadCurrentModule();
+          this.addChild(module);
+          this.currentModule = module;
+        } else {
+          throw "Path not set\uFF1A" + this.currentPath;
+        }
+      } else if (targetPath.cache) {
+        const key = JSON.stringify(toRoute);
+        const cachedModule = this.getChildren().filter((c) => c instanceof CachedModule).map((c) => c).find((c) => c.key === key);
+        if (cachedModule) {
+          this.unloadCurrentModule();
+          cachedModule.show();
+          this.currentModule = cachedModule;
+          return;
+        }
+        const module = await targetPath.module();
+        const newCachedModule = new CachedModule(key, module);
+        this.unloadCurrentModule();
         this.addChild(newCachedModule);
         this.currentModule = newCachedModule;
         const cachedModules = this.getChildren().filter((c) => c instanceof CachedModule).map((c) => c);
         if (cachedModules.length > this.cacheLimit) {
           this.removeChild(cachedModules[0]);
         }
-      }).catch(showWarning);
-    } else {
-      this.handleModule(targetPath.module).then((m) => {
-        this.addChild(m);
-        this.currentModule = m;
-      }).catch(showWarning);
+      } else {
+        const module = await targetPath.module();
+        this.unloadCurrentModule();
+        this.addChild(module);
+        this.currentModule = module;
+      }
+    } catch (e) {
+      isSuccess = false;
+      if (this.routerOpts.hooks && this.routerOpts.hooks.errorHandler) {
+        this.routerOpts.hooks.errorHandler(e, toRoute, fromRoute);
+        return;
+      }
+      throw e;
+    } finally {
+      if (this.routerOpts.hooks && this.routerOpts.hooks.afterEach) {
+        this.routerOpts.hooks.afterEach(toRoute, fromRoute, isSuccess);
+      }
     }
-  }
-  async handleModule(module) {
-    return module();
   }
   getRouterInfo() {
     return {
@@ -3384,8 +3417,8 @@ class Router extends Module {
 }
 
 class HashRouter extends Router {
-  constructor(rules, cacheLimit) {
-    super({ rules, cacheLimit });
+  constructor(opts) {
+    super(opts);
     this.listener = (e) => {
       e.preventDefault();
       this.ignoreScroll = true;
@@ -3440,7 +3473,7 @@ class HashRouter extends Router {
 
 class HistoryRouter extends Router {
   constructor(opts) {
-    super({ rules: opts.rules, cacheLimit: opts.cacheLimit });
+    super(opts);
     this.base = opts.base;
     const { pathname } = location;
     if (this.base && !pathname.startsWith(this.base)) {
@@ -3496,6 +3529,7 @@ class HistoryRouter extends Router {
   }
   destroy() {
     window.removeEventListener("popstate", this.listener);
+    super.destroy();
   }
 }
 
@@ -3549,7 +3583,6 @@ class RouterLink extends Link {
       url,
       onClick(ev) {
         ev.stopPropagation();
-        ev.stopPropagation();
         if (opts.replace) {
           if (opts.query) {
             router.replace({ path: opts.path, query: opts.query });
@@ -3571,18 +3604,20 @@ class RouterLink extends Link {
 let router;
 function initRouter(opts) {
   if (router) {
-    return router;
+    throw new Error(
+      "The router has already been initialized. Initialization can only occur once to prevent inconsistencies and ensure proper functioning of the application."
+    );
   }
   if (opts.mode === "hash") {
-    router = new HashRouter(opts.rules, opts.cacheLimit);
+    router = new HashRouter(opts);
   } else {
-    router = new HistoryRouter({ rules: opts.rules, cacheLimit: opts.cacheLimit, base: opts.base });
+    router = new HistoryRouter(opts);
   }
   return router;
 }
 function getRouter() {
   if (!router) {
-    throw new Error("\u8DEF\u7531\u5C1A\u672A\u521D\u59CB\u5316");
+    throw new Error("The route has not been initialized !");
   }
   return router;
 }
