@@ -177,7 +177,8 @@ initRouter({
 }).mount(document.body)
 ```
 
-最后，复用布局不要使用继承的方式，一个页面来继承布局模块会导致很多问题，布局的复用应该使用组合的方式。
+布局的复用尽可能使用组合的方式，一些特殊的需求（如页面模块内部需要与布局交互）也可以使用继承的方式，
+这种情况耦合度会高一些，需要谨慎。
 
 ## 缓存
 
@@ -265,3 +266,94 @@ class Page extends DivModule {
 
 注意 mount 和 destroy 是覆写的父类方法，必须先调用父类的原方法。onPageHide 和 onPageShow
 则是约定的方法，属于模块实例自有的，模块中有这个方法，就会在相应的机会被调用。
+
+## 钩子函数
+
+从 0.9.0 版本开始，新增了路由的钩子函数，可以在路由导航切换页面的过程中进行一些额外的操作，
+部分钩子可以改变流程，实现一些特殊需求。
+
+钩子函数需要在初始化路由时传递，对所有页面有效。定义如下：
+
+```ts
+// 路由初始化参数
+interface RouterInitOpts:{
+  // 其它参数省略，可通过代码中的定义文件查看 ...
+  /**
+   * 钩子，部分函数能够影响流程，在路由导航处理失败的情况下，页面地址也不会回退
+   */
+  hooks?: {
+    /**
+     * 在路由导航之前执行，来决定是否要进行导航
+     * @param to 要导航的目标路由信息
+     * @param from 来源路由信息，表示用户是从哪个路由导航来的
+     * @returns 布尔值来表示是否继续进行路由导航
+     * @throws 发生异常的情况下，路由导航也会被中止
+     */
+    beforeEach?: (to: Route, from: Route) => Promise<boolean> | boolean
+    /**
+     * 在路由导航处理完成后执行，不管处理成功与否，即便在 beforeEach 钩子中返回 false 也会执行 afterEach，
+     * 总之每次导航必定会触发一次 afterEach
+     * @param to 要导航的目标路由信息
+     * @param from 来源路由信息，表示用户是从哪个路由导航来的
+     * @param  isSuccess 此次导航是否成功，如果导航过程发生异常或被 beforeEach 阻止切换都会不成功
+     * @returns 返回结果不会影响流程
+     */
+    afterEach?: (to: Route, from: Route, isSuccess: boolean) => void
+    /**
+     * 错误处理，可以在发生错误的情况下做一些额外的处理，比如重新导航到某个特定页面。
+     * 如果没有指定 errorHandler 则会由路由组件处理错误，默认会弹出提示。
+     * @param error 错误信息
+     * @param to 要导航的目标路由信息
+     * @param from 来源路由信息，表示用户是从哪个路由导航来的
+     * @returns
+     */
+    errorHandler?: (error: any, to: Route, from: Route) => void
+  }
+}
+```
+
+下面是示例：
+
+```ts
+initRouter({
+  mode: 'hash',
+  rules: [
+    // 省略...
+  ],
+  hooks: {
+    // 前置处理，可以改变流程，阻止页面切换
+    async beforeEach(to, from) {
+      // 比如可以进行检查权限，阻止无权限的用户访问
+      // 拦截 /admin/ 开头的地址
+      if (to.path.startsWith('/admin/')) {
+        const res = await checkPermissions()
+        if (res) {
+          return true
+        } else {
+          // 权限检查失败，返回 false 阻止切换，并导航去特定的页面
+          getRouter().replace('/403')
+          return false
+        }
+      }
+      // 其它地址放行
+      return true
+    },
+    // 执行后置逻辑
+    afterEach(to, from, isSuccess) {
+      // 例如，跟踪路由变化，记一些日志等
+      trackNavigation(to, from, isSuccess)
+    },
+    // 处理导航中发生的错误
+    errorHandler(error, to, from) {
+      // 可以在发生错误发生时，重新导航到特定页面进行展示
+      const msg = error instanceof Error ? error.message : `${error}`
+      getRouter().replace({ path: '/503', query: { msg } })
+      // 也可以做日志记录或者别的处理
+    }
+  }
+}).mount(document.body)
+```
+
+如果 beforeEach 钩子的处理需要一定的时间，在这段时间里页面是保持不变的，
+可以考虑（通过消息提示组件）添加一个全局 loading 来进行过渡，防止在等待的过程中，
+用户在页面中继续操作造成干扰或重复提交。

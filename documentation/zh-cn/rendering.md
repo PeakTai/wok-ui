@@ -36,6 +36,22 @@ class CustomModule extends FullRenderingModule {
 
 上面是一个简单的示例，每次渲染实际上 CustomModule 的内容会被清空，然后调用 buildContent 重新添加。
 
+## 立即渲染
+
+默认情况下 render 方法是不会立即渲染的，而是会异步执行，如果一次的同步执行的流程调用多次 render 方法，
+最终会被合并只执行一次渲染，buildContent 只会被调用一次。一些特殊情况，可能需要立即进行渲染，
+render 支持一个参数，设置为 true ，可以让渲染变成同步的，立即执行一次。
+
+```ts
+class CustomModule extends FullRenderingModule {
+  constructor() {
+    super()
+    // 传递第一个参数为 true ，强制立即渲染一次
+    this.render(true)
+  }
+}
+```
+
 ## 缓存
 
 全量渲染会有一些副作用，所有的子模块会被销毁掉，然后重新再创建，有时候子模块会关联很多资源，导致性能问题。
@@ -191,6 +207,34 @@ class List extends ResponsiveModule {
         }))
       })
     )
+  }
+}
+```
+
+## 立即渲染
+
+ResponsiveModule 模块的 render 方法与 FullRenderingModule 有所不同，第一个表示的是否强制渲染，
+如果设置为 true 表示不管页面的尺寸变化是否达到分隔点都进行渲染，默认为 true ，第二个参数才表示的是立即渲染。
+
+定义如下：
+
+```ts
+/**
+ * 请求立即进行渲染.渲染会异步执行，一次程序流程中有多次调用 render() 方法的，会合并成为一次，减少消耗.
+ * @param force 是否强制渲染,如果为 false ,则在尺寸信息不变化的情况下不会渲染
+ * @param immediate 是否立即渲染，如果设置为 true 则渲染会立同步执行，而不是异步
+ */
+protected render(force = true, immediate = false): void 
+```
+
+示例：
+
+```ts
+class CustomModule extends ResponsiveModule {
+  constructor() {
+    super()
+    // 强制并立即渲染一次
+    this.render(true,true)
   }
 }
 ```
