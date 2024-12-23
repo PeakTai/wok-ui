@@ -33,7 +33,6 @@ export class RouterLink extends Link {
       url,
       onClick(ev) {
         ev.stopPropagation()
-        ev.stopPropagation()
         if (opts.replace) {
           if (opts.query) {
             router.replace({ path: opts.path, query: opts.query })

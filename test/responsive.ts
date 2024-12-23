@@ -8,7 +8,8 @@ import {
   Spacer,
   createDomModule,
   getColor,
-  rem
+  rem,
+  Link
 } from '../lib'
 import { TestLayout } from './layout'
 
@@ -49,7 +50,8 @@ class Page extends ResponsiveModule {
         '拖动改变窗口大小来进行测试，每当页面宽度达到一个分隔点的临界值，内容就会重新渲染'
       ),
       new Spacer(),
-      new PrimaryBodyText(`当前是第 ${this.renderCount} 次渲染`),
+      new PrimaryBodyText(`当前是第 ${this.renderCount} 次渲染，`),
+      new Link({ content: '立即强制渲染一次', onClick: () => this.render(true, true) }),
       new Spacer(),
       new SecondaryBodyText(
         `当前的响应式尺寸信息：${sizeInfo.respSize}，下面网络显示为每行 ${cols} 列`
@@ -61,8 +63,7 @@ class Page extends ResponsiveModule {
         cells: [...new Array(36)].map((v, idx) =>
           createDomModule({
             style: {
-              backgroundColor: getColor().primary,
-              color: 'white',
+              border: `1px solid ${getColor().border}`,
               minHeight: '80px',
               display: 'flex',
               alignItems: 'center',

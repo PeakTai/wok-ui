@@ -1,13 +1,13 @@
 import { HashRouter } from './hash-router'
 import { HistoryRouter } from './history-router'
-import { Router, RouterRule } from './router'
+import { AbstractRouterInitOpts, Router } from './router'
 
 let router: Router | undefined
 
 /**
- * 初始化路由
+ * 路由初始化参数
  */
-export function initRouter(opts: {
+export type RouiterInitOpts = AbstractRouterInitOpts & {
   /**
    * 模式
    */
@@ -16,22 +16,23 @@ export function initRouter(opts: {
    * 基础路径，history 模式有效
    */
   base?: string
-  /**
-   * 路由规则
-   */
-  rules: RouterRule[]
-  /**
-   * 最大缓存路由页面的数量
-   */
-  cacheLimit?: number
-}) {
+}
+
+/**
+ * 初始化路由
+ */
+export function initRouter(opts: RouiterInitOpts) {
   if (router) {
-    return router
+    throw new Error(
+      'The router has already been initialized. ' +
+        'Initialization can only occur once to prevent inconsistencies and ' +
+        'ensure proper functioning of the application.'
+    )
   }
   if (opts.mode === 'hash') {
-    router = new HashRouter(opts.rules, opts.cacheLimit)
+    router = new HashRouter(opts)
   } else {
-    router = new HistoryRouter({ rules: opts.rules, cacheLimit: opts.cacheLimit, base: opts.base })
+    router = new HistoryRouter(opts)
   }
   return router
 }
@@ -40,7 +41,7 @@ export function initRouter(opts: {
  */
 export function getRouter(): Router {
   if (!router) {
-    throw new Error('路由尚未初始化')
+    throw new Error('The route has not been initialized !')
   }
   return router
 }

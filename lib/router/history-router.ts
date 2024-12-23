@@ -1,5 +1,5 @@
 import { buildQueryString, parseQueryString, Query } from './query-string'
-import { Router, RouterRule } from './router'
+import { AbstractRouterInitOpts, RouteDestination, Router } from './router'
 
 /**
  * h5 历史记录路由.
@@ -7,8 +7,8 @@ import { Router, RouterRule } from './router'
 export class HistoryRouter extends Router {
   readonly listener: () => void
   readonly base?: string
-  constructor(opts: { rules: RouterRule[]; base?: string; cacheLimit?: number }) {
-    super({ rules: opts.rules, cacheLimit: opts.cacheLimit })
+  constructor(opts: AbstractRouterInitOpts & { base?: string }) {
+    super(opts)
     this.base = opts.base
     // 判定
     const { pathname } = location
@@ -43,7 +43,7 @@ export class HistoryRouter extends Router {
     return { path, query }
   }
 
-  buildUrl(path: string | { path: string; query: Query }): string {
+  buildUrl(path: RouteDestination): string {
     if (typeof path === 'string') {
       return this.buildUrl({ path, query: {} })
     }
@@ -63,15 +63,16 @@ export class HistoryRouter extends Router {
     return `${location.origin}${finalPath}`
   }
 
-  push(path: string | { path: string; query: Query }) {
+  push(path: RouteDestination) {
     history.pushState({}, '', this.buildUrl(path))
   }
 
-  replace(path: string | { path: string; query: Query }) {
+  replace(path: RouteDestination) {
     history.replaceState({}, '', this.buildUrl(path))
   }
 
   destroy(): void {
     window.removeEventListener('popstate', this.listener)
+    super.destroy()
   }
 }

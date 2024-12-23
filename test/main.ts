@@ -1,4 +1,4 @@
-import { initRouter } from '../lib'
+import { getRouter, initRouter, showWarning } from '../lib'
 import { notFound } from './404'
 import { colorTest } from './color'
 import { homePage } from './home'
@@ -42,9 +42,42 @@ async function main() {
         module: () => import('./router3').then(res => res.routerTest3()),
         cache: true
       },
+      // 与钩子函数配合进行测试
+      {
+        path: 'router-error',
+        module: () => import('./router-error').then(res => res.routerError())
+      },
       // 通配页面，凡是找不到地址的，都将展示这个页面
       { path: '*', module: notFound }
-    ]
+    ],
+    // 钩子测试
+    hooks: {
+      async beforeEach(to, from) {
+        console.log('路由导航开始', to, from)
+        // 如果路由是 router 4 则拦截，测试阻止导航和异常的处理
+        if (to.path === 'router4' || to.path === '/router4') {
+          if (to.query && to.query['error']) {
+            throw to.query['error'] as string
+          } else {
+            showWarning('导航中止，页面不会变化，但是地址会变化')
+            return false
+          }
+        }
+        return true
+      },
+      afterEach(to, from, isSuccess) {
+        console.log('导航结束', isSuccess, to, from)
+      },
+      errorHandler(error, to, from) {
+        showWarning('路由导航发生错误，重新导航到错误展示页面')
+        console.log('to = ', to)
+        console.log('from = ', from)
+        console.log(error)
+        // 转到展示页面
+        const msg = error instanceof Error ? error.message || error.stack : `${error}`
+        getRouter().replace({ path: 'router-error', query: { msg: msg || '' } })
+      }
+    }
   }).mount(document.body)
 }
 

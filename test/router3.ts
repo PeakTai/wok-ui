@@ -20,6 +20,7 @@ class Page extends FullRenderingModule {
     super()
     this.loading = true
     this.render()
+    document.title = getRouter().getParam('q')
     setTimeout(() => {
       this.loading = false
       this.render()
@@ -102,6 +103,7 @@ class Page extends FullRenderingModule {
   }
 
   onPageShow() {
+    document.title = getRouter().getParam('q')
     showSuccess('路由页面被显示')
   }
 }

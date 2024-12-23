@@ -1,5 +1,5 @@
+import { Cache } from './cache'
 import { Module } from '../module'
-import { proxyCachedModule } from './cached-module'
 
 /**
  * 全量渲染模块，当内部有变化时，需要整个模块的内容重新渲染.
@@ -19,16 +19,23 @@ export abstract class FullRenderingModule extends Module {
 
   private __pendingRender = false
   /**
-   * 缓存的模块
+   * 缓存
    */
-  private __cachedModules = new Map<string, Module>()
+  private __cache = new Cache()
 
   /**
    * 渲染。会尽可能减少负载的情况下重新构建内容。
-   * 注意：渲染是异步的，不会立即执行，如果有需要等等渲染结果的逻辑，是不能使用这个方法的，
-   * FullRenderingModule 无法满足这种需求。
+   * 注意：渲染是异步的，不会立即执行，由于渲染操作有可能被合并执行，也没有回调。
+   * 如果有需要等等渲染结果的逻辑，可以将设置参数 immediate 为 true，这样渲染就是同步的。
+   *
+   * @param immediate 是否立即渲染
    */
-  protected render() {
+  protected render(immediate = false) {
+    if (immediate) {
+      this.empty()
+      this.buildContent()
+      return
+    }
     this.__pendingRender = true
     setTimeout(() => {
       if (!this.__pendingRender) {
@@ -67,13 +74,7 @@ export abstract class FullRenderingModule extends Module {
      */
     module: () => Module
   }): Module {
-    const cachedModule = this.__cachedModules.get(opts.key)
-    if (cachedModule) {
-      return cachedModule
-    }
-    const module = proxyCachedModule(opts.module())
-    this.__cachedModules.set(opts.key, module)
-    return module
+    return this.__cache.cache(opts)
   }
 
   /**
@@ -81,22 +82,13 @@ export abstract class FullRenderingModule extends Module {
    * @param key
    */
   protected removeCache(key: string) {
-    const module = this.__cachedModules.get(key)
-    if (module) {
-      const { destroyThoroughly } = module as any
-      if (typeof destroyThoroughly === 'function') {
-        destroyThoroughly()
-      }
-      this.__cachedModules.delete(key)
-    }
+    this.__cache.remove(key)
   }
   /**
    * 清理掉所有的缓存
    */
   protected clearCaches() {
-    for (const key of this.__cachedModules.keys()) {
-      this.removeCache(key)
-    }
+    this.__cache.clear()
   }
 
   destroy(): void {

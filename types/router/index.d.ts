@@ -1,8 +1,8 @@
-import { Router, RouterRule } from './router';
+import { AbstractRouterInitOpts, Router } from './router';
 /**
- * 初始化路由
+ * 路由初始化参数
  */
-export declare function initRouter(opts: {
+export type RouiterInitOpts = AbstractRouterInitOpts & {
     /**
      * 模式
      */
@@ -11,15 +11,11 @@ export declare function initRouter(opts: {
      * 基础路径，history 模式有效
      */
     base?: string;
-    /**
-     * 路由规则
-     */
-    rules: RouterRule[];
-    /**
-     * 最大缓存路由页面的数量
-     */
-    cacheLimit?: number;
-}): Router;
+};
+/**
+ * 初始化路由
+ */
+export declare function initRouter(opts: RouiterInitOpts): Router;
 /**
  * 获取路由
  */

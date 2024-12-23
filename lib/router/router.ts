@@ -1,5 +1,6 @@
 import { showWarning } from '../message'
-import { DivModule, Module } from '../module'
+import { Module } from '../module'
+import { CachedModule } from './cache'
 import { PathPart, isPathRuleEquals, matchPath, parsePathRule } from './path'
 import { Query } from './query-string'
 
@@ -8,6 +9,11 @@ import { Query } from './query-string'
  * 注：取消了对构造器的支持，因为构造器在运行时很难与函数区分开，程序的处理过于复杂，也不理想.
  */
 export type RouterModule = (() => Module) | (() => Promise<Module>)
+
+/**
+ * 目标路由位置
+ */
+export type RouteDestination = string | { path: string; query: Query }
 /**
  * 路由规则.
  */
@@ -25,7 +31,7 @@ export interface RouterRule {
    */
   module: RouterModule
   /**
-   * 是否缓存
+   * 是否缓存，被缓存的页面模块会被包裹在一层 div 中，页面切换时不会真正销毁，而是将包裹层隐藏
    */
   cache?: boolean
 }
@@ -36,69 +42,58 @@ export interface Route {
   path: string
   query?: Query
 }
-
+/**
+ * 路由抽象基类初始化参数
+ */
+export interface AbstractRouterInitOpts {
+  /**
+   * 规则，不允许重复
+   */
+  rules: RouterRule[]
+  /**
+   * 缓存页面的数量限制
+   */
+  cacheLimit?: number
+  /**
+   * 钩子，部分函数能够影响流程，在路由导航处理失败的情况下，页面地址也不会回退
+   */
+  hooks?: {
+    /**
+     * 在路由导航之前执行，来决定是否要进行导航
+     * @param to 要导航的目标路由信息
+     * @param from 来源路由信息，表示用户是从哪个路由导航来的
+     * @returns 布尔值来表示是否继续进行路由导航
+     * @throws 发生异常的情况下，路由导航也会被中止
+     */
+    beforeEach?: (to: Route, from: Route) => Promise<boolean> | boolean
+    /**
+     * 在路由导航处理完成后执行，不管处理成功与否，即便在 beforeEach 钩子中返回 false 也会执行 afterEach，
+     * 总之每次导航必定会触发一次 afterEach
+     * @param to 要导航的目标路由信息
+     * @param from 来源路由信息，表示用户是从哪个路由导航来的
+     * @param  isSuccess 此次导航是否成功
+     * @returns 返回结果不会影响流程
+     */
+    afterEach?: (to: Route, from: Route, isSuccess: boolean) => void
+    /**
+     * 错误处理，可以在发生错误的情况下做一些额外的处理，比如重新导航到某个特定页面。
+     * 如果没有指定 errorHandler 则会由路由组件来处理，默认会弹出提示。
+     * @param error 错误信息
+     * @param to 要导航的目标路由信息
+     * @param from 来源路由信息，表示用户是从哪个路由导航来的
+     * @returns
+     */
+    errorHandler?: (error: any, to: Route, from: Route) => void
+  }
+}
+/**
+ * 路径信息
+ */
 interface PathInfo {
   pathRule: string
   parts: PathPart[]
   module: RouterModule
   cache: boolean
-}
-/**
- * 缓存模块，不会真正的销毁，可重复使用.
- */
-class CachedModule extends DivModule {
-  private scrollPos?: { left: number; top: number }
-  private title = ''
-  private canceled?: true
-
-  constructor(readonly key: string, module: Module) {
-    super()
-    this.addChild(module)
-  }
-
-  cacheScroll() {
-    this.scrollPos = { left: window.scrollX, top: window.scrollY }
-  }
-  /**
-   * 取消缓存，取消后，再当页面被隐藏时模块销毁
-   */
-  cancel() {
-    this.canceled = true
-  }
-
-  hide() {
-    if (this.canceled) {
-      this.destroy()
-      return
-    }
-    this.el.style.display = 'none'
-    this.title = document.title
-    this.find(() => true).forEach(m => {
-      const mm = m as any
-      if (mm.onPageHide) {
-        mm.onPageHide()
-      }
-    })
-  }
-
-  show() {
-    this.el.style.display = 'block'
-    if (this.title) {
-      document.title = this.title
-    }
-    if (this.scrollPos) {
-      const { left, top } = this.scrollPos
-      setTimeout(() => {
-        window.scrollTo({ left, top, behavior: 'instant' as ScrollBehavior })
-      }, 0)
-    }
-    this.find(() => true).forEach(m => {
-      const mm = m as any
-      if (mm.onPageShow) {
-        mm.onPageShow()
-      }
-    })
-  }
 }
 
 /**
@@ -141,12 +136,12 @@ export abstract class Router extends Module {
    */
   protected ignoreScroll = false
 
-  constructor(options: { rules: RouterRule[]; cacheLimit?: number }) {
+  constructor(private routerOpts: AbstractRouterInitOpts) {
     super(document.createElement('div'))
-    if (options.cacheLimit && options.cacheLimit >= 1) {
-      this.cacheLimit = options.cacheLimit
+    if (routerOpts.cacheLimit && routerOpts.cacheLimit >= 1) {
+      this.cacheLimit = routerOpts.cacheLimit
     }
-    options.rules
+    routerOpts.rules
       .flatMap<PathInfo>(rule => {
         if (!rule.alias) {
           return [
@@ -202,23 +197,10 @@ export abstract class Router extends Module {
     }
     window.addEventListener('scroll', this.scrollListener)
   }
-
-  handleUrl() {
-    const parRes = this.parseCurrentUrl()
-    this.currentPath = parRes.path
-    this.query = parRes.query || {}
-    // 匹配路径
-    const targetPath = this.paths.find(p => {
-      const res = matchPath(this.currentPath, p.parts)
-      if (res.matched) {
-        this.pathVars = res.vars || {}
-        return true
-      } else {
-        return false
-      }
-    })
-
-    // 清理或隐藏掉现在的模块
+  /**
+   * 卸载当前模块，准备切换到下个页面的模块
+   */
+  private unloadCurrentModule() {
     if (this.currentModule) {
       if (this.currentModule instanceof CachedModule) {
         this.currentModule.hide()
@@ -226,59 +208,94 @@ export abstract class Router extends Module {
         this.currentModule.destroy()
       }
     }
-    // 重置页面滚动位置，一般切换地址，位置都会重置
-    // 但是实测部分移动端浏览器不会，反而将下个页面顶起，主动重置一次可以避免
-    window.scrollTo({ left: 0, top: 0, behavior: 'instant' as ScrollBehavior })
-    if (!targetPath) {
-      if (this.defaultPathInfo) {
-        this.handleModule(this.defaultPathInfo.module)
-          .then(m => {
-            this.addChild(m)
-            this.currentModule = m
-          })
-          .catch(showWarning)
-      } else {
-        showWarning('Path not set：' + this.currentPath)
-      }
-    } else if (targetPath.cache) {
-      const key = JSON.stringify(parRes)
-      // 先尝试缓存
-      const cachedModule = this.getChildren()
-        .filter(c => c instanceof CachedModule)
-        .map(c => c as CachedModule)
-        .find(c => c.key === key)
-      if (cachedModule) {
-        cachedModule.show()
-        this.currentModule = cachedModule
-        return
-      }
-      // 未找到缓存，重新构建并缓存
-      this.handleModule(targetPath.module)
-        .then(m => {
-          const newCachedModule = new CachedModule(key, m)
-          this.addChild(newCachedModule)
-          this.currentModule = newCachedModule
-          // 缓存满则清理掉最前面的模块
-          const cachedModules = this.getChildren()
-            .filter(c => c instanceof CachedModule)
-            .map(c => c as CachedModule)
-          if (cachedModules.length > this.cacheLimit) {
-            this.removeChild(cachedModules[0])
-          }
-        })
-        .catch(showWarning)
-    } else {
-      this.handleModule(targetPath.module)
-        .then(m => {
-          this.addChild(m)
-          this.currentModule = m
-        })
-        .catch(showWarning)
-    }
   }
 
-  private async handleModule(module: RouterModule): Promise<Module> {
-    return module()
+  handleUrl() {
+    this.asyncHandleUrl().catch(showWarning)
+  }
+
+  private async asyncHandleUrl() {
+    const fromRoute = this.getRouterInfo()
+    const toRoute = this.parseCurrentUrl()
+    let isSuccess = true
+    try {
+      // 前置钩子
+      if (this.routerOpts.hooks && this.routerOpts.hooks.beforeEach) {
+        const res = await this.routerOpts.hooks.beforeEach(toRoute, fromRoute)
+        if (!res) {
+          isSuccess = false
+          return
+        }
+      }
+      this.currentPath = toRoute.path
+      this.query = toRoute.query || {}
+      // 匹配路径
+      const targetPath = this.paths.find(p => {
+        const res = matchPath(this.currentPath, p.parts)
+        if (res.matched) {
+          this.pathVars = res.vars || {}
+          return true
+        } else {
+          return false
+        }
+      })
+      // 重置页面滚动位置，一般切换地址，位置都会重置
+      // 但是实测部分移动端浏览器不会，反而将下个页面顶起，主动重置一次可以避免
+      window.scrollTo({ left: 0, top: 0, behavior: 'instant' as ScrollBehavior })
+      if (!targetPath) {
+        if (this.defaultPathInfo) {
+          const module = await this.defaultPathInfo.module()
+          this.unloadCurrentModule()
+          this.addChild(module)
+          this.currentModule = module
+        } else {
+          throw 'Path not set：' + this.currentPath
+        }
+      } else if (targetPath.cache) {
+        const key = JSON.stringify(toRoute)
+        // 先尝试缓存
+        const cachedModule = this.getChildren()
+          .filter(c => c instanceof CachedModule)
+          .map(c => c as CachedModule)
+          .find(c => c.key === key)
+        if (cachedModule) {
+          this.unloadCurrentModule()
+          cachedModule.show()
+          this.currentModule = cachedModule
+          return
+        }
+        // 未找到缓存，重新构建并缓存
+        const module = await targetPath.module()
+        const newCachedModule = new CachedModule(key, module)
+        this.unloadCurrentModule()
+        this.addChild(newCachedModule)
+        this.currentModule = newCachedModule
+        // 缓存满则清理掉最前面的模块
+        const cachedModules = this.getChildren()
+          .filter(c => c instanceof CachedModule)
+          .map(c => c as CachedModule)
+        if (cachedModules.length > this.cacheLimit) {
+          this.removeChild(cachedModules[0])
+        }
+      } else {
+        const module = await targetPath.module()
+        this.unloadCurrentModule()
+        this.addChild(module)
+        this.currentModule = module
+      }
+    } catch (e) {
+      isSuccess = false
+      if (this.routerOpts.hooks && this.routerOpts.hooks.errorHandler) {
+        this.routerOpts.hooks.errorHandler(e, toRoute, fromRoute)
+        return
+      }
+      throw e
+    } finally {
+      // 后置钩子
+      if (this.routerOpts.hooks && this.routerOpts.hooks.afterEach) {
+        this.routerOpts.hooks.afterEach(toRoute, fromRoute, isSuccess)
+      }
+    }
   }
 
   /**
@@ -330,7 +347,7 @@ export abstract class Router extends Module {
    * 清除匹配指定规则的页面的缓存
    * @param filter 过滤器，匹配要被清理的页面
    */
-  removeCache(filter: (route: Route) => void) {
+  removeCache(filter: (route: Route) => boolean) {
     this.getChildren()
       .filter(c => c instanceof CachedModule)
       .map(c => c as CachedModule)
@@ -347,9 +364,9 @@ export abstract class Router extends Module {
       })
   }
 
-  abstract buildUrl(path: string | { path: string; query: Query }): string
-  abstract push(path: string | { path: string; query: Query }): void
-  abstract replace(path: string | { path: string; query: Query }): void
+  abstract buildUrl(location: RouteDestination): string
+  abstract push(location: RouteDestination): void
+  abstract replace(location: RouteDestination): void
   /**
    * 按名称获取链接上的参数，返回第一个值，如“url?a=1&a=2”，getParam('a') 返回 '1'
    * @param paramName 参数名称

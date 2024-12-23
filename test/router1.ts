@@ -23,6 +23,17 @@ class Page extends DivModule {
         path: 'router3',
         query: { q: '2' },
         content: '进入设置了缓存的页面，参数 q=2'
+      }),
+      new Spacer(),
+      new RouterLink({
+        path: '/router4',
+        content: '跳转将阻止跳转的页面地址'
+      }),
+      new Spacer(),
+      new RouterLink({
+        path: 'router4',
+        query: { error: '专为测试路由导航的错误' },
+        content: '跳转路由导航将会发生错误的页面'
       })
     )
   }

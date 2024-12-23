@@ -77,6 +77,14 @@ class Page extends FullRenderingModule {
             }
           }),
           new Button({
+            text: '立即渲染两次',
+            onClick: () => {
+              // 调用几次就渲染几次
+              this.render(true)
+              this.render(true)
+            }
+          }),
+          new Button({
             text: '清理掉缓存后再渲染',
             onClick: () => {
               this.clearCaches()
@@ -91,30 +99,4 @@ class Page extends FullRenderingModule {
 
 export function fullRenderingTest() {
   return new TestLayout(new Page())
-}
-
-class CanNotCacheModule extends FullRenderingModule {
-  #count = 0
-  // 使用 ts 的语法 private 是可以的，最终生成的 js 仍然是普通的属性
-  private timerId = 0
-
-  constructor() {
-    super()
-    this.render()
-    this.timerId = setTimeout(() => {
-      this.#count++
-      this.render()
-    }, 1000)
-  }
-
-  protected buildContent(): void {
-    // 由于 #count 是私有属性，无法被代理，调用 this.#count 将报以下的错误：
-    // Cannot read private member #count from an object whose class did not declare it
-    this.addChild(`${this.#count}次`)
-  }
-
-  destroy() {
-    clearTimeout(this.timerId)
-    super.destroy()
-  }
 }

@@ -1,5 +1,5 @@
 import { buildQueryString, parseQueryString, Query } from './query-string'
-import { Router, RouterRule } from './router'
+import { AbstractRouterInitOpts, RouteDestination, Router } from './router'
 
 /**
  * 哈希路由.
@@ -7,8 +7,8 @@ import { Router, RouterRule } from './router'
 export class HashRouter extends Router {
   private readonly listener: (e: Event) => void
 
-  constructor(rules: RouterRule[], cacheLimit?: number) {
-    super({ rules, cacheLimit })
+  constructor(opts: AbstractRouterInitOpts) {
+    super(opts)
     this.listener = (e: Event) => {
       e.preventDefault()
       this.ignoreScroll = true
@@ -37,7 +37,7 @@ export class HashRouter extends Router {
     return { path, query }
   }
 
-  buildUrl(path: string | { path: string; query: Query }): string {
+  buildUrl(path: RouteDestination): string {
     const { href } = location
     const poundIdx = href.indexOf('#')
     const urlWithoutHash = poundIdx === -1 ? href : href.substring(0, poundIdx)
@@ -49,7 +49,7 @@ export class HashRouter extends Router {
     return `${urlWithoutHash}#${hash}`
   }
 
-  push(path: string | { path: string; query: Query }) {
+  push(path: RouteDestination) {
     if (typeof path === 'string') {
       location.hash = path
       return
@@ -58,7 +58,7 @@ export class HashRouter extends Router {
     location.hash = `${path.path}?${qs}`
   }
 
-  replace(path: string | { path: string; query: Query }) {
+  replace(path: RouteDestination) {
     location.replace(this.buildUrl(path))
   }
 

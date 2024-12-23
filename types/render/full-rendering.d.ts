@@ -14,15 +14,17 @@ export declare abstract class FullRenderingModule extends Module {
     constructor(rootEl?: HTMLElement);
     private __pendingRender;
     /**
-     * 缓存的模块
+     * 缓存
      */
-    private __cachedModules;
+    private __cache;
     /**
      * 渲染。会尽可能减少负载的情况下重新构建内容。
-     * 注意：渲染是异步的，不会立即执行，如果有需要等等渲染结果的逻辑，是不能使用这个方法的，
-     * FullRenderingModule 无法满足这种需求。
+     * 注意：渲染是异步的，不会立即执行，由于渲染操作有可能被合并执行，也没有回调。
+     * 如果有需要等等渲染结果的逻辑，可以将设置参数 immediate 为 true，这样渲染就是同步的。
+     *
+     * @param immediate 是否立即渲染
      */
-    protected render(): void;
+    protected render(immediate?: boolean): void;
     /**
      * 构建内容, 内部实现完成的内容构建逻辑。不要主动调用这个方法，
      * 在需要全量渲染时调用 render() 方法，render() 方法内容会在适当的时候调用 buildContent()，
