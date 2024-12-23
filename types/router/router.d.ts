@@ -60,10 +60,10 @@ export interface AbstractRouterInitOpts {
          * 在路由导航之前执行，来决定是否要进行导航
          * @param to 要导航的目标路由信息
          * @param from 来源路由信息，表示用户是从哪个路由导航来的
-         * @returns 布尔值来表示是否继续进行路由导航
+         * @returns 布尔值来表示是否继续进行路由导航，或者返回一个模块替代原本的页面模块来进行渲染
          * @throws 发生异常的情况下，路由导航也会被中止
          */
-        beforeEach?: (to: Route, from: Route) => Promise<boolean> | boolean;
+        beforeEach?: (to: Route, from: Route) => Promise<boolean | Module> | boolean | Module;
         /**
          * 在路由导航处理完成后执行，不管处理成功与否，即便在 beforeEach 钩子中返回 false 也会执行 afterEach，
          * 总之每次导航必定会触发一次 afterEach
@@ -79,9 +79,9 @@ export interface AbstractRouterInitOpts {
          * @param error 错误信息
          * @param to 要导航的目标路由信息
          * @param from 来源路由信息，表示用户是从哪个路由导航来的
-         * @returns
+         * @returns 返回空或一个模块来进行渲染
          */
-        errorHandler?: (error: any, to: Route, from: Route) => void;
+        errorHandler?: (error: any, to: Route, from: Route) => void | Promise<Module> | Module;
     };
 }
 /**

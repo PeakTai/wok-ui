@@ -5,6 +5,8 @@ import { homePage } from './home'
 import { initI18n } from './i18n'
 import { i18nTest } from './i18n-test'
 import { iconTest } from './icon'
+import { buildErrorPage } from './router-error'
+import { buildForbiddenPage } from './router-forbidden'
 import { textTest } from './text'
 
 async function main() {
@@ -42,11 +44,6 @@ async function main() {
         module: () => import('./router3').then(res => res.routerTest3()),
         cache: true
       },
-      // 与钩子函数配合进行测试
-      {
-        path: 'router-error',
-        module: () => import('./router-error').then(res => res.routerError())
-      },
       // 通配页面，凡是找不到地址的，都将展示这个页面
       { path: '*', module: notFound }
     ],
@@ -55,12 +52,21 @@ async function main() {
       async beforeEach(to, from) {
         console.log('路由导航开始', to, from)
         // 如果路由是 router 4 则拦截，测试阻止导航和异常的处理
-        if (to.path === 'router4' || to.path === '/router4') {
-          if (to.query && to.query['error']) {
-            throw to.query['error'] as string
-          } else {
-            showWarning('导航中止，页面不会变化，但是地址会变化')
-            return false
+        if (to.path === 'router3' || to.path === '/router3') {
+          if (to.query) {
+            const test = to.query['test']
+            if (test) {
+              if (test === 'forbidden') {
+                showWarning('beforeEach 使用自定义模块替换原页面')
+                return buildForbiddenPage(from.path, to.path)
+              } else if (test === 'error') {
+                showWarning('导航处理过程中抛出异常')
+                throw new Error('beforeEach 处理失败，抛出的异常')
+              } else {
+                showWarning('导航中止，页面不会变化，但是地址会变化')
+                return false
+              }
+            }
           }
         }
         return true
@@ -69,13 +75,9 @@ async function main() {
         console.log('导航结束', isSuccess, to, from)
       },
       errorHandler(error, to, from) {
-        showWarning('路由导航发生错误，重新导航到错误展示页面')
-        console.log('to = ', to)
-        console.log('from = ', from)
-        console.log(error)
-        // 转到展示页面
-        const msg = error instanceof Error ? error.message || error.stack : `${error}`
-        getRouter().replace({ path: 'router-error', query: { msg: msg || '' } })
+        showWarning('路由导航发生错误，使用错误展示模块替换原页面')
+        // 展示错误页面
+        return buildErrorPage(from.path, to.path, error)
       }
     }
   }).mount(document.body)

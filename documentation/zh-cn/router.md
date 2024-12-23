@@ -330,9 +330,12 @@ initRouter({
         if (res) {
           return true
         } else {
-          // 权限检查失败，返回 false 阻止切换，并导航去特定的页面
-          getRouter().replace('/403')
-          return false
+          // 权限检查失败，返回 false 阻止切换
+          // return false
+          // 阻止后什么也不会发生，地址变了，但是页面无变化
+          // 还可以使用自定义的模块来替代原来的页面模块进行渲染，进行信息提示，这样体验更好
+          // 这里的 ForbiddenPage 是一个自定义模块，会显示无权限的提示
+          return new ForbiddenPage()
         }
       }
       // 其它地址放行
@@ -345,9 +348,9 @@ initRouter({
     },
     // 处理导航中发生的错误
     errorHandler(error, to, from) {
-      // 可以在发生错误发生时，重新导航到特定页面进行展示
-      const msg = error instanceof Error ? error.message : `${error}`
-      getRouter().replace({ path: '/503', query: { msg } })
+      // 可以在发生错误发生时，使用自定义的错误展示模块来渲染页面
+      // 这里 ErrorPage 是一个自定义的模块，会展示错误信息，提示用户进行反馈
+      return new ErrorPage(error)
       // 也可以做日志记录或者别的处理
     }
   }
@@ -357,3 +360,5 @@ initRouter({
 如果 beforeEach 钩子的处理需要一定的时间，在这段时间里页面是保持不变的，
 可以考虑（通过消息提示组件）添加一个全局 loading 来进行过渡，防止在等待的过程中，
 用户在页面中继续操作造成干扰或重复提交。
+
+beforeEach 和 errorHandler 返回的自定义模块不会被缓存，不受路由配置里 cache 参数的影响。

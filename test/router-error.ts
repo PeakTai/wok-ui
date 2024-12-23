@@ -1,20 +1,21 @@
-import { DivModule, FullRenderingModule, getRouter, LargeTitle, Spacer } from '../lib'
+import { DivModule, LargeTitle, Spacer } from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {
-  constructor() {
+  constructor(from: string, to: string, error: any) {
     super()
     document.title = '路由错误测试'
+    const msg = error instanceof Error ? error.message : `${error}`
     this.addChild(
       new LargeTitle('路由导航发生错误'),
       new Spacer(),
-      `如果来到这个页面，就表明路由导航过程中发生了错误`,
+      `从页面 ${from} 到页面 ${to} 的过程中发生了异常。`,
       new Spacer(),
-      `错误信息：${getRouter().getParam('msg')}`
+      `错误信息：${msg}`
     )
   }
 }
 
-export function routerError() {
-  return new TestLayout(new Page())
+export function buildErrorPage(from: string, to: string, error: any) {
+  return new TestLayout(new Page(from, to, error))
 }
