@@ -3295,8 +3295,15 @@ class Router extends Module {
     try {
       if (this.routerOpts.hooks && this.routerOpts.hooks.beforeEach) {
         const res = await this.routerOpts.hooks.beforeEach(toRoute, fromRoute);
-        if (!res) {
-          isSuccess = false;
+        if (typeof res === "boolean") {
+          if (!res) {
+            isSuccess = false;
+            return;
+          }
+        } else if (res instanceof Module) {
+          this.unloadCurrentModule();
+          this.addChild(res);
+          this.currentModule = res;
           return;
         }
       }
@@ -3348,7 +3355,12 @@ class Router extends Module {
     } catch (e) {
       isSuccess = false;
       if (this.routerOpts.hooks && this.routerOpts.hooks.errorHandler) {
-        this.routerOpts.hooks.errorHandler(e, toRoute, fromRoute);
+        const res = await this.routerOpts.hooks.errorHandler(e, toRoute, fromRoute);
+        if (res instanceof Module) {
+          this.unloadCurrentModule();
+          this.addChild(res);
+          this.currentModule = res;
+        }
         return;
       }
       throw e;
