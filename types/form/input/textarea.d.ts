@@ -16,6 +16,8 @@ export declare class TextArea extends FormInput {
     constructor(textAreaopts: TextInputOpts & {
         rows?: number;
     });
+    mount(parentEl: Element): void;
+    focus(): void;
     private handleChange;
     private __validate;
     validate(): boolean;

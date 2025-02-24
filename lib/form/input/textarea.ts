@@ -75,6 +75,17 @@ export class TextArea extends FormInput {
     }
   }
 
+  mount(parentEl: Element): void {
+    super.mount(parentEl)
+    if (this.textAreaopts.autofocus) {
+      setTimeout(() => this.textareaEl.focus(), 0)
+    }
+  }
+
+  focus() {
+    this.textareaEl.focus()
+  }
+
   private handleChange() {
     if (this.textAreaopts.onChange) {
       this.textAreaopts.onChange(this.textareaEl.value)

@@ -2226,6 +2226,15 @@ class TextArea extends FormInput {
       this.textareaEl.addEventListener("blur", () => onBlur());
     }
   }
+  mount(parentEl) {
+    super.mount(parentEl);
+    if (this.textAreaopts.autofocus) {
+      setTimeout(() => this.textareaEl.focus(), 0);
+    }
+  }
+  focus() {
+    this.textareaEl.focus();
+  }
   handleChange() {
     if (this.textAreaopts.onChange) {
       this.textAreaopts.onChange(this.textareaEl.value);
