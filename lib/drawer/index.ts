@@ -25,6 +25,11 @@ export interface DrawerOpts {
    * 关闭事件回调
    */
   onClose?: () => void
+  /**
+   * 抽屉完全显示回调，在抽屉入场动画完成后触发
+   * @returns
+   */
+  onShown?: () => void
 }
 
 export interface Drawer {
@@ -105,7 +110,13 @@ class Content extends DivModule implements DivModule {
     } else {
       this.el.classList.add('right')
     }
-    this.enter().catch(showWarning)
+    this.enter()
+      .then(() => {
+        if (opts.onShown) {
+          opts.onShown()
+        }
+      })
+      .catch(showWarning)
     if (opts.replaceByBody) {
       this.addChild(...buildSubModules(opts.body))
       return

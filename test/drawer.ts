@@ -1,4 +1,15 @@
-import { Button, DivModule, HBox, LargeTitle, Spacer, rem, showDrawer, showWarning } from '../lib'
+import {
+  Button,
+  DivModule,
+  Form,
+  HBox,
+  LargeTitle,
+  Spacer,
+  TextInput,
+  rem,
+  showDrawer,
+  showWarning
+} from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {
@@ -119,6 +130,32 @@ class Page extends DivModule {
                 },
                 onClose() {
                   showWarning('抽屉关闭了')
+                }
+              })
+            }
+          }),
+          new Button({
+            text: '嵌入表单，自动聚集',
+            onClick(ev) {
+              let input: TextInput
+              showDrawer({
+                title: '嵌入表单',
+                placement: 'right',
+                body: new Form({
+                  children: [
+                    '请输入手机号',
+                    new Spacer('sm'),
+                    (input = new TextInput({
+                      placeholder: '不得超过15个字符',
+                      required: true,
+                      maxLength: 15
+                    })),
+                    new Spacer(),
+                    new Button({ text: '下一步', type: 'primary', formType: 'submit' })
+                  ]
+                }),
+                onShown() {
+                  input.focus()
                 }
               })
             }

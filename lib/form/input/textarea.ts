@@ -3,6 +3,16 @@ import { getSize } from '../../size'
 import { FormInput } from '../form-input'
 import { TextInputOpts, ValidateResult } from './text'
 
+export interface TextAreaOpts extends TextInputOpts {
+  /**
+   * 默认行数
+   */
+  rows?: number
+  /**
+   * 是否自动高度
+   */
+  autoHeight?: boolean
+}
 /**
  * 多行文本
  *
@@ -16,8 +26,12 @@ export class TextArea extends FormInput {
   private composing = false
 
   private textareaEl: HTMLTextAreaElement
+  /**
+   * 记录上内边距，为了做自动高度，要准确的高度值
+   */
+  private paddingY = 0
 
-  constructor(private readonly textAreaopts: TextInputOpts & { rows?: number }) {
+  constructor(private readonly textAreaopts: TextAreaOpts) {
     super(document.createElement('div'))
     this.textareaEl = document.createElement('textarea')
     this.textareaEl.classList.add('wok-ui-input')
@@ -25,12 +39,15 @@ export class TextArea extends FormInput {
     const size = getSize()
     switch (textAreaopts.size) {
       case 'lg':
+        this.paddingY = size.textLg * 0.375
         this.textareaEl.style.setProperty('--input-font-size', `${size.textLg}px`)
         break
       case 'sm':
+        this.paddingY = size.textSm * 0.375
         this.textareaEl.style.setProperty('--input-font-size', `${size.textSm}px`)
         break
       default:
+        this.paddingY = size.text * 0.375
         this.textareaEl.style.setProperty('--input-font-size', `${size.text}px`)
         break
     }
@@ -64,6 +81,7 @@ export class TextArea extends FormInput {
       this.handleChange()
     })
     this.textareaEl.addEventListener('input', () => {
+      8
       if (this.composing) {
         return
       }
@@ -77,6 +95,12 @@ export class TextArea extends FormInput {
 
   mount(parentEl: Element): void {
     super.mount(parentEl)
+    // 自动高度的处理
+    if (this.textAreaopts.autoHeight && this.textareaEl.value.trim()) {
+      setTimeout(() => {
+        this.textareaEl.style.height = this.textareaEl.scrollHeight + this.paddingY * 2 + 'px'
+      }, 0)
+    }
     if (this.textAreaopts.autofocus) {
       setTimeout(() => this.textareaEl.focus(), 0)
     }
@@ -86,7 +110,17 @@ export class TextArea extends FormInput {
     this.textareaEl.focus()
   }
 
+  setValue(value: string) {
+    this.textareaEl.value = value
+    this.handleChange()
+  }
+
   private handleChange() {
+    // 自动高度的处理
+    if (this.textAreaopts.autoHeight && this.textareaEl.value.trim()) {
+      this.textareaEl.style.height = 'auto'
+      this.textareaEl.style.height = this.textareaEl.scrollHeight + this.paddingY * 2 + 'px'
+    }
     if (this.textAreaopts.onChange) {
       this.textAreaopts.onChange(this.textareaEl.value)
     }
