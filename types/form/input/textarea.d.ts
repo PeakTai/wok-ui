@@ -1,5 +1,15 @@
 import { FormInput } from '../form-input';
 import { TextInputOpts } from './text';
+export interface TextAreaOpts extends TextInputOpts {
+    /**
+     * 默认行数
+     */
+    rows?: number;
+    /**
+     * 是否自动高度
+     */
+    autoHeight?: boolean;
+}
 /**
  * 多行文本
  *
@@ -13,11 +23,14 @@ export declare class TextArea extends FormInput {
      */
     private composing;
     private textareaEl;
-    constructor(textAreaopts: TextInputOpts & {
-        rows?: number;
-    });
+    /**
+     * 记录上内边距，为了做自动高度，要准确的高度值
+     */
+    private paddingY;
+    constructor(textAreaopts: TextAreaOpts);
     mount(parentEl: Element): void;
     focus(): void;
+    setValue(value: string): void;
     private handleChange;
     private __validate;
     validate(): boolean;
