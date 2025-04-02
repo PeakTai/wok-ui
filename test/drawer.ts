@@ -159,6 +159,17 @@ class Page extends DivModule {
                 }
               })
             }
+          }),
+          new Button({
+            text: '自定义宽度',
+            onClick(ev) {
+              showDrawer({
+                title: '自定义宽度',
+                width: 300,
+                placement: 'right',
+                body: '这个抽屉自定义宽度为 300px'
+              })
+            }
           })
         ]
       }),
