@@ -1648,12 +1648,18 @@ class Content extends DivModule {
     this.el.addEventListener("click", (e) => e.stopPropagation());
     if (opts.placement === "left") {
       this.el.classList.add("left");
+      if (typeof opts.width === "number" && opts.width > 0) {
+        this.el.style.width = `${opts.width}px`;
+      }
     } else if (opts.placement === "top") {
       this.el.classList.add("top");
     } else if (opts.placement === "bottom") {
       this.el.classList.add("bottom");
     } else {
       this.el.classList.add("right");
+      if (typeof opts.width === "number" && opts.width > 0) {
+        this.el.style.width = `${opts.width}px`;
+      }
     }
     this.enter().then(() => {
       if (opts.onShown) {

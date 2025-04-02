@@ -9,6 +9,10 @@ export interface DrawerOpts {
      */
     title?: string;
     /**
+     * 自定义宽度，仅对位置在左侧或右侧的抽屉有效，默认宽度是 400px
+     */
+    width?: number;
+    /**
      * 内容.
      */
     body: SubModulesOpt;
