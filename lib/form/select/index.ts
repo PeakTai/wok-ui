@@ -14,6 +14,10 @@ export interface SelectOpts {
    */
   required?: boolean | string
   /**
+   * 是否禁用
+   */
+  disabled?: boolean
+  /**
    * 默认值
    */
   value?: string
@@ -38,6 +42,7 @@ export class Select extends FormInput {
     this.addChild({
       tag: 'select',
       classNames: ['wok-ui-select'],
+      attrs: { disabled: !!opts.disabled },
       postHandle: el => {
         this.select = el as HTMLSelectElement
         if (opts.value) {

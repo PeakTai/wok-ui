@@ -95,9 +95,10 @@ export interface CreateDomModuleOptions {
      */
     innerHTML?: string;
     /**
-     * 属性
+     * 属性，支持布尔类型，如果值是 undefined 表示不设置该属性，主要的作用是方便编写一些渲染逻辑，兼容空的情况。
+     * 值是 false 时表示将布尔类型属性的值设置为 false。
      */
-    attrs?: Record<string, string>;
+    attrs?: Record<string, string | undefined | boolean>;
     /**
      * css 类名称
      */

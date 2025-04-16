@@ -42,6 +42,9 @@ export class BoolCheckbox extends FormInput {
     if (opts.value) {
       this.__value = opts.value
     }
+    if (opts.disabled) {
+      this.__disabled = true
+    }
     this.addChild({
       classNames: ['wok-ui-bool-checkbox'],
       children: [

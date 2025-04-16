@@ -468,7 +468,17 @@ function createDomModule(options) {
     const { attrs } = options;
     Object.keys(options.attrs).forEach((key) => {
       const val = attrs[key];
-      if (typeof val !== "undefined") {
+      if (val === void 0) {
+        return;
+      }
+      if (typeof val === "boolean") {
+        if (val) {
+          el.setAttribute(key, "");
+        } else {
+          el.removeAttribute(key);
+        }
+      }
+      if (typeof val === "string") {
         el.setAttribute(key, val);
       }
     });
@@ -2740,6 +2750,9 @@ class BoolCheckbox extends FormInput {
     if (opts.value) {
       this.__value = opts.value;
     }
+    if (opts.disabled) {
+      this.__disabled = true;
+    }
     this.addChild({
       classNames: ["wok-ui-bool-checkbox"],
       children: [
@@ -2908,6 +2921,7 @@ class Select extends FormInput {
     this.addChild({
       tag: "select",
       classNames: ["wok-ui-select"],
+      attrs: { disabled: !!opts.disabled },
       postHandle: (el) => {
         this.select = el;
         if (opts.value) {

@@ -9,6 +9,10 @@ export interface SelectOpts {
      */
     required?: boolean | string;
     /**
+     * 是否禁用
+     */
+    disabled?: boolean;
+    /**
      * 默认值
      */
     value?: string;
