@@ -23,8 +23,11 @@
     background-color: var(--color-primary);
     border-color: var(--color-primary);
   }
+
   &:disabled {
     cursor: not-allowed;
     background-color: #e9ecef;
+    pointer-events: none;
+    opacity: .5;
   }
 }
