@@ -24,7 +24,7 @@ export interface SelectOpts {
   /**
    * 选项
    */
-  options: Array<{ label: string; value: string }>
+  options: Array<{ label: string; value: string } | string>
   /**
    * 变化监听
    * @param val
@@ -55,11 +55,21 @@ export class Select extends FormInput {
           this.validate()
         })
       },
-      children: opts.options.map(opt => ({
-        tag: 'option',
-        innerText: opt.label,
-        attrs: { value: opt.value }
-      }))
+      children: opts.options.map(opt => {
+        if (typeof opt === 'string') {
+          return {
+            tag: 'option',
+            innerText: opt,
+            attrs: { value: opt }
+          }
+        } else {
+          return {
+            tag: 'option',
+            innerText: opt.label,
+            attrs: { value: opt.value }
+          }
+        }
+      })
     })
     // 尺寸
     const size = getSize()

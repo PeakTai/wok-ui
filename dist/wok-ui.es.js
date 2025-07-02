@@ -2934,11 +2934,21 @@ class Select extends FormInput {
           this.validate();
         });
       },
-      children: opts.options.map((opt) => ({
-        tag: "option",
-        innerText: opt.label,
-        attrs: { value: opt.value }
-      }))
+      children: opts.options.map((opt) => {
+        if (typeof opt === "string") {
+          return {
+            tag: "option",
+            innerText: opt,
+            attrs: { value: opt }
+          };
+        } else {
+          return {
+            tag: "option",
+            innerText: opt.label,
+            attrs: { value: opt.value }
+          };
+        }
+      })
     });
     const size = getSize();
     switch (opts.size) {

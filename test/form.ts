@@ -162,12 +162,7 @@ class Page extends FullRenderingModule {
             new Select({
               value: this.form.district,
               required: true,
-              options: [
-                { label: '-- 请选择 --', value: '' },
-                { label: '徐家汇', value: '徐家汇' },
-                { label: '长宁区', value: '长宁区' },
-                { label: '陆家嘴', value: '陆家嘴' }
-              ],
+              options: [{ label: '-- 请选择 --', value: '' }, '徐家汇', '长宁区', '陆家嘴'],
               onChange: val => {
                 // 联动,改变街道的选项
                 this.form.district = val
@@ -186,9 +181,9 @@ class Page extends FullRenderingModule {
                 options: this.form.district
                   ? [
                       { label: `-- 请选择 --`, value: '' },
-                      { label: `${this.form.district}-街道一`, value: '街道一' },
-                      { label: `${this.form.district}-街道二`, value: '街道二' },
-                      { label: `${this.form.district}-街道三`, value: '街道三' }
+                      `${this.form.district}-街道一`,
+                      `${this.form.district}-街道二`,
+                      `${this.form.district}-街道三`
                     ]
                   : [{ label: `-- 请选择 --`, value: '' }],
                 onChange: val => {

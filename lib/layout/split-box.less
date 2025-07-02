@@ -4,22 +4,25 @@
   align-items: stretch;
   flex-wrap: nowrap;
 
-  & > * {
+  &>* {
     overflow: hidden;
   }
 
-  &.fix-top > * {
+  &.fix-top>* {
     &:first-child {
       flex-shrink: 0;
     }
+
     &:last-child {
       flex-grow: 1;
     }
   }
-  &.fix-bottom > * {
+
+  &.fix-bottom>* {
     &:first-child {
       flex-grow: 1;
     }
+
     &:last-child {
       flex-shrink: 0;
     }
@@ -32,18 +35,23 @@
   align-items: stretch;
   flex-wrap: nowrap;
 
-  &.fix-left > * {
+  &.fix-left>* {
     &:first-child {
       flex-shrink: 0;
     }
+
     &:last-child {
       flex-grow: 1;
+      min-width: 0;
     }
   }
-  &.fix-right > * {
+
+  &.fix-right>* {
     &:first-child {
       flex-grow: 1;
+      min-width: 0;
     }
+
     &:last-child {
       flex-shrink: 0;
     }

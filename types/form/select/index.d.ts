@@ -22,7 +22,7 @@ export interface SelectOpts {
     options: Array<{
         label: string;
         value: string;
-    }>;
+    } | string>;
     /**
      * 变化监听
      * @param val
