@@ -13,7 +13,7 @@ export class HistoryRouter extends Router {
     // 判定
     const { pathname } = location
     if (this.base && !pathname.startsWith(this.base)) {
-      throw new Error('无法创建路由，当前路径不在设定的 base 下')
+      throw new Error('Failed to create route: the current path is not under the configured base.​')
     }
     this.listener = () => {
       this.ignoreScroll = true
@@ -40,6 +40,12 @@ export class HistoryRouter extends Router {
       path = path.substring(0, qmarkIdx)
       query = parseQueryString(qs)
     }
+    if (this.base) {
+      if (!path.startsWith(this.base)) {
+        throw new Error(`Failed to resolve the current url.`)
+      }
+      path = path.substring(this.base.length)
+    }
     return { path, query }
   }
 
@@ -58,17 +64,24 @@ export class HistoryRouter extends Router {
       finalPath = `/${finalPath}`
     }
     if (path.query) {
-      finalPath = `${finalPath}?${buildQueryString(path.query)}`
+      const qs = buildQueryString(path.query)
+      if (qs) {
+        finalPath = `${finalPath}?${qs}`
+      }
     }
     return `${location.origin}${finalPath}`
   }
 
   push(path: RouteDestination) {
     history.pushState({}, '', this.buildUrl(path))
+    this.ignoreScroll = true
+    this.handleUrl()
   }
 
   replace(path: RouteDestination) {
     history.replaceState({}, '', this.buildUrl(path))
+    this.ignoreScroll = true
+    this.handleUrl()
   }
 
   destroy(): void {

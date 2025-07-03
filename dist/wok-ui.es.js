@@ -3549,7 +3549,7 @@ class HistoryRouter extends Router {
     this.base = opts.base;
     const { pathname } = location;
     if (this.base && !pathname.startsWith(this.base)) {
-      throw new Error("\u65E0\u6CD5\u521B\u5EFA\u8DEF\u7531\uFF0C\u5F53\u524D\u8DEF\u5F84\u4E0D\u5728\u8BBE\u5B9A\u7684 base \u4E0B");
+      throw new Error("Failed to create route: the current path is not under the configured base.\u200B");
     }
     this.listener = () => {
       this.ignoreScroll = true;
@@ -3572,6 +3572,12 @@ class HistoryRouter extends Router {
       path = path.substring(0, qmarkIdx);
       query = parseQueryString(qs);
     }
+    if (this.base) {
+      if (!path.startsWith(this.base)) {
+        throw new Error(`Failed to resolve the current url.`);
+      }
+      path = path.substring(this.base.length);
+    }
     return { path, query };
   }
   buildUrl(path) {
@@ -3589,15 +3595,22 @@ class HistoryRouter extends Router {
       finalPath = `/${finalPath}`;
     }
     if (path.query) {
-      finalPath = `${finalPath}?${buildQueryString(path.query)}`;
+      const qs = buildQueryString(path.query);
+      if (qs) {
+        finalPath = `${finalPath}?${qs}`;
+      }
     }
     return `${location.origin}${finalPath}`;
   }
   push(path) {
     history.pushState({}, "", this.buildUrl(path));
+    this.ignoreScroll = true;
+    this.handleUrl();
   }
   replace(path) {
     history.replaceState({}, "", this.buildUrl(path));
+    this.ignoreScroll = true;
+    this.handleUrl();
   }
   destroy() {
     window.removeEventListener("popstate", this.listener);
