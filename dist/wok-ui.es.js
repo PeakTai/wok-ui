@@ -2192,21 +2192,18 @@ class TextArea extends FormInput {
     super(document.createElement("div"));
     this.textAreaopts = textAreaopts;
     this.composing = false;
-    this.paddingY = 0;
+    this.handleAutoHeight = false;
     this.textareaEl = document.createElement("textarea");
     this.textareaEl.classList.add("wok-ui-input");
     const size = getSize();
     switch (textAreaopts.size) {
       case "lg":
-        this.paddingY = size.textLg * 0.375;
         this.textareaEl.style.setProperty("--input-font-size", `${size.textLg}px`);
         break;
       case "sm":
-        this.paddingY = size.textSm * 0.375;
         this.textareaEl.style.setProperty("--input-font-size", `${size.textSm}px`);
         break;
       default:
-        this.paddingY = size.text * 0.375;
         this.textareaEl.style.setProperty("--input-font-size", `${size.text}px`);
         break;
     }
@@ -2249,17 +2246,25 @@ class TextArea extends FormInput {
       const { onBlur } = textAreaopts;
       this.textareaEl.addEventListener("blur", () => onBlur());
     }
+    if (textAreaopts.autoHeight) {
+      this.textareaEl.style.setProperty("field-sizing", "content");
+      if (this.textareaEl.style.getPropertyValue("field-sizing") !== "content") {
+        this.handleAutoHeight = true;
+      }
+    }
   }
   mount(parentEl) {
     super.mount(parentEl);
-    if (this.textAreaopts.autoHeight && this.textareaEl.value.trim()) {
-      setTimeout(() => {
-        this.textareaEl.style.height = this.textareaEl.scrollHeight + this.paddingY * 2 + "px";
-      }, 0);
-    }
-    if (this.textAreaopts.autofocus) {
-      setTimeout(() => this.textareaEl.focus(), 0);
-    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (this.handleAutoHeight && this.textareaEl.value.trim()) {
+          this.textareaEl.style.height = this.textareaEl.scrollHeight + 2 + "px";
+        }
+        if (this.textAreaopts.autofocus) {
+          this.textareaEl.focus();
+        }
+      });
+    });
   }
   focus() {
     this.textareaEl.focus();
@@ -2269,9 +2274,10 @@ class TextArea extends FormInput {
     this.handleChange();
   }
   handleChange() {
-    if (this.textAreaopts.autoHeight && this.textareaEl.value.trim()) {
-      this.textareaEl.style.height = "auto";
-      this.textareaEl.style.height = this.textareaEl.scrollHeight + this.paddingY * 2 + "px";
+    if (this.handleAutoHeight) {
+      if (this.textareaEl.scrollHeight !== this.textareaEl.clientHeight) {
+        this.textareaEl.style.height = this.textareaEl.scrollHeight + 2 + "px";
+      }
     }
     if (this.textAreaopts.onChange) {
       this.textAreaopts.onChange(this.textareaEl.value);

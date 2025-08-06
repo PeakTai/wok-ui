@@ -24,9 +24,9 @@ export declare class TextArea extends FormInput {
     private composing;
     private textareaEl;
     /**
-     * 记录上内边距，为了做自动高度，要准确的高度值
+     * 要处理自动高度逻辑的标识，如果原生 css 不能支持 field-sizing，则需要进行额外的处理
      */
-    private paddingY;
+    private handleAutoHeight;
     constructor(textAreaopts: TextAreaOpts);
     mount(parentEl: Element): void;
     focus(): void;

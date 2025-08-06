@@ -27,9 +27,9 @@ export class TextArea extends FormInput {
 
   private textareaEl: HTMLTextAreaElement
   /**
-   * 记录上内边距，为了做自动高度，要准确的高度值
+   * 要处理自动高度逻辑的标识，如果原生 css 不能支持 field-sizing，则需要进行额外的处理
    */
-  private paddingY = 0
+  private handleAutoHeight = false
 
   constructor(private readonly textAreaopts: TextAreaOpts) {
     super(document.createElement('div'))
@@ -39,15 +39,12 @@ export class TextArea extends FormInput {
     const size = getSize()
     switch (textAreaopts.size) {
       case 'lg':
-        this.paddingY = size.textLg * 0.375
         this.textareaEl.style.setProperty('--input-font-size', `${size.textLg}px`)
         break
       case 'sm':
-        this.paddingY = size.textSm * 0.375
         this.textareaEl.style.setProperty('--input-font-size', `${size.textSm}px`)
         break
       default:
-        this.paddingY = size.text * 0.375
         this.textareaEl.style.setProperty('--input-font-size', `${size.text}px`)
         break
     }
@@ -91,19 +88,28 @@ export class TextArea extends FormInput {
       const { onBlur } = textAreaopts
       this.textareaEl.addEventListener('blur', () => onBlur())
     }
+    if (textAreaopts.autoHeight) {
+      this.textareaEl.style.setProperty('field-sizing', 'content')
+      // 浏览器不兼容
+      if (this.textareaEl.style.getPropertyValue('field-sizing') !== 'content') {
+        this.handleAutoHeight = true
+      }
+    }
   }
 
   mount(parentEl: Element): void {
     super.mount(parentEl)
-    // 自动高度的处理
-    if (this.textAreaopts.autoHeight && this.textareaEl.value.trim()) {
-      setTimeout(() => {
-        this.textareaEl.style.height = this.textareaEl.scrollHeight + this.paddingY * 2 + 'px'
-      }, 0)
-    }
-    if (this.textAreaopts.autofocus) {
-      setTimeout(() => this.textareaEl.focus(), 0)
-    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // 自动高度的处理
+        if (this.handleAutoHeight && this.textareaEl.value.trim()) {
+          this.textareaEl.style.height = this.textareaEl.scrollHeight + 2 + 'px'
+        }
+        if (this.textAreaopts.autofocus) {
+          this.textareaEl.focus()
+        }
+      })
+    })
   }
 
   focus() {
@@ -117,9 +123,17 @@ export class TextArea extends FormInput {
 
   private handleChange() {
     // 自动高度的处理
-    if (this.textAreaopts.autoHeight && this.textareaEl.value.trim()) {
-      this.textareaEl.style.height = 'auto'
-      this.textareaEl.style.height = this.textareaEl.scrollHeight + this.paddingY * 2 + 'px'
+    if (this.handleAutoHeight) {
+      // 这里将高度设置为 auto 才能获取到浏览器的计算高度，但是在
+      // textarea 高度超过一屏的情况下，输入中文时浏览器会跳动，
+      // 实测只有 firefox 不会发生跳动
+      // 尤其是移动端体验会很差，用户无法连续输入
+      // 暂时不再使用，这样也就无法支持高度自动收缩了
+      // this.textareaEl.style.height = 'auto'
+      if (this.textareaEl.scrollHeight !== this.textareaEl.clientHeight) {
+        // 加2像素是上下边框的高度，scrollHeight 不包括元素的边框、外边距以及水平滚动条
+        this.textareaEl.style.height = this.textareaEl.scrollHeight + 2 + 'px'
+      }
     }
     if (this.textAreaopts.onChange) {
       this.textAreaopts.onChange(this.textareaEl.value)
