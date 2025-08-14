@@ -31,14 +31,43 @@ async function getSvgCodeFromCache(url: string) {
  * 减少包体积，提升打包速度和程序加载速度
  */
 export class RemoteSvgIcon extends DivModule {
-  constructor(iconUrl: string) {
+  /**
+   * 远程 svg 图标
+   * @param options 图标 url 或者 配置对象
+   * @param options.iconUrl 图标 url
+   * @param options.onClick 点击事件
+   * @param options.size 图标大小
+   * @param options.color 图标颜色
+   */
+  constructor(
+    options:
+      | string
+      | { iconUrl: string; onClick?: (e: MouseEvent) => void; size?: number; color?: string }
+  ) {
     super('wok-ui-svg-icon')
+    let iconUrl = ''
+    if (typeof options === 'string') {
+      iconUrl = options
+    } else {
+      iconUrl = options.iconUrl
+    }
     getSvgCodeFromCache(iconUrl)
       .then(code => {
         this.el.innerHTML = code
         const svg = this.el.querySelector('svg')
         if (svg) {
           svg.setAttribute('fill', 'currentColor')
+        }
+        if (typeof options !== 'string') {
+          if (options.size) {
+            this.setSize(options.size)
+          }
+          if (options.color) {
+            this.setColor(options.color)
+          }
+          if (options.onClick) {
+            this.onClick(options.onClick)
+          }
         }
       })
       .catch(console.error)
@@ -59,6 +88,12 @@ export class RemoteSvgIcon extends DivModule {
    */
   setColor(color: string) {
     this.el.style.color = color
+    return this
+  }
+
+  onClick(callback: (e: MouseEvent) => void) {
+    this.el.style.cursor = 'pointer'
+    this.el.onclick = callback
     return this
   }
 }

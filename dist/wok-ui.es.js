@@ -1271,12 +1271,29 @@ var toast = '';
 var style$8 = '';
 
 class SvgIcon extends DivModule {
-  constructor(svgHtml) {
+  constructor(options) {
     super("wok-ui-svg-icon");
+    let svgHtml = "";
+    if (typeof options === "string") {
+      svgHtml = options;
+    } else {
+      svgHtml = options.svgHtml;
+    }
     this.el.innerHTML = svgHtml;
     const svg = this.el.querySelector("svg");
     if (svg) {
       svg.setAttribute("fill", "currentColor");
+    }
+    if (typeof options !== "string") {
+      if (options.size) {
+        this.setSize(options.size);
+      }
+      if (options.color) {
+        this.setColor(options.color);
+      }
+      if (options.onClick) {
+        this.onClick(options.onClick);
+      }
     }
   }
   setSize(height) {
@@ -1285,6 +1302,11 @@ class SvgIcon extends DivModule {
   }
   setColor(color) {
     this.el.style.color = color;
+    return this;
+  }
+  onClick(callback) {
+    this.el.style.cursor = "pointer";
+    this.el.onclick = callback;
     return this;
   }
 }
@@ -1311,13 +1333,30 @@ async function getSvgCodeFromCache(url) {
   return promise;
 }
 class RemoteSvgIcon extends DivModule {
-  constructor(iconUrl) {
+  constructor(options) {
     super("wok-ui-svg-icon");
+    let iconUrl = "";
+    if (typeof options === "string") {
+      iconUrl = options;
+    } else {
+      iconUrl = options.iconUrl;
+    }
     getSvgCodeFromCache(iconUrl).then((code) => {
       this.el.innerHTML = code;
       const svg = this.el.querySelector("svg");
       if (svg) {
         svg.setAttribute("fill", "currentColor");
+      }
+      if (typeof options !== "string") {
+        if (options.size) {
+          this.setSize(options.size);
+        }
+        if (options.color) {
+          this.setColor(options.color);
+        }
+        if (options.onClick) {
+          this.onClick(options.onClick);
+        }
       }
     }).catch(console.error);
   }
@@ -1327,6 +1366,11 @@ class RemoteSvgIcon extends DivModule {
   }
   setColor(color) {
     this.el.style.color = color;
+    return this;
+  }
+  onClick(callback) {
+    this.el.style.cursor = "pointer";
+    this.el.onclick = callback;
     return this;
   }
 }
