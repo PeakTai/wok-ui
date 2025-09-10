@@ -2,7 +2,7 @@ import {
   Button,
   DivModule,
   HBox,
-  LargeTitle,
+  H1,
   Spacer,
   hideLoading,
   rem,
@@ -19,7 +19,7 @@ class Page extends DivModule {
   constructor() {
     super()
     this.addChild(
-      new LargeTitle('消息提示'),
+      new H1('消息提示'),
       new Spacer(20),
       new HBox({
         gap: rem(1),

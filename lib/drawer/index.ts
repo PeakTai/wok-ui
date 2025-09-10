@@ -1,5 +1,6 @@
 // 抽屉
 import { ANIMATION_PROVISION, Animation, animate } from '../animation'
+import { H5 } from '../heading'
 import { showWarning } from '../message'
 import { DivModule, SubModulesOpt, buildSubModules } from '../module'
 import './style.less'
@@ -136,10 +137,7 @@ class Content extends DivModule implements DivModule {
       this.addChild({
         classNames: ['header'],
         children: [
-          {
-            classNames: ['title'],
-            innerText: opts.title
-          },
+          new H5(opts.title),
           {
             classNames: ['close'],
             innerHTML: '&times;',

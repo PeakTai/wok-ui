@@ -14,7 +14,7 @@ export interface TextOpts {
     /**
      * 颜色
      */
-    color?: string;
+    color?: 'primary' | 'success' | 'danger' | 'warning' | (string & {});
     /**
      * 尺寸，支持预设和自定义数字（单位px）
      */
@@ -61,12 +61,14 @@ export declare class SmallSecondaryBodyText extends Text {
 }
 /**
  * 普通标题，对应 h2 标签
+ * @deprecated 请使用 H2 组件
  */
 export declare class Title extends Text {
     constructor(text: string);
 }
 /**
  * 大号标题，对应 h1 标签，建议一个页面最多出现一个，作为页面的标题
+ * @deprecated 请使用 H1 组件
  */
 export declare class LargeTitle extends Text {
     constructor(text: string);

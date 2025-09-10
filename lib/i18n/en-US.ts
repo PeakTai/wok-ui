@@ -16,5 +16,7 @@ export const enUS: I18nMessages = {
   'form-err-max-size': 'The file size must not exceed {}',
   'form-err-max-files-select': 'You can select up to {} file(s)',
   'form-err-min-files-select': 'Please select at least {} file(s)',
-  'choose-file': 'Choose file'
+  'choose-file': 'Choose file',
+  information: 'Information',
+  confirmation: 'Confirmation'
 }

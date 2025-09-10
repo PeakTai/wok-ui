@@ -1,8 +1,8 @@
 import {
   Button,
   FullRenderingModule,
+  H1,
   HBox,
-  LargeTitle,
   Spacer,
   getI18n,
   rem,
@@ -20,7 +20,7 @@ class Page extends FullRenderingModule {
   protected buildContent(): void {
     const i18n = getI18n()
     this.addChild(
-      new LargeTitle(getExtI18n().buildMsg('internationalization')),
+      new H1(getExtI18n().buildMsg('internationalization')),
       new Spacer('lg'),
       `${getExtI18n().buildMsg('currentLanguage')}：${i18n.getLang()}`,
       new Spacer(),

@@ -1,68 +1,53 @@
 // 对话框提示消息，强制用户交互，层级比 loading 低一些
-import { Animation } from '../animation'
-import { getColor } from '../color'
 import { getI18n } from '../i18n'
-import { createDomModule } from '../module'
-import { Text } from '../text'
-import './dialog.less'
+import { showModal } from '../modal'
+import { SecondaryBodyText } from '../text'
 
 export function showAlert(msg: string): Promise<void> {
-  return new Promise<void>(res => {
-    const dialog = createDomModule({
-      classNames: 'wok-ui-dialog-box',
-      children: {
-        classNames: ['dialog-content', Animation.SLIDE_TOP],
-        children: [
-          { classNames: 'dialog-body', innerText: msg },
-          {
-            classNames: 'dialog-footer',
-            children: {
-              innerText: getI18n().buildMsg('confirm'),
-              onClick(ev) {
-                res()
-                dialog.destroy()
-              }
-            }
-          }
-        ]
+  return new Promise<void>((resolve, reject) => {
+    const modal = showModal({
+      dialogCentered:true,
+      width: 400,
+      staticBackDrop: true,
+      title: `⚠️ ${getI18n().buildMsg('information')}`,
+      closeBtn: false,
+      body: {
+        style: { padding: '0.5rem' },
+        children: new SecondaryBodyText(msg)
+      },
+      buttons: {
+        confirm: true
+      },
+      onConfirm: () => {
+        resolve()
+        modal.close()
       }
     })
-    dialog.mount(document.body)
   })
 }
 export function showConfirm(msg: string): Promise<boolean> {
-  return new Promise<boolean>(res => {
-    const dialog = createDomModule({
-      classNames: ['wok-ui-dialog-box'],
-      children: {
-        classNames: ['dialog-content', Animation.SLIDE_TOP],
-        children: [
-          { classNames: 'dialog-body', innerText: msg },
-          {
-            classNames: 'dialog-footer',
-            children: [
-              {
-                innerText: getI18n().buildMsg('cancel'),
-                onClick(ev) {
-                  res(false)
-                  dialog.destroy()
-                }
-              },
-              {
-                children: new Text({
-                  text: getI18n().buildMsg('confirm'),
-                  color: getColor().primary
-                }),
-                onClick(ev) {
-                  res(true)
-                  dialog.destroy()
-                }
-              }
-            ]
-          }
-        ]
+  return new Promise<boolean>((resolve, reject) => {
+    const modal = showModal({
+      dialogCentered: true,
+      width: 400,
+      staticBackDrop: true,
+      title: `❓ ${getI18n().buildMsg('confirmation')}`,
+      closeBtn: false,
+      body: {
+        style: { padding: '0.5rem' },
+        children: new SecondaryBodyText(msg)
+      },
+      buttons: {
+        confirm: true,
+        cancel: true
+      },
+      onConfirm: () => {
+        resolve(true)
+        modal.close()
+      },
+      onClose: () => {
+        resolve(false)
       }
     })
-    dialog.mount(document.body)
   })
 }

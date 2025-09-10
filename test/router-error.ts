@@ -1,4 +1,4 @@
-import { DivModule, LargeTitle, Spacer } from '../lib'
+import { DivModule, H1, Spacer } from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {
@@ -7,7 +7,7 @@ class Page extends DivModule {
     document.title = '路由错误测试'
     const msg = error instanceof Error ? error.message : `${error}`
     this.addChild(
-      new LargeTitle('路由导航发生错误'),
+      new H1('路由导航发生错误'),
       new Spacer(),
       `从页面 ${from} 到页面 ${to} 的过程中发生了异常。`,
       new Spacer(),

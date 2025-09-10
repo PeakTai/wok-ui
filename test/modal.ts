@@ -3,7 +3,7 @@ import {
   DivModule,
   Form,
   HBox,
-  LargeTitle,
+  H1,
   Link,
   Spacer,
   TextInput,
@@ -19,7 +19,7 @@ class Page extends DivModule {
   constructor() {
     super()
     this.addChild(
-      new LargeTitle('模态框'),
+      new H1('模态框'),
       rem(1),
       new HBox({
         gap: rem(1),
@@ -73,6 +73,43 @@ class Page extends DivModule {
                 onClose() {
                   showWarning('模态框被关闭了')
                 }
+              })
+            }
+          }),
+          new Button({
+            text: '自定义按钮的模态框',
+            onClick(ev) {
+              const modal = showModal({
+                title: '提交表单',
+                body: '您即将提交信息，请在确认信息后，点击下方的按钮来进行下一步的操作',
+                staticBackDrop: true,
+                buttons: [
+                  new Button({
+                    text: '直接发布',
+                    type: 'primary',
+                    onClick(ev) {
+                      modal.close()
+                      showSuccess('点击了直接发布')
+                    }
+                  }),
+                  new Button({
+                    text: '保存为草稿',
+                    type: 'default',
+                    onClick(ev) {
+                      modal.close()
+                      showSuccess('点击了保存为草稿')
+                    }
+                  }),
+
+                  new Button({
+                    text: '放弃',
+                    type: 'warning',
+                    onClick(ev) {
+                      modal.close()
+                      showWarning('点击了放弃')
+                    }
+                  })
+                ]
               })
             }
           }),

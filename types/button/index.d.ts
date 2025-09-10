@@ -1,3 +1,4 @@
+import { RemoteSvgIcon, SvgIcon } from '../icon';
 import { Module } from '../module';
 /**
  * 按钮选项
@@ -48,6 +49,14 @@ export interface ButtonOpts {
      * @returns
      */
     onClick?: (ev: MouseEvent) => void;
+    /**
+     * 图标
+     */
+    icon?: SvgIcon | RemoteSvgIcon;
+    /**
+     * 图标位置
+     */
+    iconPosition?: 'start' | 'end';
 }
 /**
  * 按钮

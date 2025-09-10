@@ -1,5 +1,6 @@
 import { ANIMATION_PROVISION, Animation, animate } from '../animation'
 import { Button } from '../button'
+import { H5 } from '../heading'
 import { getI18n } from '../i18n'
 import { showWarning } from '../message'
 import { ConvertibleModule, DivModule, Module, SubModulesOpt } from '../module'
@@ -59,12 +60,18 @@ export interface ModalOptions {
    */
   borderRadius?: number
   /**
-   * 按钮设置，可选，可设置显示按钮或自定义按钮文字，有设置才会显示出来
+   * 按钮设置，可选，可设置显示按钮或自定义按钮文字，有设置才会显示出来。
+   * 当值是 Button[] 类型时，可自定义多个按钮，需要注意按钮是从右往左排列的。
+   * 当值是 { confirm?: boolean | string, cancel?: boolean | string } 类型时，
+   * 会显示确认按钮和取消按钮，按钮文字可自定义，当值为 true 时，按钮文字为默认值。
+   * 确认按钮为主要按钮，取消按钮为次要按钮。
    */
-  buttons?: {
-    confirm?: boolean | string
-    cancel?: boolean | string
-  }
+  buttons?:
+    | {
+        confirm?: boolean | string
+        cancel?: boolean | string
+      }
+    | Button[]
   /**
    * 模态框完全显示回调，在模态框入场动画完成后触发
    * @returns
@@ -222,10 +229,11 @@ class Dialog extends DivModule {
       children: addChild => {
         // header
         if (opts.title) {
+          const { title } = opts
           addChild({
             classNames: ['wok-ui-modal-header'],
             children: addChild => {
-              addChild({ classNames: ['title'], innerText: opts.title })
+              addChild(new H5(title))
               // 关闭按钮
               if (opts.closeBtn !== false) {
                 addChild({
@@ -246,35 +254,42 @@ class Dialog extends DivModule {
         // 自定义
         if (opts.footer) {
           addChild(opts.footer)
-        } else if (opts.buttons && (opts.buttons.cancel || opts.buttons.confirm)) {
-          // 非自定义，判定按钮
-          const { confirm, cancel } = opts.buttons
-          addChild({
-            classNames: ['wok-ui-modal-footer'],
-            children: addChild => {
-              if (confirm) {
-                addChild(
-                  new Button({
-                    text: typeof confirm === 'string' ? confirm : getI18n().buildMsg('confirm'),
-                    type: 'primary',
-                    onClick(ev) {
-                      if (opts.onConfirm) {
-                        opts.onConfirm()
+        } else if (opts.buttons) {
+          if (Array.isArray(opts.buttons)) {
+            addChild({
+              classNames: ['wok-ui-modal-footer'],
+              children: opts.buttons
+            })
+          } else if (opts.buttons.cancel || opts.buttons.confirm) {
+            // 非自定义，判定按钮
+            const { confirm, cancel } = opts.buttons
+            addChild({
+              classNames: ['wok-ui-modal-footer'],
+              children: add => {
+                if (confirm) {
+                  add(
+                    new Button({
+                      text: typeof confirm === 'string' ? confirm : getI18n().buildMsg('confirm'),
+                      type: 'primary',
+                      onClick(ev) {
+                        if (opts.onConfirm) {
+                          opts.onConfirm()
+                        }
                       }
-                    }
-                  })
-                )
+                    })
+                  )
+                }
+                if (cancel) {
+                  add(
+                    new Button({
+                      text: typeof cancel === 'string' ? cancel : getI18n().buildMsg('cancel'),
+                      onClick: ev => this.destroy()
+                    })
+                  )
+                }
               }
-              if (cancel) {
-                addChild(
-                  new Button({
-                    text: typeof cancel === 'string' ? cancel : getI18n().buildMsg('cancel'),
-                    onClick: ev => this.destroy()
-                  })
-                )
-              }
-            }
-          })
+            })
+          }
         }
       }
     })

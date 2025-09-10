@@ -16,7 +16,9 @@ const enUS = {
   "form-err-max-size": "The file size must not exceed {}",
   "form-err-max-files-select": "You can select up to {} file(s)",
   "form-err-min-files-select": "Please select at least {} file(s)",
-  "choose-file": "Choose file"
+  "choose-file": "Choose file",
+  information: "Information",
+  confirmation: "Confirmation"
 };
 
 function parseLangTag(tag) {
@@ -139,7 +141,9 @@ const zhCN = {
   "form-err-max-size": "\u6587\u4EF6\u5927\u5C0F\u4E0D\u5F97\u5927\u4E8E {}",
   "form-err-max-files-select": "\u6700\u591A\u53EF\u4EE5\u9009\u62E9 {} \u4E2A\u6587\u4EF6",
   "form-err-min-files-select": "\u8BF7\u81F3\u5C11\u9009\u62E9 {} \u4E2A\u6587\u4EF6",
-  "choose-file": "\u8BF7\u9009\u62E9\u6587\u4EF6"
+  "choose-file": "\u8BF7\u9009\u62E9\u6587\u4EF6",
+  information: "\u63D0\u793A\u4FE1\u606F",
+  confirmation: "\u8BF7\u786E\u8BA4"
 };
 
 let I18N;
@@ -689,7 +693,7 @@ if (isNaN(defaultFontSize) || defaultFontSize < 14 || defaultFontSize > 20) {
 }
 const defaultSize = {
   text: defaultFontSize,
-  textSm: defaultFontSize * 0.75,
+  textSm: defaultFontSize * 0.875,
   textLg: defaultFontSize * 1.25,
   textXl: defaultFontSize * 1.5,
   borderRadius: Math.round(defaultFontSize * 0.375)
@@ -735,7 +739,7 @@ const defaultColor = {
   warning: "#ffc107",
   border: "#dee2e6",
   text: "#303133",
-  textSecondary: "#909399",
+  textSecondary: "#757575",
   outline: "#b1d2ff"
 };
 Object.freeze(defaultColor);
@@ -786,7 +790,24 @@ class Text extends Module {
       this.el.style.fontWeight = "bold";
     }
     if (finalOpts.color) {
-      this.el.style.color = finalOpts.color;
+      const color = getColor();
+      switch (finalOpts.color) {
+        case "primary":
+          this.el.style.color = color.primary;
+          break;
+        case "success":
+          this.el.style.color = color.success;
+          break;
+        case "danger":
+          this.el.style.color = color.danger;
+          break;
+        case "warning":
+          this.el.style.color = color.warning;
+          break;
+        default:
+          this.el.style.color = finalOpts.color;
+          break;
+      }
     }
     if (finalOpts.onClick) {
       this.onClick(finalOpts.onClick);
@@ -801,14 +822,15 @@ class Text extends Module {
     return this;
   }
   setSize(size) {
+    const sizeSetting = getSize();
     if (size === "sm") {
-      this.el.style.fontSize = "0.8rem";
+      this.el.style.fontSize = sizeSetting.textSm + "px";
     } else if (size === "default") {
-      this.el.style.fontSize = "1rem";
+      this.el.style.fontSize = sizeSetting.text + "px";
     } else if (size === "large") {
-      this.el.style.fontSize = "1.2rem";
+      this.el.style.fontSize = sizeSetting.textLg + "px";
     } else if (size === "xl") {
-      this.el.style.fontSize = "1.4rem";
+      this.el.style.fontSize = sizeSetting.textXl + "px";
     } else {
       this.el.style.fontSize = `${size}px`;
     }
@@ -911,7 +933,7 @@ class HSpacer extends DivModule {
   }
 }
 
-var style$9 = '';
+var style$a = '';
 
 class Button extends Module {
   constructor(opts) {
@@ -919,7 +941,13 @@ class Button extends Module {
     btn.type = "button";
     btn.classList.add("wok-ui-btn");
     super(btn);
-    btn.innerText = opts.text;
+    if (opts.icon && (!opts.iconPosition || opts.iconPosition === "start")) {
+      this.addChild(opts.icon);
+    }
+    this.addChild(opts.text);
+    if (opts.icon && opts.iconPosition === "end") {
+      this.addChild(opts.icon);
+    }
     if (opts.block) {
       btn.classList.add("block");
     }
@@ -1176,6 +1204,51 @@ class VBox extends DivModule {
   }
 }
 
+var style$9 = '';
+
+class H1 extends Module {
+  constructor(text) {
+    super(document.createElement("h1"));
+    this.el.textContent = text;
+    this.el.classList.add("wok-ui-heading");
+  }
+}
+class H2 extends Module {
+  constructor(text) {
+    super(document.createElement("h2"));
+    this.el.textContent = text;
+    this.el.classList.add("wok-ui-heading");
+  }
+}
+class H3 extends Module {
+  constructor(text) {
+    super(document.createElement("h3"));
+    this.el.textContent = text;
+    this.el.classList.add("wok-ui-heading");
+  }
+}
+class H4 extends Module {
+  constructor(text) {
+    super(document.createElement("h4"));
+    this.el.textContent = text;
+    this.el.classList.add("wok-ui-heading");
+  }
+}
+class H5 extends Module {
+  constructor(text) {
+    super(document.createElement("h5"));
+    this.el.textContent = text;
+    this.el.classList.add("wok-ui-heading");
+  }
+}
+class H6 extends Module {
+  constructor(text) {
+    super(document.createElement("h6"));
+    this.el.textContent = text;
+    this.el.classList.add("wok-ui-heading");
+  }
+}
+
 var loading$1 = '';
 
 class Loading extends DivModule {
@@ -1203,66 +1276,52 @@ function hideLoading() {
   }
 }
 
-var dialog = '';
-
 function showAlert(msg) {
-  return new Promise((res) => {
-    const dialog = createDomModule({
-      classNames: "wok-ui-dialog-box",
-      children: {
-        classNames: ["dialog-content", Animation.SLIDE_TOP],
-        children: [
-          { classNames: "dialog-body", innerText: msg },
-          {
-            classNames: "dialog-footer",
-            children: {
-              innerText: getI18n().buildMsg("confirm"),
-              onClick(ev) {
-                res();
-                dialog.destroy();
-              }
-            }
-          }
-        ]
+  return new Promise((resolve, reject) => {
+    const modal = showModal({
+      dialogCentered: true,
+      width: 400,
+      staticBackDrop: true,
+      title: `\u26A0\uFE0F ${getI18n().buildMsg("information")}`,
+      closeBtn: false,
+      body: {
+        style: { padding: "0.5rem" },
+        children: new SecondaryBodyText(msg)
+      },
+      buttons: {
+        confirm: true
+      },
+      onConfirm: () => {
+        resolve();
+        modal.close();
       }
     });
-    dialog.mount(document.body);
   });
 }
 function showConfirm(msg) {
-  return new Promise((res) => {
-    const dialog = createDomModule({
-      classNames: ["wok-ui-dialog-box"],
-      children: {
-        classNames: ["dialog-content", Animation.SLIDE_TOP],
-        children: [
-          { classNames: "dialog-body", innerText: msg },
-          {
-            classNames: "dialog-footer",
-            children: [
-              {
-                innerText: getI18n().buildMsg("cancel"),
-                onClick(ev) {
-                  res(false);
-                  dialog.destroy();
-                }
-              },
-              {
-                children: new Text({
-                  text: getI18n().buildMsg("confirm"),
-                  color: getColor().primary
-                }),
-                onClick(ev) {
-                  res(true);
-                  dialog.destroy();
-                }
-              }
-            ]
-          }
-        ]
+  return new Promise((resolve, reject) => {
+    const modal = showModal({
+      dialogCentered: true,
+      width: 400,
+      staticBackDrop: true,
+      title: `\u2753 ${getI18n().buildMsg("confirmation")}`,
+      closeBtn: false,
+      body: {
+        style: { padding: "0.5rem" },
+        children: new SecondaryBodyText(msg)
+      },
+      buttons: {
+        confirm: true,
+        cancel: true
+      },
+      onConfirm: () => {
+        resolve(true);
+        modal.close();
+      },
+      onClose: () => {
+        resolve(false);
       }
     });
-    dialog.mount(document.body);
   });
 }
 
@@ -1545,10 +1604,11 @@ class Dialog extends DivModule {
       },
       children: (addChild) => {
         if (opts.title) {
+          const { title } = opts;
           addChild({
             classNames: ["wok-ui-modal-header"],
             children: (addChild2) => {
-              addChild2({ classNames: ["title"], innerText: opts.title });
+              addChild2(new H5(title));
               if (opts.closeBtn !== false) {
                 addChild2({
                   classNames: ["close"],
@@ -1565,34 +1625,41 @@ class Dialog extends DivModule {
         });
         if (opts.footer) {
           addChild(opts.footer);
-        } else if (opts.buttons && (opts.buttons.cancel || opts.buttons.confirm)) {
-          const { confirm, cancel } = opts.buttons;
-          addChild({
-            classNames: ["wok-ui-modal-footer"],
-            children: (addChild2) => {
-              if (confirm) {
-                addChild2(
-                  new Button({
-                    text: typeof confirm === "string" ? confirm : getI18n().buildMsg("confirm"),
-                    type: "primary",
-                    onClick(ev) {
-                      if (opts.onConfirm) {
-                        opts.onConfirm();
+        } else if (opts.buttons) {
+          if (Array.isArray(opts.buttons)) {
+            addChild({
+              classNames: ["wok-ui-modal-footer"],
+              children: opts.buttons
+            });
+          } else if (opts.buttons.cancel || opts.buttons.confirm) {
+            const { confirm, cancel } = opts.buttons;
+            addChild({
+              classNames: ["wok-ui-modal-footer"],
+              children: (add) => {
+                if (confirm) {
+                  add(
+                    new Button({
+                      text: typeof confirm === "string" ? confirm : getI18n().buildMsg("confirm"),
+                      type: "primary",
+                      onClick(ev) {
+                        if (opts.onConfirm) {
+                          opts.onConfirm();
+                        }
                       }
-                    }
-                  })
-                );
+                    })
+                  );
+                }
+                if (cancel) {
+                  add(
+                    new Button({
+                      text: typeof cancel === "string" ? cancel : getI18n().buildMsg("cancel"),
+                      onClick: (ev) => this.destroy()
+                    })
+                  );
+                }
               }
-              if (cancel) {
-                addChild2(
-                  new Button({
-                    text: typeof cancel === "string" ? cancel : getI18n().buildMsg("cancel"),
-                    onClick: (ev) => this.destroy()
-                  })
-                );
-              }
-            }
-          });
+            });
+          }
         }
       }
     });
@@ -1728,10 +1795,7 @@ class Content extends DivModule {
       this.addChild({
         classNames: ["header"],
         children: [
-          {
-            classNames: ["title"],
-            innerText: opts.title
-          },
+          new H5(opts.title),
           {
             classNames: ["close"],
             innerHTML: "&times;",
@@ -2294,6 +2358,10 @@ class TextArea extends FormInput {
       this.textareaEl.style.setProperty("field-sizing", "content");
       if (this.textareaEl.style.getPropertyValue("field-sizing") !== "content") {
         this.handleAutoHeight = true;
+      } else {
+        if (textAreaopts.rows && textAreaopts.rows > 0) {
+          this.textareaEl.style.minHeight = `calc(2 * 0.375em + ${textAreaopts.rows}* 1.5em + 2px)`;
+        }
       }
     }
   }
@@ -3844,4 +3912,4 @@ class Dropup extends Dropdown {
   }
 }
 
-export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
+export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, H1, H2, H3, H4, H5, H6, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };

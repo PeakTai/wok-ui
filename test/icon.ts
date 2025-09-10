@@ -1,7 +1,7 @@
 import {
   FullRenderingModule,
+  H1,
   HBox,
-  LargeTitle,
   Link,
   PrimaryBodyText,
   RemoteSvgIcon,
@@ -58,7 +58,7 @@ class Page extends FullRenderingModule {
   }
   protected buildContent(): void {
     this.addChild(
-      new LargeTitle('图标'),
+      new H1('图标'),
       new Spacer(20),
       new PrimaryBodyText('SVG 图标'),
       new Spacer(10),

@@ -1,3 +1,4 @@
+import { Button } from '../button';
 import { ConvertibleModule, SubModulesOpt } from '../module';
 /**
  * 模态框选项
@@ -54,12 +55,16 @@ export interface ModalOptions {
      */
     borderRadius?: number;
     /**
-     * 按钮设置，可选，可设置显示按钮或自定义按钮文字，有设置才会显示出来
+     * 按钮设置，可选，可设置显示按钮或自定义按钮文字，有设置才会显示出来。
+     * 当值是 Button[] 类型时，可自定义多个按钮，需要注意按钮是从右往左排列的。
+     * 当值是 { confirm?: boolean | string, cancel?: boolean | string } 类型时，
+     * 会显示确认按钮和取消按钮，按钮文字可自定义，当值为 true 时，按钮文字为默认值。
+     * 确认按钮为主要按钮，取消按钮为次要按钮。
      */
     buttons?: {
         confirm?: boolean | string;
         cancel?: boolean | string;
-    };
+    } | Button[];
     /**
      * 模态框完全显示回调，在模态框入场动画完成后触发
      * @returns

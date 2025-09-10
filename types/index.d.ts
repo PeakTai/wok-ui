@@ -18,3 +18,4 @@ export * from './link';
 export * from './message';
 export * from './drawer';
 export * from './dropdown';
+export * from './heading';

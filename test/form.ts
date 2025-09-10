@@ -7,8 +7,8 @@ import {
   FileInput,
   Form,
   FullRenderingModule,
+  H1,
   HBox,
-  LargeTitle,
   Link,
   NumberInput,
   RadioGroup,
@@ -66,7 +66,7 @@ class Page extends FullRenderingModule {
   }
   protected buildContent(): void {
     this.addChild(
-      new LargeTitle('表单'),
+      new H1('表单'),
       new Spacer(20),
       new HBox({
         gap: rem(1),

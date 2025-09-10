@@ -2,7 +2,7 @@ import {
   Button,
   FullRenderingModule,
   HBox,
-  LargeTitle,
+  H1,
   PrimaryBodyText,
   RouterLink,
   Spacer,
@@ -30,7 +30,7 @@ class Page extends FullRenderingModule {
   protected buildContent(): void {
     if (this.loading) {
       this.addChild(
-        new LargeTitle('路由缓存测试'),
+        new H1('路由缓存测试'),
         new Spacer(),
         new PrimaryBodyText(`loading...`),
         new Spacer(),
@@ -43,7 +43,7 @@ class Page extends FullRenderingModule {
       return
     }
     this.addChild(
-      new LargeTitle('路由缓存测试'),
+      new H1('路由缓存测试'),
       new Spacer(),
       new Spacer(),
       new PrimaryBodyText(

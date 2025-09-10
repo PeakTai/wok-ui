@@ -1,15 +1,13 @@
 import {
   DivModule,
   Grid,
+  H1,
+  H2,
   HBox,
   HSplitBox,
   JustifyBox,
-  LargeTitle,
   PrimaryBodyText,
-  SecondaryBodyText,
   Spacer,
-  Text,
-  Title,
   VBox,
   VSplitBox,
   createDomModule,
@@ -22,9 +20,9 @@ class Page extends DivModule {
   constructor() {
     super()
     this.addChild(
-      new LargeTitle('布局'),
+      new H1('布局'),
       new Spacer(20),
-      new Title('HBox 水平堆叠容器'),
+      new H2('HBox 水平堆叠容器'),
       new Spacer(10),
       new HBox({
         gap: rem(1),
@@ -36,7 +34,7 @@ class Page extends DivModule {
         }
       }),
       new Spacer(20),
-      new Title('VBox 垂直堆叠容器'),
+      new H2('VBox 垂直堆叠容器'),
       new Spacer(10),
       new VBox({
         gap: rem(0.5),
@@ -47,14 +45,14 @@ class Page extends DivModule {
         }
       }),
       new Spacer(20),
-      new Title('两端对齐容器'),
+      new H2('两端对齐容器'),
       new Spacer(10),
       new JustifyBox({
         align: 'center',
         children: ['容器中的内容', '将会', '两端对齐']
       }),
       new Spacer(),
-      new Title('横向分隔视图'),
+      new H2('横向分隔视图'),
       new Spacer('sm'),
       new HSplitBox({
         left: createDomModule({
@@ -78,7 +76,7 @@ class Page extends DivModule {
         fixedSide: 'left'
       }),
       new Spacer(),
-      new Title('纵向分隔视图'),
+      new H2('纵向分隔视图'),
       new Spacer('sm'),
       new VSplitBox({
         height: 300,
@@ -97,7 +95,7 @@ class Page extends DivModule {
         fixedSide: 'top'
       }),
       new Spacer(),
-      new Title('网格'),
+      new H2('网格'),
       new Spacer(10),
       new PrimaryBodyText('网格常常可以配合响应式模块来使用，下面展示一行3列的网格'),
       new Spacer(10),

@@ -1,17 +1,16 @@
 import {
-  LargeTitle,
-  Link,
   DivModule,
-  Spacer,
-  getColor,
-  PrimaryBodyText,
-  SecondaryBodyText,
-  createDomModule,
-  resetColor,
   FullRenderingModule,
+  getColor,
+  H1,
+  HBox,
+  Link,
+  PrimaryBodyText,
+  resetColor,
+  SecondaryBodyText,
   setColor,
-  VBox,
-  HBox
+  Spacer,
+  VBox
 } from './../lib'
 import { TestLayout } from './layout'
 import { generateRandomColor } from './utils/color'
@@ -25,7 +24,7 @@ class Page extends FullRenderingModule {
   protected buildContent(): void {
     const color = getColor()
     this.addChild(
-      new LargeTitle('颜色'),
+      new H1('颜色'),
       new Spacer(20),
       new VBox({
         gap: 10,

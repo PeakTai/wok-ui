@@ -1,6 +1,7 @@
 {
   "color": "色",
   "text": "テキスト",
+  "heading": "タイトル",
   "icon": "アイコン",
   "button": "ボタン",
   "message": "メッセージ",

@@ -1,4 +1,5 @@
 import { getColor } from '../color'
+import { RemoteSvgIcon, SvgIcon } from '../icon'
 import { Module } from '../module'
 import { getSize } from '../size'
 import './style.less'
@@ -52,6 +53,14 @@ export interface ButtonOpts {
    * @returns
    */
   onClick?: (ev: MouseEvent) => void
+  /**
+   * 图标
+   */
+  icon?: SvgIcon | RemoteSvgIcon
+  /**
+   * 图标位置
+   */
+  iconPosition?: 'start' | 'end'
 }
 /**
  * 按钮
@@ -62,7 +71,15 @@ export class Button extends Module {
     btn.type = 'button'
     btn.classList.add('wok-ui-btn')
     super(btn)
-    btn.innerText = opts.text
+    // 支持图标
+    if (opts.icon && (!opts.iconPosition || opts.iconPosition === 'start')) {
+      this.addChild(opts.icon)
+    }
+    this.addChild(opts.text)
+    // 支持图标
+    if (opts.icon && opts.iconPosition === 'end') {
+      this.addChild(opts.icon)
+    }
     if (opts.block) {
       btn.classList.add('block')
     }

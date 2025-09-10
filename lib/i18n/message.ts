@@ -10,6 +10,15 @@ export interface I18nMessages {
    * 确定
    */
   confirm: string
+
+  /**
+   * 提示信息， showAlert 模块的标题
+   */
+  information: string
+  /**
+   * 请确认，showConfirm 模块的标题
+   */
+  confirmation: string
   /**
    * 请选择文件
    */

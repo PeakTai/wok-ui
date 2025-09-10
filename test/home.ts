@@ -1,4 +1,4 @@
-import { DivModule, HBox, LargeTitle, RouterLink, Spacer } from '../lib'
+import { DivModule, H1, HBox, RouterLink, Spacer } from '../lib'
 import { getExtI18n } from './i18n'
 import { TestLayout } from './layout'
 
@@ -7,7 +7,7 @@ class Page extends DivModule {
     const i18n = getExtI18n()
     super()
     this.addChild(
-      new LargeTitle('wok-ui 功能测试和演示'),
+      new H1('wok-ui 功能测试和演示'),
       new Spacer(20),
       new HBox({
         gap: 16,
@@ -16,6 +16,7 @@ class Page extends DivModule {
           new RouterLink({ path: 'i18n', content: i18n.buildMsg('internationalization') }),
           new RouterLink({ path: 'color', content: i18n.buildMsg('color') }),
           new RouterLink({ path: 'text', content: i18n.buildMsg('text') }),
+          new RouterLink({ path: 'hading', content: i18n.buildMsg('heading') }),
           new RouterLink({ path: 'icon', content: i18n.buildMsg('icon') }),
           new RouterLink({ path: 'button', content: i18n.buildMsg('button') }),
           new RouterLink({ path: 'message', content: i18n.buildMsg('message') }),

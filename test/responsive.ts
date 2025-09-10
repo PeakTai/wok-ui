@@ -1,6 +1,6 @@
 import {
   Grid,
-  LargeTitle,
+  H1,
   PrimaryBodyText,
   ResponsiveModule,
   ResponsiveSize,
@@ -44,7 +44,7 @@ class Page extends ResponsiveModule {
     }
     this.renderCount++
     this.addChild(
-      new LargeTitle('响应式渲染'),
+      new H1('响应式渲染'),
       new Spacer('lg'),
       new SecondaryBodyText(
         '拖动改变窗口大小来进行测试，每当页面宽度达到一个分隔点的临界值，内容就会重新渲染'

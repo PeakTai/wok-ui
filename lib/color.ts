@@ -46,7 +46,8 @@ const defaultColor: Color = {
   warning: '#ffc107',
   border: '#dee2e6',
   text: '#303133',
-  textSecondary: '#909399',
+  textSecondary: '#757575',
+  // textSecondary: '#909399', 原默认次级颜色过淡，与白色对比度不足，影响可读性与无障碍体验，故更改
   outline: '#b1d2ff'
 }
 Object.freeze(defaultColor)

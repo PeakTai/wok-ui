@@ -2,8 +2,8 @@ import {
   Button,
   DivModule,
   FullRenderingModule,
+  H1,
   HBox,
-  LargeTitle,
   PrimaryBodyText,
   SecondaryBodyText,
   Spacer,
@@ -41,7 +41,7 @@ class Page extends FullRenderingModule {
   protected buildContent(): void {
     this.renderCount++
     this.addChild(
-      new LargeTitle('全量渲染测试'),
+      new H1('全量渲染测试'),
       new Spacer('lg'),
       new PrimaryBodyText(`这是第 ${this.renderCount} 次渲染`),
       new Spacer(),

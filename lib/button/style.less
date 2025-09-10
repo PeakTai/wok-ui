@@ -1,6 +1,9 @@
 // 按钮主题靠变量 --btn-color 控制
 button.wok-ui-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
   vertical-align: middle;
   user-select: none;
   background-color: var(--btn-bg-color);
@@ -23,9 +26,10 @@ button.wok-ui-btn {
     background-color: transparent !important;
     color: var(--btn-color) !important;
   }
+
   // 块
   &.block {
-    display: block !important;
+    display: flex !important;
     width: 100%;
   }
 
@@ -43,4 +47,5 @@ button.wok-ui-btn {
     cursor: not-allowed;
     transform: none !important;
   }
+
 }

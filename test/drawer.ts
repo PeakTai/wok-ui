@@ -2,8 +2,8 @@ import {
   Button,
   DivModule,
   Form,
+  H1,
   HBox,
-  LargeTitle,
   Spacer,
   TextInput,
   rem,
@@ -16,7 +16,7 @@ class Page extends DivModule {
   constructor() {
     super()
     this.addChild(
-      new LargeTitle('抽屉'),
+      new H1('抽屉'),
       new Spacer(20),
       new HBox({
         gap: 16,

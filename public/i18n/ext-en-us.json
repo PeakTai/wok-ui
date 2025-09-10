@@ -1,6 +1,7 @@
 {
   "color": "color",
   "text": "text",
+  "heading": "heading",
   "icon": "icon",
   "button": "button",
   "message": "message",

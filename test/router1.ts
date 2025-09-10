@@ -1,11 +1,11 @@
-import { DivModule, LargeTitle, RouterLink, Spacer } from '../lib'
+import { DivModule, H1, RouterLink, Spacer } from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {
   constructor() {
     super()
     this.addChild(
-      new LargeTitle('路由跳转测试'),
+      new H1('路由跳转测试'),
       new Spacer(),
       new RouterLink({
         path: 'router2',

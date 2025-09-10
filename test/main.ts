@@ -1,6 +1,7 @@
 import { getRouter, initRouter, showWarning } from '../lib'
 import { notFound } from './404'
 import { colorTest } from './color'
+import { headingTest } from './heading'
 import { homePage } from './home'
 import { initI18n } from './i18n'
 import { i18nTest } from './i18n-test'
@@ -18,6 +19,7 @@ async function main() {
       { path: 'i18n', module: i18nTest },
       { path: 'color', module: colorTest },
       { path: 'text', module: textTest },
+      { path: 'hading', module: headingTest },
       { path: 'icon', module: iconTest },
       // 使用动态导入，这样可以将不同的页面打包到不同的文件中，异步加载
       { path: 'button', module: () => import('./button').then(res => res.buttonTest()) },

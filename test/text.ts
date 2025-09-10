@@ -1,15 +1,17 @@
 import {
   FullRenderingModule,
-  LargeTitle,
+  H1,
+  HBox,
   Link,
   PrimaryBodyText,
   SecondaryBodyText,
+  SmallSecondaryBodyText,
   Spacer,
   Text,
-  Title,
   VBox,
   createDomModule,
   resetSize,
+  rem,
   setSize
 } from '../lib'
 import { TestLayout } from './layout'
@@ -21,10 +23,10 @@ class Page extends FullRenderingModule {
   }
   protected buildContent(): void {
     this.addChild(
-      new LargeTitle('文本'),
+      new H1('文本'),
       new Spacer(20),
       new VBox({
-        gap: 10,
+        gap: rem(1),
         children: [
           new PrimaryBodyText(
             '首要正文，首要正文，首要正文，首要正文，首要正文，首要正文，首要正文，首要正文，首要正文，首要正文，首要正文'
@@ -34,12 +36,37 @@ class Page extends FullRenderingModule {
           ),
           new Text({
             size: 'sm',
-            text: '小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本'
+            text: '小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本小号文本，号文本小号文本小号文本小号文本小号文本小号文本'
           }),
-          new Title('标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题'),
-          new LargeTitle(
-            '大号标题大号标题大号标题大号标题大号标题大号标题大号标题大号标题大号标题大号标题大号标题'
+          new SmallSecondaryBodyText(
+            '小号次要正文,小号次要正文,小号次要正文,小号次要正文，小号次要正文,小号次要正文,小号次要正文,小号次要正文'
           ),
+          new HBox({
+            wrap: true,
+            gap: rem(1),
+            children: [
+              new Text({
+                text: '主题色文字',
+                color: 'primary'
+              }),
+              new Text({
+                text: '警告色文字',
+                color: 'warning'
+              }),
+              new Text({
+                text: '成功色文字',
+                color: 'success'
+              }),
+              new Text({
+                text: '危险色文字',
+                color: 'danger'
+              }),
+              new Text({
+                text: '自定义颜色文字',
+                color: '#3df'
+              })
+            ]
+          }),
           createDomModule({
             children: [
               new SecondaryBodyText('通过 setSize 函数可以自定义文字大小，'),

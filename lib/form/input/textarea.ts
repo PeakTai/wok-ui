@@ -93,6 +93,12 @@ export class TextArea extends FormInput {
       // 浏览器不兼容
       if (this.textareaEl.style.getPropertyValue('field-sizing') !== 'content') {
         this.handleAutoHeight = true
+      } else {
+        // 设置了 field-sizing 后默认高度一行，根据 rows 选项设置最小高度
+        // 考虑行高加内边距加边框
+        if (textAreaopts.rows && textAreaopts.rows > 0) {
+          this.textareaEl.style.minHeight = `calc(2 * 0.375em + ${textAreaopts.rows}* 1.5em + 2px)`
+        }
       }
     }
   }

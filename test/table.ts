@@ -3,7 +3,7 @@ import {
   DivModule,
   FullRenderingModule,
   HBox,
-  LargeTitle,
+  H1,
   Link,
   PrimaryBodyText,
   Spacer,
@@ -75,7 +75,7 @@ class Page extends FullRenderingModule {
   }
   protected buildContent(): void {
     this.addChild(
-      new LargeTitle('表格'),
+      new H1('表格'),
       new Spacer(20),
       new HBox({
         gap: rem(1),

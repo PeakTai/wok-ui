@@ -8,6 +8,7 @@ import { I18n, getI18n } from '../lib'
 interface ExtI18nMsgs {
   color: string
   text: string
+  heading: string
   icon: string
   button: string
   message: string

@@ -1,5 +1,6 @@
 import { getColor } from './color'
 import { Module } from './module'
+import { getSize } from './size'
 /**
  * 文本选项
  */
@@ -15,7 +16,7 @@ export interface TextOpts {
   /**
    * 颜色
    */
-  color?: string
+  color?: 'primary' | 'success' | 'danger' | 'warning' | (string & {})
   /**
    * 尺寸，支持预设和自定义数字（单位px）
    */
@@ -49,7 +50,24 @@ export class Text extends Module {
       this.el.style.fontWeight = 'bold'
     }
     if (finalOpts.color) {
-      this.el.style.color = finalOpts.color
+      const color = getColor()
+      switch (finalOpts.color) {
+        case 'primary':
+          this.el.style.color = color.primary
+          break
+        case 'success':
+          this.el.style.color = color.success
+          break
+        case 'danger':
+          this.el.style.color = color.danger
+          break
+        case 'warning':
+          this.el.style.color = color.warning
+          break
+        default:
+          this.el.style.color = finalOpts.color
+          break
+      }
     }
     if (finalOpts.onClick) {
       this.onClick(finalOpts.onClick)
@@ -67,14 +85,15 @@ export class Text extends Module {
   }
 
   setSize(size: TextOpts['size']) {
+    const sizeSetting = getSize()
     if (size === 'sm') {
-      this.el.style.fontSize = '0.8rem'
+      this.el.style.fontSize = sizeSetting.textSm + 'px'
     } else if (size === 'default') {
-      this.el.style.fontSize = '1rem'
+      this.el.style.fontSize = sizeSetting.text + 'px'
     } else if (size === 'large') {
-      this.el.style.fontSize = '1.2rem'
+      this.el.style.fontSize = sizeSetting.textLg + 'px'
     } else if (size === 'xl') {
-      this.el.style.fontSize = '1.4rem'
+      this.el.style.fontSize = sizeSetting.textXl + 'px'
     } else {
       this.el.style.fontSize = `${size}px`
     }
@@ -139,6 +158,7 @@ export class SmallSecondaryBodyText extends Text {
 
 /**
  * 普通标题，对应 h2 标签
+ * @deprecated 请使用 H2 组件
  */
 export class Title extends Text {
   constructor(text: string) {
@@ -154,6 +174,7 @@ export class Title extends Text {
 }
 /**
  * 大号标题，对应 h1 标签，建议一个页面最多出现一个，作为页面的标题
+ * @deprecated 请使用 H1 组件
  */
 export class LargeTitle extends Text {
   constructor(text: string) {
