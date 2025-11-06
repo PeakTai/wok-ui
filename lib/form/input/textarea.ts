@@ -78,7 +78,6 @@ export class TextArea extends FormInput {
       this.handleChange()
     })
     this.textareaEl.addEventListener('input', () => {
-      8
       if (this.composing) {
         return
       }

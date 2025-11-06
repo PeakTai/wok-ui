@@ -43,6 +43,7 @@ export class RadioGroup extends FormInput {
     if (opts.inline) {
       this.el.classList.add('inline')
     }
+    this.value = opts.value || ''
     this.addChild(
       ...opts.options.map(opt =>
         createDomModule({
@@ -89,7 +90,7 @@ export class RadioGroup extends FormInput {
     const res = this.__validate()
     if (!res.valid) {
       this.showInvalidFeedback(res.msg)
-    }else{
+    } else {
       this.hideInvalidFeedback()
     }
     return res.valid
