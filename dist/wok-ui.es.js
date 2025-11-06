@@ -2979,6 +2979,7 @@ class RadioGroup extends FormInput {
     if (opts.inline) {
       this.el.classList.add("inline");
     }
+    this.value = opts.value || "";
     this.addChild(
       ...opts.options.map(
         (opt) => createDomModule({
