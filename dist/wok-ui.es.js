@@ -567,7 +567,10 @@ class Cache {
     }
   }
 }
-new Cache();
+const globalCache = new Cache();
+function getCache() {
+  return globalCache;
+}
 
 class FullRenderingModule extends Module {
   constructor(rootEl) {
@@ -3913,4 +3916,4 @@ class Dropup extends Dropdown {
   }
 }
 
-export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, H1, H2, H3, H4, H5, H6, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
+export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Cache, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, H1, H2, H3, H4, H5, H6, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getCache, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
