@@ -1,4 +1,4 @@
-import { getColor } from './color'
+import { ColorKey, getColor, resolveColor } from './color'
 import { Module } from './module'
 import { getSize } from './size'
 /**
@@ -16,7 +16,7 @@ export interface TextOpts {
   /**
    * 颜色
    */
-  color?: 'primary' | 'success' | 'danger' | 'warning' | (string & {})
+  color?: ColorKey
   /**
    * 尺寸，支持预设和自定义数字（单位px）
    */
@@ -50,24 +50,7 @@ export class Text extends Module {
       this.el.style.fontWeight = 'bold'
     }
     if (finalOpts.color) {
-      const color = getColor()
-      switch (finalOpts.color) {
-        case 'primary':
-          this.el.style.color = color.primary
-          break
-        case 'success':
-          this.el.style.color = color.success
-          break
-        case 'danger':
-          this.el.style.color = color.danger
-          break
-        case 'warning':
-          this.el.style.color = color.warning
-          break
-        default:
-          this.el.style.color = finalOpts.color
-          break
-      }
+      this.el.style.color = resolveColor(finalOpts.color)
     }
     if (finalOpts.onClick) {
       this.onClick(finalOpts.onClick)

@@ -778,6 +778,9 @@ function setColor(color) {
 function resetColor() {
   setColor(defaultColor);
 }
+function resolveColor(key) {
+  return getColor()[key] || key;
+}
 
 class Text extends Module {
   constructor(opts) {
@@ -793,24 +796,7 @@ class Text extends Module {
       this.el.style.fontWeight = "bold";
     }
     if (finalOpts.color) {
-      const color = getColor();
-      switch (finalOpts.color) {
-        case "primary":
-          this.el.style.color = color.primary;
-          break;
-        case "success":
-          this.el.style.color = color.success;
-          break;
-        case "danger":
-          this.el.style.color = color.danger;
-          break;
-        case "warning":
-          this.el.style.color = color.warning;
-          break;
-        default:
-          this.el.style.color = finalOpts.color;
-          break;
-      }
+      this.el.style.color = resolveColor(finalOpts.color);
     }
     if (finalOpts.onClick) {
       this.onClick(finalOpts.onClick);
@@ -1209,46 +1195,48 @@ class VBox extends DivModule {
 
 var style$9 = '';
 
-class H1 extends Module {
-  constructor(text) {
-    super(document.createElement("h1"));
-    this.el.textContent = text;
+class Heading extends Module {
+  constructor(tag, text) {
+    super(document.createElement(tag));
     this.el.classList.add("wok-ui-heading");
+    if (typeof text === "string") {
+      this.el.textContent = text;
+    } else {
+      this.addChild(...buildSubModules(text.content));
+      if (text.color) {
+        this.el.style.color = resolveColor(text.color);
+      }
+    }
   }
 }
-class H2 extends Module {
+class H1 extends Heading {
   constructor(text) {
-    super(document.createElement("h2"));
-    this.el.textContent = text;
-    this.el.classList.add("wok-ui-heading");
+    super("h1", text);
   }
 }
-class H3 extends Module {
+class H2 extends Heading {
   constructor(text) {
-    super(document.createElement("h3"));
-    this.el.textContent = text;
-    this.el.classList.add("wok-ui-heading");
+    super("h2", text);
   }
 }
-class H4 extends Module {
+class H3 extends Heading {
   constructor(text) {
-    super(document.createElement("h4"));
-    this.el.textContent = text;
-    this.el.classList.add("wok-ui-heading");
+    super("h3", text);
   }
 }
-class H5 extends Module {
+class H4 extends Heading {
   constructor(text) {
-    super(document.createElement("h5"));
-    this.el.textContent = text;
-    this.el.classList.add("wok-ui-heading");
+    super("h4", text);
   }
 }
-class H6 extends Module {
+class H5 extends Heading {
   constructor(text) {
-    super(document.createElement("h6"));
-    this.el.textContent = text;
-    this.el.classList.add("wok-ui-heading");
+    super("h5", text);
+  }
+}
+class H6 extends Heading {
+  constructor(text) {
+    super("h6", text);
   }
 }
 
@@ -3916,4 +3904,4 @@ class Dropup extends Dropdown {
   }
 }
 
-export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Cache, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, H1, H2, H3, H4, H5, H6, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getCache, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
+export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Cache, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, H1, H2, H3, H4, H5, H6, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getCache, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, resolveColor, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };

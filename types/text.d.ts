@@ -1,3 +1,4 @@
+import { ColorKey } from './color';
 import { Module } from './module';
 /**
  * 文本选项
@@ -14,7 +15,7 @@ export interface TextOpts {
     /**
      * 颜色
      */
-    color?: 'primary' | 'success' | 'danger' | 'warning' | (string & {});
+    color?: ColorKey;
     /**
      * 尺寸，支持预设和自定义数字（单位px）
      */

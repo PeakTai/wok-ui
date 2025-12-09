@@ -1,4 +1,4 @@
-import { DivModule, H1, H4, H2, H3, H5, H6,Spacer } from '../lib'
+import { DivModule, H1, H2, H3, H4, H5, H6, Spacer } from '../lib'
 import { TestLayout } from './layout'
 
 class Page extends DivModule {
@@ -6,6 +6,11 @@ class Page extends DivModule {
     super()
     this.addChild(
       new H1('H1 一级标题'),
+      new Spacer(),
+      new H1({
+        content: ['H1 一级标题', '主题色'],
+        color: 'primary'
+      }),
       new Spacer(),
       new H2('H2 二级标题'),
       new Spacer(),
