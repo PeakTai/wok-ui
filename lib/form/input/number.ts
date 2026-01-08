@@ -15,6 +15,10 @@ export interface NumberInputOpts {
    */
   min?: number | { min: number; errMsg: string }
   /**
+   * 步长
+   */
+  step?: number
+  /**
    * 初始值
    */
   value?: number
@@ -111,6 +115,9 @@ export class NumberInput extends TextInput {
       onBlur: numOpts.onBlur
     })
     this.input.type = 'number'
+    if (typeof numOpts.step === 'number') {
+      this.input.step = `${numOpts.step}`
+    }
     if (typeof numOpts.max === 'number') {
       this.input.max = `${numOpts.max}`
     } else if (numOpts.max) {

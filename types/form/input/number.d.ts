@@ -19,6 +19,10 @@ export interface NumberInputOpts {
         errMsg: string;
     };
     /**
+     * 步长
+     */
+    step?: number;
+    /**
      * 初始值
      */
     value?: number;
