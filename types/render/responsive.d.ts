@@ -53,7 +53,7 @@ export declare abstract class ResponsiveModule extends Module {
      * 构造器.
      * @param el
      */
-    constructor(el?: HTMLElement);
+    constructor(elOrClassName?: HTMLElement | string);
     /**
      * 根据尺寸信息构建内容
      */

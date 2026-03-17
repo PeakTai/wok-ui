@@ -23,7 +23,7 @@ export interface TableOptions<T> {
  */
 export class Table<T> extends DivModule {
   constructor(opts: TableOptions<T>) {
-    super('kk-table')
+    super('wok-ui-table')
     if (opts.bordered) {
       this.el.classList.add('bordered')
     }

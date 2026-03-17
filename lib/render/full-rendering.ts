@@ -13,8 +13,14 @@ import { Module } from '../module'
  * 目前可以通过 cacheModule 来缓存图片组件避免重新渲染来解决。
  */
 export abstract class FullRenderingModule extends Module {
-  constructor(rootEl?: HTMLElement) {
-    super(rootEl || document.createElement('div'))
+  constructor(elOrClassName?: HTMLElement | string) {
+    let el: HTMLElement = document.createElement('div')
+    if (typeof elOrClassName === 'string') {
+      el.className = elOrClassName
+    } else if (elOrClassName) {
+      el = elOrClassName
+    }
+    super(el)
   }
 
   private __pendingRender = false

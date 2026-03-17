@@ -59,8 +59,14 @@ export abstract class ResponsiveModule extends Module {
    * 构造器.
    * @param el
    */
-  constructor(el?: HTMLElement) {
-    super(el || document.createElement('div'))
+  constructor(elOrClassName?: HTMLElement | string) {
+    let el: HTMLElement = document.createElement('div')
+    if (typeof elOrClassName === 'string') {
+      el.className = elOrClassName
+    } else if (elOrClassName) {
+      el = elOrClassName
+    }
+    super(el)
     this.__resizeListener = () => this.render(false)
     window.addEventListener('resize', this.__resizeListener)
   }

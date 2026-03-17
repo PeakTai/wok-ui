@@ -32,8 +32,8 @@ export declare abstract class Module {
     replaceBy(module: Module): boolean;
     protected find<T>(predicate: (m: Module) => boolean): T[];
     protected findFirst<T>(predicate: (m: Module) => boolean): T | undefined;
-    protected addChild(...child: ConvertibleModule[]): void;
-    private __addSingleChild;
+    protected addChild(...child: SubModulesOpt[]): void;
+    private __addChild;
     protected removeChild(moduleOrIndex: Module | number): boolean;
     protected getChildren(): Readonly<Module[]>;
     protected getChild(index: number): Module | undefined;
@@ -75,7 +75,7 @@ export declare function convertToModule(cm: ConvertibleModule): Module;
  * 子模块选项，可用于模块的构建参数中.
  * 支持直接使用可转换的模块和动态添加的函数.
  */
-export type SubModulesOpt = ConvertibleModule | ConvertibleModule[] | ((addChild: (...child: ConvertibleModule[]) => void) => void);
+export type SubModulesOpt = ConvertibleModule | ConvertibleModule[] | ((addChild: (...child: SubModulesOpt[]) => void) => void);
 /**
  * 子模块选项来构建子模块列表
  * @param opt

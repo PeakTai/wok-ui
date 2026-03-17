@@ -325,20 +325,22 @@ class Module {
     return void 0;
   }
   addChild(...child) {
-    child.filter((c) => c !== void 0).forEach((c) => this.__addSingleChild(c));
+    child.filter((c) => c !== void 0).forEach((c) => this.__addChild(c));
   }
-  __addSingleChild(child) {
-    const childModule = convertToModule(child);
-    if (childModule.__destroyed) {
-      console.error("The module to be added has been destroyed", child);
-      throw new Error("The module to be added has been destroyed");
+  __addChild(child) {
+    const children = buildSubModules(child);
+    for (const childModule of children) {
+      if (childModule.__destroyed) {
+        console.error("The module to be added has been destroyed", child);
+        throw new Error("The module to be added has been destroyed");
+      }
+      if (childModule.getParent()) {
+        throw new Error("The module you want to add already has a parent module");
+      }
+      childModule.mount(this.el);
+      this.__children.push(childModule);
+      childModule.__parent = this;
     }
-    if (childModule.getParent()) {
-      throw new Error("The module you want to add already has a parent module");
-    }
-    childModule.mount(this.el);
-    this.__children.push(childModule);
-    childModule.__parent = this;
   }
   removeChild(moduleOrIndex) {
     let child = void 0;
@@ -453,7 +455,7 @@ function buildSubModules(opt) {
     if (res instanceof Module) {
       return [res];
     }
-    return children.map((c) => convertToModule(c));
+    return children.flatMap((c) => buildSubModules(c));
   } else {
     return [convertToModule(opt)];
   }
@@ -573,8 +575,14 @@ function getCache() {
 }
 
 class FullRenderingModule extends Module {
-  constructor(rootEl) {
-    super(rootEl || document.createElement("div"));
+  constructor(elOrClassName) {
+    let el = document.createElement("div");
+    if (typeof elOrClassName === "string") {
+      el.className = elOrClassName;
+    } else if (elOrClassName) {
+      el = elOrClassName;
+    }
+    super(el);
     this.__pendingRender = false;
     this.__cache = new Cache();
   }
@@ -622,8 +630,14 @@ var ResponsiveBreakPoint = /* @__PURE__ */ ((ResponsiveBreakPoint2) => {
   return ResponsiveBreakPoint2;
 })(ResponsiveBreakPoint || {});
 class ResponsiveModule extends Module {
-  constructor(el) {
-    super(el || document.createElement("div"));
+  constructor(elOrClassName) {
+    let el = document.createElement("div");
+    if (typeof elOrClassName === "string") {
+      el.className = elOrClassName;
+    } else if (elOrClassName) {
+      el = elOrClassName;
+    }
+    super(el);
     this.__respSize = "xs";
     this.__pendingRender = false;
     this.__cache = new Cache();
@@ -1924,7 +1938,7 @@ class Title extends Module {
 
 class Table extends DivModule {
   constructor(opts) {
-    super("kk-table");
+    super("wok-ui-table");
     if (opts.bordered) {
       this.el.classList.add("bordered");
     }

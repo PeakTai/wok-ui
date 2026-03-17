@@ -11,7 +11,7 @@ import { Module } from '../module';
  * 目前可以通过 cacheModule 来缓存图片组件避免重新渲染来解决。
  */
 export declare abstract class FullRenderingModule extends Module {
-    constructor(rootEl?: HTMLElement);
+    constructor(elOrClassName?: HTMLElement | string);
     private __pendingRender;
     /**
      * 缓存

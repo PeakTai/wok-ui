@@ -136,24 +136,26 @@ export abstract class Module {
     return undefined
   }
 
-  protected addChild(...child: ConvertibleModule[]): void {
+  protected addChild(...child: SubModulesOpt[]): void {
     // 外部调用 addChid(...[]) 会导致得到的 child 是 [undefined]，需要处理下，否则会有错误
     // 虽然外部检查后再调用可以避免，但是太过于繁琐了，这里处理更方便
-    child.filter(c => c !== undefined).forEach(c => this.__addSingleChild(c))
+    child.filter(c => c !== undefined).forEach(c => this.__addChild(c))
   }
 
-  private __addSingleChild(child: ConvertibleModule): void {
-    const childModule = convertToModule(child)
-    if (childModule.__destroyed) {
-      console.error('The module to be added has been destroyed', child)
-      throw new Error('The module to be added has been destroyed')
+  private __addChild(child: SubModulesOpt): void {
+    const children = buildSubModules(child)
+    for (const childModule of children) {
+      if (childModule.__destroyed) {
+        console.error('The module to be added has been destroyed', child)
+        throw new Error('The module to be added has been destroyed')
+      }
+      if (childModule.getParent()) {
+        throw new Error('The module you want to add already has a parent module')
+      }
+      childModule.mount(this.el)
+      this.__children.push(childModule)
+      childModule.__parent = this
     }
-    if (childModule.getParent()) {
-      throw new Error('The module you want to add already has a parent module')
-    }
-    childModule.mount(this.el)
-    this.__children.push(childModule)
-    childModule.__parent = this
   }
 
   protected removeChild(moduleOrIndex: Module | number): boolean {
@@ -314,7 +316,7 @@ export function convertToModule(cm: ConvertibleModule): Module {
 export type SubModulesOpt =
   | ConvertibleModule
   | ConvertibleModule[]
-  | ((addChild: (...child: ConvertibleModule[]) => void) => void)
+  | ((addChild: (...child: SubModulesOpt[]) => void) => void)
 
 /**
  * 子模块选项来构建子模块列表
@@ -325,12 +327,12 @@ export function buildSubModules(opt: SubModulesOpt): Module[] {
     return opt.map(c => convertToModule(c))
   }
   if (typeof opt === 'function') {
-    const children: ConvertibleModule[] = []
+    const children: SubModulesOpt[] = []
     const res = opt((...child) => children.push(...child))
     if (res instanceof Module) {
       return [res]
     }
-    return children.map(c => convertToModule(c))
+    return children.flatMap(c => buildSubModules(c))
   } else {
     return [convertToModule(opt)]
   }
