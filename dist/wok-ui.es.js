@@ -489,11 +489,19 @@ function createDomModule(options) {
       }
     });
   }
+  function addClassName(name) {
+    if (name) {
+      el.classList.add(...name.split(/\s+/));
+    }
+  }
+  if (options.className) {
+    addClassName(options.className);
+  }
   if (options.classNames) {
     if (typeof options.classNames === "string") {
-      el.classList.add(options.classNames);
+      addClassName(options.classNames);
     } else {
-      el.classList.add(...options.classNames.filter((name) => !!name));
+      options.classNames.forEach((name) => addClassName(name));
     }
   }
   if (options.style) {

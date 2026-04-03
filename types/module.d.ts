@@ -100,9 +100,13 @@ export interface CreateDomModuleOptions {
      */
     attrs?: Record<string, string | undefined | boolean>;
     /**
-     * css 类名称
+     * css 类名称,支持带空格的多个类名
      */
     classNames?: string[] | string;
+    /**
+     * 单个 css 类名称，支持空格分隔多个类名
+     */
+    className?: string;
     /**
      * 样式设置
      */
