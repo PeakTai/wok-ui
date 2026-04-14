@@ -377,8 +377,8 @@ class Module {
     }
     parentEl.appendChild(this.el);
   }
-  scrollIntoView() {
-    this.el.scrollIntoView(true);
+  scrollIntoView(options) {
+    this.el.scrollIntoView(options);
   }
   getIndex() {
     if (!this.__parent) {
@@ -2669,7 +2669,7 @@ class Form extends Module {
     });
   }
   validate() {
-    return this.find((m) => m instanceof FormInput).some((m) => !m.validate());
+    return this.find((m) => m instanceof FormInput).every((m) => m.validate());
   }
   submit() {
     if (!this.opts.onSubmit) {
@@ -2679,7 +2679,7 @@ class Form extends Module {
       (m) => !m.validate()
     );
     if (invalidInputs.length) {
-      invalidInputs[0].scrollIntoViewIfInvisible();
+      invalidInputs[0].scrollIntoView();
       if (invalidInputs[0] instanceof TextInput) {
         invalidInputs[0].focus();
       }
