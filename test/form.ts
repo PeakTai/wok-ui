@@ -20,7 +20,9 @@ import {
   ValidateResult,
   createDomModule,
   rem,
-  showModal
+  showModal,
+  showSuccess,
+  showWarning
 } from '../lib'
 import { TestLayout } from './layout'
 
@@ -65,6 +67,7 @@ class Page extends FullRenderingModule {
     this.render()
   }
   protected buildContent(): void {
+    let form: Form
     this.addChild(
       new H1('表单'),
       new Spacer(20),
@@ -91,7 +94,7 @@ class Page extends FullRenderingModule {
       }),
       createDomModule({ tag: 'hr' }),
       new Spacer(20),
-      new Form({
+      (form = new Form({
         autocomplete: this.setting.autoComplete,
         feedbackMode: this.setting.feedbackTooltip ? 'tooltip' : 'inline',
         onSubmit: () => this.handleSubmit(),
@@ -279,6 +282,18 @@ class Page extends FullRenderingModule {
                   text: '提交'
                 }),
                 new Button({
+                  type: 'default',
+                  text: '校验',
+                  onClick: () => {
+                    const res = form.validate()
+                    if (res) {
+                      showSuccess('校验通过')
+                    } else {
+                      showWarning('校验不通过')
+                    }
+                  }
+                }),
+                new Button({
                   text: '返回',
                   onClick: () => history.back()
                 })
@@ -286,7 +301,7 @@ class Page extends FullRenderingModule {
             })
           )
         }
-      })
+      }))
     )
     // 每次渲染后，将 nameAutoFocus 设置为 false，避免再次渲染又让名称获取到焦点
     if (this.nameAutoFocus) {

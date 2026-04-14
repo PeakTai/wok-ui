@@ -51,7 +51,7 @@ export class Form extends Module {
    * @returns
    */
   validate(): boolean {
-    return this.find<FormInput>(m => m instanceof FormInput).some(m => !m.validate())
+    return this.find<FormInput>(m => m instanceof FormInput).every(m => m.validate())
   }
 
   /**
@@ -65,7 +65,7 @@ export class Form extends Module {
       m => !m.validate()
     )
     if (invalidInputs.length) {
-      invalidInputs[0].scrollIntoViewIfInvisible()
+      invalidInputs[0].scrollIntoView()
       if (invalidInputs[0] instanceof TextInput) {
         invalidInputs[0].focus()
       }

@@ -204,8 +204,8 @@ export abstract class Module {
   /**
    * 滚动使元素可见.
    */
-  scrollIntoView(): void {
-    this.el.scrollIntoView(true)
+  scrollIntoView(options?: ScrollToOptions): void {
+    this.el.scrollIntoView(options)
   }
 
   /**
