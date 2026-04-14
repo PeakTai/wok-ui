@@ -45,7 +45,7 @@ export declare abstract class Module {
     /**
      * 滚动使元素可见.
      */
-    scrollIntoView(): void;
+    scrollIntoView(options?: ScrollToOptions): void;
     /**
      * 获取在兄弟元素中的下标.
      * @returns
