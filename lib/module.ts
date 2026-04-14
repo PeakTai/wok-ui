@@ -221,6 +221,7 @@ export abstract class Module {
 
   /**
    * 如果不可见，滚动至可见.
+   * @deprecated 该方法已被弃用，某些场景有 BUG，并且该方法属于前期的过度设计，未来的版本会移除该方法
    */
   scrollIntoViewIfInvisible(): void {
     const el = this.el

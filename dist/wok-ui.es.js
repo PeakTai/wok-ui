@@ -2668,6 +2668,9 @@ class Form extends Module {
       this.submit();
     });
   }
+  validate() {
+    return this.find((m) => m instanceof FormInput).some((m) => !m.validate());
+  }
   submit() {
     if (!this.opts.onSubmit) {
       return;

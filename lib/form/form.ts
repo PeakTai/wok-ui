@@ -46,6 +46,13 @@ export class Form extends Module {
       this.submit()
     })
   }
+  /**
+   * 校验表单元素是否都校验通过，返回校验结果。不会触发提交事件。
+   * @returns
+   */
+  validate(): boolean {
+    return this.find<FormInput>(m => m instanceof FormInput).some(m => !m.validate())
+  }
 
   /**
    * 主要请求提交，如果所有表单元素都校验通过，则会触发 submit 事件

@@ -28,6 +28,11 @@ export declare class Form extends Module {
     private readonly opts;
     constructor(opts: FormOpts);
     /**
+     * 校验表单元素是否都校验通过，返回校验结果。不会触发提交事件。
+     * @returns
+     */
+    validate(): boolean;
+    /**
      * 主要请求提交，如果所有表单元素都校验通过，则会触发 submit 事件
      */
     submit(): void;
