@@ -73,4 +73,12 @@ initRouter({
 }).mount(document.body)
 ```
 
+### AI Skill Installation
+
+wok-ui provides an AI skill that, once installed, enables AI coding assistants to better understand and utilize wok-ui components.
+
+```
+npx skills add git@gitee.com:tai/wok-ui.git --all
+```
+
 For more usage details, please [refer to the documentation](./documentation/en/index.md).
