@@ -1,3 +1,12 @@
+---
+name: getting-started
+description: 介绍 wok-ui 的入门指南，包括项目创建、手动安装、最简使用、使用路由等。
+license: MIT
+metadata:
+  author: Peak Tai
+  email: peaktai@qq.com
+---
+
 # 入门指南
 
 wok-ui 是一个前端 UI 组件库，具备以下特点：简单、直观、低心智负担；响应式设计；无第三方依赖；深度拥抱 Typescript，提供完善的类型推导与严格的类型约束。
