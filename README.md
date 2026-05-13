@@ -79,8 +79,15 @@ initRouter({
 
 wok-ui 提供了 AI 技能，安装后可以让 AI 编程助手更好地理解和使用 wok-ui 组件。
 
+
+```bash
+npx skills add peaktai/wok-ui --all
 ```
-npx skills add git@gitee.com:tai/wok-ui.git --all
+
+国内用户访问 github 速度慢，可以使用 gitee 仓库地址来安装。
+
+```bash
+npx skills add https://gitee.com/tai/wok-ui.git --all
 ```
 
 更多的使用方法，请[查看文档](https://gitee.com/tai/wok-ui/blob/master/documentation/zh-cn/index.md)。

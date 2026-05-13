@@ -77,8 +77,8 @@ initRouter({
 
 wok-ui provides an AI skill that, once installed, enables AI coding assistants to better understand and utilize wok-ui components.
 
-```
-npx skills add git@gitee.com:tai/wok-ui.git --all
+```bash
+npx skills add peaktai/wok-ui --all
 ```
 
 For more usage details, please [refer to the documentation](./documentation/en/index.md).
