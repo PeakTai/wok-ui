@@ -49,6 +49,8 @@ export declare abstract class ResponsiveModule extends Module {
      * 缓存的模块
      */
     private __cache;
+    private __saveScrollPositions;
+    private __restoreScrollPositions;
     /**
      * 构造器.
      * @param el

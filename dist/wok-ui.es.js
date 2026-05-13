@@ -594,10 +594,31 @@ class FullRenderingModule extends Module {
     this.__pendingRender = false;
     this.__cache = new Cache();
   }
+  __saveScrollPositions() {
+    const snapshots = [];
+    let el = this.el;
+    while (el) {
+      if (el.scrollLeft > 0 || el.scrollTop > 0) {
+        snapshots.push({ el, left: el.scrollLeft, top: el.scrollTop });
+      }
+      el = el.parentElement;
+    }
+    return snapshots;
+  }
+  __restoreScrollPositions(snapshots) {
+    for (const snapshot of snapshots) {
+      if (snapshot.el.isConnected) {
+        snapshot.el.scrollLeft = snapshot.left;
+        snapshot.el.scrollTop = snapshot.top;
+      }
+    }
+  }
   render(immediate = false) {
     if (immediate) {
+      const snapshots = this.__saveScrollPositions();
       this.empty();
       this.buildContent();
+      this.__restoreScrollPositions(snapshots);
       return;
     }
     this.__pendingRender = true;
@@ -607,8 +628,10 @@ class FullRenderingModule extends Module {
       }
       this.__pendingRender = false;
       try {
+        const snapshots = this.__saveScrollPositions();
         this.empty();
         this.buildContent();
+        this.__restoreScrollPositions(snapshots);
       } catch (e) {
         console.error(e);
       }
@@ -652,6 +675,25 @@ class ResponsiveModule extends Module {
     this.__resizeListener = () => this.render(false);
     window.addEventListener("resize", this.__resizeListener);
   }
+  __saveScrollPositions() {
+    const snapshots = [];
+    let el = this.el;
+    while (el) {
+      if (el.scrollLeft > 0 || el.scrollTop > 0) {
+        snapshots.push({ el, left: el.scrollLeft, top: el.scrollTop });
+      }
+      el = el.parentElement;
+    }
+    return snapshots;
+  }
+  __restoreScrollPositions(snapshots) {
+    for (const snapshot of snapshots) {
+      if (snapshot.el.isConnected) {
+        snapshot.el.scrollLeft = snapshot.left;
+        snapshot.el.scrollTop = snapshot.top;
+      }
+    }
+  }
   render(force = true, immediate = false) {
     if (immediate) {
       this.__render(force);
@@ -688,11 +730,13 @@ class ResponsiveModule extends Module {
     }
     if (force || this.__respSize !== size) {
       this.__respSize = size;
+      const snapshots = this.__saveScrollPositions();
       this.empty();
       this.buildContent({
         respSize: size,
         windowWidth
       });
+      this.__restoreScrollPositions(snapshots);
     }
   }
   cacheModule(opts) {

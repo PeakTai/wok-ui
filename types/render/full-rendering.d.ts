@@ -17,6 +17,8 @@ export declare abstract class FullRenderingModule extends Module {
      * 缓存
      */
     private __cache;
+    private __saveScrollPositions;
+    private __restoreScrollPositions;
     /**
      * 渲染。会尽可能减少负载的情况下重新构建内容。
      * 注意：渲染是异步的，不会立即执行，由于渲染操作有可能被合并执行，也没有回调。

@@ -1,6 +1,12 @@
 import { Cache } from './cache'
 import { Module } from '../module'
 
+interface ScrollSnapshot {
+  el: Element
+  left: number
+  top: number
+}
+
 /**
  * 响应式尺寸,分隔点信息:
  * xs : <576px
@@ -55,6 +61,27 @@ export abstract class ResponsiveModule extends Module {
    * 缓存的模块
    */
   private __cache = new Cache()
+
+  private __saveScrollPositions(): ScrollSnapshot[] {
+    const snapshots: ScrollSnapshot[] = []
+    let el: Element | null = this.el
+    while (el) {
+      if (el.scrollLeft > 0 || el.scrollTop > 0) {
+        snapshots.push({ el, left: el.scrollLeft, top: el.scrollTop })
+      }
+      el = el.parentElement
+    }
+    return snapshots
+  }
+
+  private __restoreScrollPositions(snapshots: ScrollSnapshot[]) {
+    for (const snapshot of snapshots) {
+      if (snapshot.el.isConnected) {
+        snapshot.el.scrollLeft = snapshot.left
+        snapshot.el.scrollTop = snapshot.top
+      }
+    }
+  }
   /**
    * 构造器.
    * @param el
@@ -126,11 +153,13 @@ export abstract class ResponsiveModule extends Module {
     }
     if (force || this.__respSize !== size) {
       this.__respSize = size
+      const snapshots = this.__saveScrollPositions()
       this.empty()
       this.buildContent({
         respSize: size,
         windowWidth
       })
+      this.__restoreScrollPositions(snapshots)
     }
   }
 

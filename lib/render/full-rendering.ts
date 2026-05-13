@@ -1,6 +1,12 @@
 import { Cache } from './cache'
 import { Module } from '../module'
 
+interface ScrollSnapshot {
+  el: Element
+  left: number
+  top: number
+}
+
 /**
  * 全量渲染模块，当内部有变化时，需要整个模块的内容重新渲染.
  * 子类需要实现 buildContent()方法，用于构建完整内容.在需要渲染的时候调用
@@ -29,6 +35,27 @@ export abstract class FullRenderingModule extends Module {
    */
   private __cache = new Cache()
 
+  private __saveScrollPositions(): ScrollSnapshot[] {
+    const snapshots: ScrollSnapshot[] = []
+    let el: Element | null = this.el
+    while (el) {
+      if (el.scrollLeft > 0 || el.scrollTop > 0) {
+        snapshots.push({ el, left: el.scrollLeft, top: el.scrollTop })
+      }
+      el = el.parentElement
+    }
+    return snapshots
+  }
+
+  private __restoreScrollPositions(snapshots: ScrollSnapshot[]) {
+    for (const snapshot of snapshots) {
+      if (snapshot.el.isConnected) {
+        snapshot.el.scrollLeft = snapshot.left
+        snapshot.el.scrollTop = snapshot.top
+      }
+    }
+  }
+
   /**
    * 渲染。会尽可能减少负载的情况下重新构建内容。
    * 注意：渲染是异步的，不会立即执行，由于渲染操作有可能被合并执行，也没有回调。
@@ -38,8 +65,10 @@ export abstract class FullRenderingModule extends Module {
    */
   protected render(immediate = false) {
     if (immediate) {
+      const snapshots = this.__saveScrollPositions()
       this.empty()
       this.buildContent()
+      this.__restoreScrollPositions(snapshots)
       return
     }
     this.__pendingRender = true
@@ -49,8 +78,10 @@ export abstract class FullRenderingModule extends Module {
       }
       this.__pendingRender = false
       try {
+        const snapshots = this.__saveScrollPositions()
         this.empty()
         this.buildContent()
+        this.__restoreScrollPositions(snapshots)
       } catch (e) {
         console.error(e)
       }
