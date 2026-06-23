@@ -68,20 +68,7 @@ class Page extends FullRenderingModule {
           new Button({
             text: '点击重新渲染',
             onClick: () => {
-              // 多次调用，也只会渲染一次，可观察记录渲染次数的第一个文本模块
               this.render()
-              this.render()
-              this.render()
-              this.render()
-              this.render()
-            }
-          }),
-          new Button({
-            text: '立即渲染两次',
-            onClick: () => {
-              // 调用几次就渲染几次
-              this.render(true)
-              this.render(true)
             }
           }),
           new Button({

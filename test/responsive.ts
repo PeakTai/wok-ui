@@ -51,7 +51,7 @@ class Page extends ResponsiveModule {
       ),
       new Spacer(),
       new PrimaryBodyText(`当前是第 ${this.renderCount} 次渲染，`),
-      new Link({ content: '立即强制渲染一次', onClick: () => this.render(true, true) }),
+      new Link({ content: '强制渲染一次', onClick: () => this.render(true) }),
       new Spacer(),
       new SecondaryBodyText(
         `当前的响应式尺寸信息：${sizeInfo.respSize}，下面网络显示为每行 ${cols} 列`
