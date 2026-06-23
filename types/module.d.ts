@@ -58,6 +58,12 @@ export declare abstract class Module {
     scrollIntoViewIfInvisible(): void;
 }
 /**
+ * 将类名字符串添加到元素上，支持空格分隔的多个类名
+ * @param el 目标元素
+ * @param className 单个类名或空格分隔的多个类名
+ */
+export declare function addClassNames(el: HTMLElement, className: string): void;
+/**
  * 基础的 div 模块
  */
 export declare class DivModule extends Module {

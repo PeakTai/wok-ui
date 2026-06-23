@@ -416,11 +416,14 @@ class DomModule extends Module {
     }
   }
 }
+function addClassNames(el, className) {
+  className.split(/\s+/).filter((s) => s).forEach((s) => el.classList.add(s));
+}
 class DivModule extends Module {
   constructor(...classNames) {
     const el = document.createElement("div");
     super(el);
-    el.classList.add(...classNames);
+    classNames.forEach((name) => addClassNames(el, name));
   }
 }
 function convertToModule(cm) {
@@ -489,19 +492,14 @@ function createDomModule(options) {
       }
     });
   }
-  function addClassName(name) {
-    if (name) {
-      el.classList.add(...name.split(/\s+/));
-    }
-  }
   if (options.className) {
-    addClassName(options.className);
+    addClassNames(el, options.className);
   }
   if (options.classNames) {
     if (typeof options.classNames === "string") {
-      addClassName(options.classNames);
+      addClassNames(el, options.classNames);
     } else {
-      options.classNames.forEach((name) => addClassName(name));
+      options.classNames.forEach((name) => addClassNames(el, name));
     }
   }
   if (options.style) {
@@ -586,12 +584,12 @@ class FullRenderingModule extends Module {
   constructor(elOrClassName) {
     let el = document.createElement("div");
     if (typeof elOrClassName === "string") {
-      el.className = elOrClassName;
+      addClassNames(el, elOrClassName);
     } else if (elOrClassName) {
       el = elOrClassName;
     }
     super(el);
-    this.__pendingRender = false;
+    this.__rendering = false;
     this.__cache = new Cache();
   }
   __saveScrollPositions() {
@@ -613,29 +611,19 @@ class FullRenderingModule extends Module {
       }
     }
   }
-  render(immediate = false) {
-    if (immediate) {
+  render() {
+    if (this.__rendering) {
+      return;
+    }
+    this.__rendering = true;
+    try {
       const snapshots = this.__saveScrollPositions();
       this.empty();
       this.buildContent();
       this.__restoreScrollPositions(snapshots);
-      return;
+    } finally {
+      this.__rendering = false;
     }
-    this.__pendingRender = true;
-    setTimeout(() => {
-      if (!this.__pendingRender) {
-        return;
-      }
-      this.__pendingRender = false;
-      try {
-        const snapshots = this.__saveScrollPositions();
-        this.empty();
-        this.buildContent();
-        this.__restoreScrollPositions(snapshots);
-      } catch (e) {
-        console.error(e);
-      }
-    }, 0);
   }
   cacheModule(opts) {
     return this.__cache.cache(opts);
@@ -664,13 +652,13 @@ class ResponsiveModule extends Module {
   constructor(elOrClassName) {
     let el = document.createElement("div");
     if (typeof elOrClassName === "string") {
-      el.className = elOrClassName;
+      addClassNames(el, elOrClassName);
     } else if (elOrClassName) {
       el = elOrClassName;
     }
     super(el);
     this.__respSize = "xs";
-    this.__pendingRender = false;
+    this.__rendering = false;
     this.__cache = new Cache();
     this.__resizeListener = () => this.render(false);
     window.addEventListener("resize", this.__resizeListener);
@@ -694,23 +682,16 @@ class ResponsiveModule extends Module {
       }
     }
   }
-  render(force = true, immediate = false) {
-    if (immediate) {
-      this.__render(force);
+  render(force = true) {
+    if (this.__rendering) {
       return;
     }
-    this.__pendingRender = true;
-    setTimeout(() => {
-      if (!this.__pendingRender) {
-        return;
-      }
-      this.__pendingRender = false;
-      try {
-        this.__render(force);
-      } catch (e) {
-        console.error(e);
-      }
-    }, 0);
+    this.__rendering = true;
+    try {
+      this.__render(force);
+    } finally {
+      this.__rendering = false;
+    }
   }
   __render(force) {
     let size = "xs";
@@ -3976,4 +3957,4 @@ class Dropup extends Dropdown {
   }
 }
 
-export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Cache, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, H1, H2, H3, H4, H5, H6, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getCache, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, resolveColor, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };
+export { ANIMATION_PROVISION, Animation, BoolCheckbox, Button, Cache, Checkbox, CheckboxGroup, ColorInput, DateInput, DivModule, Dropdown, Dropup, ExtensibleI18n, FileInput, Form, FormInput, FullRenderingModule, Grid, H1, H2, H3, H4, H5, H6, HBox, HSpacer, HSplitBox, I18n, InvalidFeedback, JustifyBox, LargeTitle, Link, Module, NumberInput, PasswordInput, PrimaryBodyText, Radio, RadioGroup, Range, RemoteSvgIcon, ResponsiveBreakPoint, ResponsiveModule, Router, RouterLink, SearchInput, SecondaryBodyText, Select, SmallSecondaryBodyText, Spacer, SvgIcon, Table, TableCheckboxColumn, TableColumn, TableIndexColumn, TelInput, Text, TextArea, TextInput, Title$1 as Title, VBox, VSplitBox, addClassNames, animate, buildSubModules, closeAllModals, convertToModule, createDomModule, getCache, getColor, getI18n, getRouter, getSize, hideLoading, initRouter, rem, resetColor, resetSize, resolveColor, setColor, setSize, showAlert, showConfirm, showDrawer, showLoading, showModal, showSuccess, showToast, showWarning };

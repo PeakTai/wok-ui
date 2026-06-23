@@ -44,7 +44,7 @@ export declare abstract class ResponsiveModule extends Module {
      */
     private readonly __resizeListener;
     private __respSize;
-    private __pendingRender;
+    private __rendering;
     /**
      * 缓存的模块
      */
@@ -70,11 +70,12 @@ export declare abstract class ResponsiveModule extends Module {
         windowWidth: number;
     }): void;
     /**
-     * 请求立即进行渲染.渲染会异步执行，一次程序流程中有多次调用 render() 方法的，会合并成为一次，减少消耗.
-     * @param force 是否强制渲染,如果为 false ,则在尺寸信息不变化的情况下不会渲染
-     * @param immediate 是否立即渲染，如果设置为 true 则渲染会立同步执行，而不是异步
+     * 渲染，同步执行，清空内容后重新构建。
+     * 如果当前正在渲染中，调用会被忽略以避免重入。
+     *
+     * @param force 是否强制渲染，如果为 false 则在尺寸信息不变化的情况下不渲染
      */
-    protected render(force?: boolean, immediate?: boolean): void;
+    protected render(force?: boolean): void;
     private __render;
     /**
      * 缓存一个模块，返回的是一个特殊的模块，能够复用，避免重新渲染.

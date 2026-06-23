@@ -1,18 +1,15 @@
 import { Module } from '../module';
 /**
- * 全量渲染模块，当内部有变化时，需要整个模块的内容重新渲染.
- * 子类需要实现 buildContent()方法，用于构建完整内容.在需要渲染的时候调用
- * render() 方法，render() 方法可以保证在同步逻辑完成后异步进行渲染，尽可能少的
- * 重新构建内容. 全量渲染不是必须的，在 buildContent()
- * 中也可以自定义局部更改部分内容，在需要全量渲染时调用 render() .
+ * 全量渲染模块，当内部有变化时，需要整个模块的内容重新渲染。
+ * 子类实现 buildContent() 构建完整内容，在需要渲染时调用 render()，
+ * render() 会同步清空内容、重新构建并恢复滚动位置。
  *
- * 一般情况下全量渲染不会导致滚动位置变化引发页面抖动，但是如果内容里有图片就会
- * 出现滚动位置变化和闪烁的情况，因为图片加载前和加载成功后会有大小变化。
- * 目前可以通过 cacheModule 来缓存图片组件避免重新渲染来解决。
+ * 如果内容中有图片，全量渲染可能导致滚动位置变化和闪烁（图片加载前后大小变化），
+ * 可通过 cacheModule 缓存图片组件避免重新渲染来解决。
  */
 export declare abstract class FullRenderingModule extends Module {
     constructor(elOrClassName?: HTMLElement | string);
-    private __pendingRender;
+    private __rendering;
     /**
      * 缓存
      */
@@ -20,13 +17,10 @@ export declare abstract class FullRenderingModule extends Module {
     private __saveScrollPositions;
     private __restoreScrollPositions;
     /**
-     * 渲染。会尽可能减少负载的情况下重新构建内容。
-     * 注意：渲染是异步的，不会立即执行，由于渲染操作有可能被合并执行，也没有回调。
-     * 如果有需要等等渲染结果的逻辑，可以将设置参数 immediate 为 true，这样渲染就是同步的。
-     *
-     * @param immediate 是否立即渲染
+     * 渲染，同步执行，清空内容后重新构建。
+     * 如果当前正在渲染中，调用会被忽略以避免重入。
      */
-    protected render(immediate?: boolean): void;
+    protected render(): void;
     /**
      * 构建内容, 内部实现完成的内容构建逻辑。不要主动调用这个方法，
      * 在需要全量渲染时调用 render() 方法，render() 方法内容会在适当的时候调用 buildContent()，
