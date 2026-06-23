@@ -1,5 +1,5 @@
 import { Cache } from './cache'
-import { Module } from '../module'
+import { Module, addClassNames } from '../module'
 
 interface ScrollSnapshot {
   el: Element
@@ -56,7 +56,7 @@ export abstract class ResponsiveModule extends Module {
 
   private __respSize: ResponsiveSize = 'xs'
 
-  private __pendingRender = false
+  private __rendering = false
   /**
    * 缓存的模块
    */
@@ -89,7 +89,7 @@ export abstract class ResponsiveModule extends Module {
   constructor(elOrClassName?: HTMLElement | string) {
     let el: HTMLElement = document.createElement('div')
     if (typeof elOrClassName === 'string') {
-      el.className = elOrClassName
+      addClassNames(el, elOrClassName)
     } else if (elOrClassName) {
       el = elOrClassName
     }
@@ -111,28 +111,21 @@ export abstract class ResponsiveModule extends Module {
     windowWidth: number
   }): void
   /**
-   * 请求立即进行渲染.渲染会异步执行，一次程序流程中有多次调用 render() 方法的，会合并成为一次，减少消耗.
-   * @param force 是否强制渲染,如果为 false ,则在尺寸信息不变化的情况下不会渲染
-   * @param immediate 是否立即渲染，如果设置为 true 则渲染会立同步执行，而不是异步
+   * 渲染，同步执行，清空内容后重新构建。
+   * 如果当前正在渲染中，调用会被忽略以避免重入。
+   *
+   * @param force 是否强制渲染，如果为 false 则在尺寸信息不变化的情况下不渲染
    */
-  protected render(force = true, immediate = false): void {
-    // 强制的情况下，立即进行渲染
-    if (immediate) {
-      this.__render(force)
+  protected render(force = true): void {
+    if (this.__rendering) {
       return
     }
-    this.__pendingRender = true
-    setTimeout(() => {
-      if (!this.__pendingRender) {
-        return
-      }
-      this.__pendingRender = false
-      try {
-        this.__render(force)
-      } catch (e) {
-        console.error(e)
-      }
-    }, 0)
+    this.__rendering = true
+    try {
+      this.__render(force)
+    } finally {
+      this.__rendering = false
+    }
   }
 
   private __render(force: boolean) {

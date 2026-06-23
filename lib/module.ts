@@ -263,13 +263,22 @@ class DomModule extends Module {
 }
 
 /**
+ * 将类名字符串添加到元素上，支持空格分隔的多个类名
+ * @param el 目标元素
+ * @param className 单个类名或空格分隔的多个类名
+ */
+export function addClassNames(el: HTMLElement, className: string): void {
+  className.split(/\s+/).filter(s => s).forEach(s => el.classList.add(s))
+}
+
+/**
  * 基础的 div 模块
  */
 export class DivModule extends Module {
   constructor(...classNames: string[]) {
     const el = document.createElement('div')
     super(el)
-    el.classList.add(...classNames)
+    classNames.forEach(name => addClassNames(el, name))
   }
 }
 
@@ -430,19 +439,14 @@ export function createDomModule(options: CreateDomModuleOptions): Module {
       }
     })
   }
-  function addClassName(name: string) {
-    if (name) {
-      el.classList.add(...name.split(/\s+/))
-    }
-  }
   if (options.className) {
-    addClassName(options.className)
+    addClassNames(el, options.className)
   }
   if (options.classNames) {
     if (typeof options.classNames === 'string') {
-      addClassName(options.classNames)
+      addClassNames(el, options.classNames)
     } else {
-      options.classNames.forEach(name => addClassName(name))
+      options.classNames.forEach(name => addClassNames(el, name))
     }
   }
   if (options.style) {
