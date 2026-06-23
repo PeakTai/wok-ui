@@ -64,6 +64,14 @@ this.render(true)
 const height = this.el.scrollHeight
 ```
 
+## 保留输入状态的场景
+
+由于框架没有虚拟 DOM，`buildContent()` 每次调用都会重建整个 DOM。如果渲染区域内包含输入框等需要保留用户状态的元素（比如搜索输入、表单等），三种方式可以处理：
+
+- **缓存输入组件**：用 `cacheModule` 将输入模块缓存，使其在 `render()` 时不被销毁重建（见下方"模块缓存"）
+- **局部刷新**：不调用 `render()`，改为持有子模块引用，直接调用子模块方法局部更新内容（见[模块间通讯](./communication.md)）
+- **分层解耦**：将输入框和结果区分开放到不同模块，仅对结果列表做全量渲染，输入框所在容器不 render（见[即时搜索场景](./instant-search.md)）
+
 ## 模块缓存
 
 `FullRenderingModule` 内置了模块缓存机制，通过 `cacheModule` 方法可以让指定子模块在重新渲染时不被销毁重建，保留其内部状态和 DOM 结构。
