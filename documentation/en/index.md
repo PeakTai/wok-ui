@@ -26,3 +26,4 @@ The documentation does not cover every API parameter — only common usage patte
 - [Modal](./modal.md)
 - [Drawer](./drawer.md)
 - [Other Components](./others.md)
+- [Design Philosophy](./philosophy.md)

@@ -28,3 +28,4 @@ TypeScript 的类型约束和推断，这样开发效率才会比较高。
 - [模态框](./modal.md)
 - [抽屉](./drawer.md)
 - [其它模块](./others.md)
+- [设计哲学](./philosophy.md)

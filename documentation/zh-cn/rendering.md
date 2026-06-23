@@ -36,18 +36,16 @@ class CustomModule extends FullRenderingModule {
 
 上面是一个简单的示例，每次渲染实际上 CustomModule 的内容会被清空，然后调用 buildContent 重新添加。
 
-## 立即渲染
+## 渲染机制
 
-默认情况下 render 方法是不会立即渲染的，而是会异步执行，如果一次的同步执行的流程调用多次 render 方法，
-最终会被合并只执行一次渲染，buildContent 只会被调用一次。一些特殊情况，可能需要立即进行渲染，
-render 支持一个参数，设置为 true ，可以让渲染变成同步的，立即执行一次。
+> **1.1.0 版本变更**：`render()` 改为同步执行，不再有异步合并逻辑。原先的 `immediate` 参数已移除，调用 `render()` 会立即清空并重建内容。在 `buildContent()` 执行期间如果再次调用 `render()` 会被忽略以避免重入。
 
 ```ts
 class CustomModule extends FullRenderingModule {
   constructor() {
     super()
-    // 传递第一个参数为 true ，强制立即渲染一次
-    this.render(true)
+    // render() 同步执行，立即构建内容
+    this.render()
   }
 }
 ```
@@ -211,20 +209,20 @@ class List extends ResponsiveModule {
 }
 ```
 
-## 立即渲染
+## 渲染机制
 
-ResponsiveModule 模块的 render 方法与 FullRenderingModule 有所不同，第一个表示的是否强制渲染，
-如果设置为 true 表示不管页面的尺寸变化是否达到分隔点都进行渲染，默认为 true ，第二个参数才表示的是立即渲染。
+> **1.1.0 版本变更**：`render()` 改为同步执行，`immediate` 参数已移除。`force` 参数保留，设为 `true` 时会忽略尺寸变化判定强制渲染，设为 `false` 时仅在尺寸跨过分隔点时才渲染。
 
 定义如下：
 
 ```ts
 /**
- * 请求立即进行渲染.渲染会异步执行，一次程序流程中有多次调用 render() 方法的，会合并成为一次，减少消耗.
- * @param force 是否强制渲染,如果为 false ,则在尺寸信息不变化的情况下不会渲染
- * @param immediate 是否立即渲染，如果设置为 true 则渲染会立同步执行，而不是异步
+ * 渲染，同步执行，清空内容后重新构建。
+ * 如果当前正在渲染中，调用会被忽略以避免重入。
+ *
+ * @param force 是否强制渲染，如果为 false 则在尺寸信息不变化的情况下不渲染
  */
-protected render(force = true, immediate = false): void 
+protected render(force = true): void
 ```
 
 示例：
@@ -233,8 +231,8 @@ protected render(force = true, immediate = false): void
 class CustomModule extends ResponsiveModule {
   constructor() {
     super()
-    // 强制并立即渲染一次
-    this.render(true,true)
+    // 强制渲染一次
+    this.render(true)
   }
 }
 ```

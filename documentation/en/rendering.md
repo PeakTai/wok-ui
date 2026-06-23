@@ -35,16 +35,16 @@ class CustomModule extends FullRenderingModule {
 
 The example above is simple: each time `render` is called, the `CustomModule`'s content is cleared, and then `buildContent` is called to re-add content.
 
-## Immediate Rendering
+## Rendering Mechanism
 
-By default, the `render` method does not render immediately but executes asynchronously. If `render` is called multiple times within a single synchronous flow, the calls are merged into a single render, and `buildContent` is called only once. In some special cases, immediate rendering may be needed. `render` accepts a parameter — set it to `true` to make rendering synchronous and execute immediately.
+> **1.1.0 Change**: `render()` now executes synchronously and the async merge logic has been removed. The `immediate` parameter is no longer available — calling `render()` immediately clears and rebuilds content. If `render()` is called again during `buildContent()` execution, the call is ignored to prevent re-entry.
 
 ```ts
 class CustomModule extends FullRenderingModule {
   constructor() {
     super()
-    // Pass true as the first argument to force an immediate render
-    this.render(true)
+    // render() executes synchronously, building content immediately
+    this.render()
   }
 }
 ```
@@ -201,20 +201,20 @@ class List extends ResponsiveModule {
 }
 ```
 
-## Immediate Rendering
+## Rendering Mechanism
 
-The `render` method of `ResponsiveModule` differs from `FullRenderingModule`. The first parameter indicates whether to force rendering — if set to `true`, rendering occurs regardless of whether the page size change crosses a breakpoint. The default is `true`. The second parameter indicates immediate rendering.
+> **1.1.0 Change**: `render()` now executes synchronously and the `immediate` parameter has been removed. The `force` parameter is retained — set to `true` to force rendering regardless of breakpoint changes, or `false` to only render when the viewport crosses a breakpoint.
 
 Definition:
 
 ```ts
 /**
- * Request immediate rendering. Rendering executes asynchronously. Multiple render() calls
- * within a single program flow are merged into one to reduce overhead.
+ * Render synchronously, clearing content and rebuilding.
+ * If already rendering, the call is ignored to prevent re-entry.
+ *
  * @param force Whether to force rendering. If false, no rendering occurs if size info hasn't changed
- * @param immediate Whether to render immediately. If true, rendering executes synchronously instead of asynchronously
  */
-protected render(force = true, immediate = false): void 
+protected render(force = true): void
 ```
 
 Example:
@@ -223,8 +223,8 @@ Example:
 class CustomModule extends ResponsiveModule {
   constructor() {
     super()
-    // Force and immediately render once
-    this.render(true, true)
+    // Force render once
+    this.render(true)
   }
 }
 ```
