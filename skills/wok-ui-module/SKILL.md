@@ -377,4 +377,11 @@ my-module/
 
 ## 更多参考示例
 
+这些示例，可以作为常见模块的实现参考。
+
+- [树](references/tree.md) — FullRenderingModule 递归构建树形结构，含选中、折叠、操作按钮
+- [描述列表](references/description-list.md) — 基于 CSS Grid 的多列键值对布局
+- [标签页](references/tabs.md) — FullRenderingModule + cacheModule 实现标签切换
+- [分页器](references/pagination.md) — FullRenderingModule 实现页码导航
 - [搜索框](references/search-box.md)
+- [即时搜索](references/instant-search.md)
