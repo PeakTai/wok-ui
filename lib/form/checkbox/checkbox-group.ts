@@ -19,7 +19,7 @@ export interface CheckboxGroupOpts {
   /**
    * 选项
    */
-  options: Array<{ label: ConvertibleModule; value: string }>
+  options: Array<{ label: ConvertibleModule; value: string; disabled?: boolean }>
   /**
    * 是否必填. 可自定义错误信息
    */
@@ -47,6 +47,7 @@ export interface CheckboxGroupOpts {
 export class CheckboxGroup extends FormInput {
   private __values: string[] = []
   private __disabled = false
+  private __optionDisabled: Set<string>
   constructor(private readonly opts: CheckboxGroupOpts) {
     super()
     if (opts.value) {
@@ -55,17 +56,20 @@ export class CheckboxGroup extends FormInput {
     if (opts.disabled) {
       this.__disabled = true
     }
+    this.__optionDisabled = new Set(
+      opts.options.filter(o => o.disabled).map(o => o.value)
+    )
     this.addChild({
       classNames: ['wok-ui-checkbox-group', opts.inline ? 'inline' : ''],
       children: opts.options.map(opt =>
         createDomModule({
           tag: 'label',
-          classNames: ['item'],
+          classNames: ['wok-ui-checkbox-group-item'],
           children: [
             new Checkbox({
               value: opt.value,
               status: this.__values.includes(opt.value) ? 'checked' : 'unchecked',
-              disabled: this.__disabled,
+              disabled: opt.disabled || this.__disabled,
               onChange: status => {
                 if (status === 'checked') {
                   if (!this.__values.includes(opt.value)) {
@@ -97,20 +101,20 @@ export class CheckboxGroup extends FormInput {
     if (!this.opts.maxSelected) {
       return
     }
-    // 达到上限后，将还没有选择的禁用
+    // 达到上限后，将还没有选择的禁用（选项级禁用的不参与 toggle）
     const maxSelected =
       typeof this.opts.maxSelected === 'number'
         ? this.opts.maxSelected
         : this.opts.maxSelected.maxSelected
     if (this.__values.length >= maxSelected) {
       this.find<Checkbox>(m => m instanceof Checkbox).forEach(box => {
-        if (!box.isChecked()) {
+        if (!box.isChecked() && !this.__optionDisabled.has(box.value)) {
           box.setDisabled(true)
         }
       })
     } else {
       this.find<Checkbox>(m => m instanceof Checkbox).forEach(box => {
-        if (!box.isChecked()) {
+        if (!box.isChecked() && !this.__optionDisabled.has(box.value)) {
           box.setDisabled(false)
         }
       })
@@ -180,9 +184,9 @@ export class CheckboxGroup extends FormInput {
   setDisabled(disabled: boolean): void {
     if (this.__disabled !== disabled) {
       this.__disabled = disabled
-      this.find(m => m instanceof Checkbox)
-        .map(m => m as Checkbox)
-        .forEach(box => box.setDisabled(this.__disabled))
+      this.find<Checkbox>(m => m instanceof Checkbox).forEach(box => {
+        box.setDisabled(disabled || this.__optionDisabled.has(box.value))
+      })
     }
   }
 }

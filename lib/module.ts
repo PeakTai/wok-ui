@@ -79,6 +79,9 @@ export abstract class Module {
   }
 
   destroy(): void {
+    if (this.__destroyed) {
+      return
+    }
     if (this.__parent) {
       // 解除关系
       const index = this.__parent.__children.indexOf(this)
@@ -268,7 +271,10 @@ class DomModule extends Module {
  * @param className 单个类名或空格分隔的多个类名
  */
 export function addClassNames(el: HTMLElement, className: string): void {
-  className.split(/\s+/).filter(s => s).forEach(s => el.classList.add(s))
+  className
+    .split(/\s+/)
+    .filter(s => s)
+    .forEach(s => el.classList.add(s))
 }
 
 /**

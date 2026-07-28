@@ -1,7 +1,7 @@
 import { DivModule } from '../module';
 export class InvalidFeedback extends DivModule {
   constructor(errMsg: string) {
-    super('invalid-feedback')
+    super('wok-ui-invalid-feedback')
     this.el.innerText = errMsg
   }
 }

@@ -237,7 +237,7 @@ class Dialog extends DivModule {
               // 关闭按钮
               if (opts.closeBtn !== false) {
                 addChild({
-                  classNames: ['close'],
+                  classNames: ['wok-ui-modal-close'],
                   innerHTML: '&times;',
                   onClick: () => this.destroy()
                 })

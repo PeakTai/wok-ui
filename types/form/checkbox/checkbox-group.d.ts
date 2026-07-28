@@ -18,6 +18,7 @@ export interface CheckboxGroupOpts {
     options: Array<{
         label: ConvertibleModule;
         value: string;
+        disabled?: boolean;
     }>;
     /**
      * 是否必填. 可自定义错误信息
@@ -53,6 +54,7 @@ export declare class CheckboxGroup extends FormInput {
     private readonly opts;
     private __values;
     private __disabled;
+    private __optionDisabled;
     constructor(opts: CheckboxGroupOpts);
     /**
      * 更新勾选框状态，如果达到限制则禁用

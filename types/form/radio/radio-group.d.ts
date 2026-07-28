@@ -15,6 +15,7 @@ export interface RadioGroupOpts {
     options: Array<{
         label: ConvertibleModule;
         value: string;
+        disabled?: boolean;
     }>;
     /**
      * 是否必填. 可自定义错误信息
@@ -33,6 +34,7 @@ export declare class RadioGroup extends FormInput {
     private readonly opts;
     private name;
     private value;
+    private __optionDisabled;
     constructor(opts: RadioGroupOpts);
     private __validate;
     validate(): boolean;

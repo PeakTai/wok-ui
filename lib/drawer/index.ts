@@ -135,11 +135,11 @@ class Content extends DivModule implements DivModule {
     // 标题
     if (opts.title) {
       this.addChild({
-        classNames: ['header'],
+        classNames: ['wok-ui-drawer-header'],
         children: [
           new H5(opts.title),
           {
-            classNames: ['close'],
+            classNames: ['wok-ui-drawer-close'],
             innerHTML: '&times;',
             onClick: () => this.destroy()
           }
@@ -148,7 +148,7 @@ class Content extends DivModule implements DivModule {
     }
     // 内容
     this.addChild({
-      classNames: ['body'],
+      classNames: ['wok-ui-drawer-body'],
       children: opts.body
     })
   }

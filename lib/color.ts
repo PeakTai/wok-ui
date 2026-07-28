@@ -61,7 +61,7 @@ let specifiedColor: Color | undefined
  * 设置css变量
  */
 function setCssVars(color: Color) {
-  const { style } = document.body
+  const { style } = document.documentElement
   style.setProperty('--color-primary', color.primary)
   style.setProperty('--color-danger', color.danger)
   style.setProperty('--color-success', color.success)

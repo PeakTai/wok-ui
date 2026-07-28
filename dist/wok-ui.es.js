@@ -277,6 +277,9 @@ class Module {
     return true;
   }
   destroy() {
+    if (this.__destroyed) {
+      return;
+    }
     if (this.__parent) {
       const index = this.__parent.__children.indexOf(this);
       if (index !== -1) {
@@ -795,7 +798,7 @@ const defaultColor = {
 Object.freeze(defaultColor);
 let specifiedColor;
 function setCssVars(color) {
-  const { style } = document.body;
+  const { style } = document.documentElement;
   style.setProperty("--color-primary", color.primary);
   style.setProperty("--color-danger", color.danger);
   style.setProperty("--color-success", color.success);
@@ -1293,7 +1296,7 @@ class Loading extends DivModule {
   constructor(msg) {
     super("wok-ui-loading");
     this.addChild({
-      classNames: ["loading-spinner"],
+      classNames: ["wok-ui-loading-spinner"],
       innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>`
     });
     if (msg) {
@@ -1649,7 +1652,7 @@ class Dialog extends DivModule {
               addChild2(new H5(title));
               if (opts.closeBtn !== false) {
                 addChild2({
-                  classNames: ["close"],
+                  classNames: ["wok-ui-modal-close"],
                   innerHTML: "&times;",
                   onClick: () => this.destroy()
                 });
@@ -1831,11 +1834,11 @@ class Content extends DivModule {
     }
     if (opts.title) {
       this.addChild({
-        classNames: ["header"],
+        classNames: ["wok-ui-drawer-header"],
         children: [
           new H5(opts.title),
           {
-            classNames: ["close"],
+            classNames: ["wok-ui-drawer-close"],
             innerHTML: "&times;",
             onClick: () => this.destroy()
           }
@@ -1843,7 +1846,7 @@ class Content extends DivModule {
       });
     }
     this.addChild({
-      classNames: ["body"],
+      classNames: ["wok-ui-drawer-body"],
       children: opts.body
     });
   }
@@ -1991,7 +1994,7 @@ class Table extends DivModule {
 
 class InvalidFeedback extends DivModule {
   constructor(errMsg) {
-    super("invalid-feedback");
+    super("wok-ui-invalid-feedback");
     this.el.innerText = errMsg;
   }
 }
@@ -2787,17 +2790,20 @@ class CheckboxGroup extends FormInput {
     if (opts.disabled) {
       this.__disabled = true;
     }
+    this.__optionDisabled = new Set(
+      opts.options.filter((o) => o.disabled).map((o) => o.value)
+    );
     this.addChild({
       classNames: ["wok-ui-checkbox-group", opts.inline ? "inline" : ""],
       children: opts.options.map(
         (opt) => createDomModule({
           tag: "label",
-          classNames: ["item"],
+          classNames: ["wok-ui-checkbox-group-item"],
           children: [
             new Checkbox({
               value: opt.value,
               status: this.__values.includes(opt.value) ? "checked" : "unchecked",
-              disabled: this.__disabled,
+              disabled: opt.disabled || this.__disabled,
               onChange: (status) => {
                 if (status === "checked") {
                   if (!this.__values.includes(opt.value)) {
@@ -2829,13 +2835,13 @@ class CheckboxGroup extends FormInput {
     const maxSelected = typeof this.opts.maxSelected === "number" ? this.opts.maxSelected : this.opts.maxSelected.maxSelected;
     if (this.__values.length >= maxSelected) {
       this.find((m) => m instanceof Checkbox).forEach((box) => {
-        if (!box.isChecked()) {
+        if (!box.isChecked() && !this.__optionDisabled.has(box.value)) {
           box.setDisabled(true);
         }
       });
     } else {
       this.find((m) => m instanceof Checkbox).forEach((box) => {
-        if (!box.isChecked()) {
+        if (!box.isChecked() && !this.__optionDisabled.has(box.value)) {
           box.setDisabled(false);
         }
       });
@@ -2896,7 +2902,9 @@ class CheckboxGroup extends FormInput {
   setDisabled(disabled) {
     if (this.__disabled !== disabled) {
       this.__disabled = disabled;
-      this.find((m) => m instanceof Checkbox).map((m) => m).forEach((box) => box.setDisabled(this.__disabled));
+      this.find((m) => m instanceof Checkbox).forEach((box) => {
+        box.setDisabled(disabled || this.__optionDisabled.has(box.value));
+      });
     }
   }
 }
@@ -3024,16 +3032,20 @@ class RadioGroup extends FormInput {
       this.el.classList.add("inline");
     }
     this.value = opts.value || "";
+    this.__optionDisabled = new Set(
+      opts.options.filter((o) => o.disabled).map((o) => o.value)
+    );
     this.addChild(
       ...opts.options.map(
         (opt) => createDomModule({
           tag: "label",
+          classNames: ["wok-ui-radio-group-item"],
           children: [
             new Radio({
               name: this.name,
               value: opt.value,
               checked: opts.value === opt.value,
-              disabled: opts.disabled,
+              disabled: opt.disabled || opts.disabled,
               onChecked: () => {
                 this.value = opt.value;
                 if (this.opts.onChange) {
@@ -3071,7 +3083,9 @@ class RadioGroup extends FormInput {
     return res.valid;
   }
   setDisabled(disabled) {
-    this.find((m) => m instanceof Radio).map((m) => m).forEach((m) => m.setDisabled(disabled));
+    this.find((m) => m instanceof Radio).forEach((radio) => {
+      radio.setDisabled(disabled || this.__optionDisabled.has(radio.getValue()));
+    });
   }
 }
 

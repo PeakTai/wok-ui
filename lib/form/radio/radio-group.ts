@@ -18,7 +18,7 @@ export interface RadioGroupOpts {
   /**
    * 选项
    */
-  options: Array<{ label: ConvertibleModule; value: string }>
+  options: Array<{ label: ConvertibleModule; value: string; disabled?: boolean }>
   /**
    * 是否必填. 可自定义错误信息
    */
@@ -36,6 +36,7 @@ export interface RadioGroupOpts {
 export class RadioGroup extends FormInput {
   private name: string
   private value = ''
+  private __optionDisabled: Set<string>
   constructor(private readonly opts: RadioGroupOpts) {
     super(document.createElement('div'))
     this.el.classList.add('wok-ui-radio-group')
@@ -44,16 +45,20 @@ export class RadioGroup extends FormInput {
       this.el.classList.add('inline')
     }
     this.value = opts.value || ''
+    this.__optionDisabled = new Set(
+      opts.options.filter(o => o.disabled).map(o => o.value)
+    )
     this.addChild(
       ...opts.options.map(opt =>
         createDomModule({
           tag: 'label',
+          classNames: ['wok-ui-radio-group-item'],
           children: [
             new Radio({
               name: this.name,
               value: opt.value,
               checked: opts.value === opt.value,
-              disabled: opts.disabled,
+              disabled: opt.disabled || opts.disabled,
               onChecked: () => {
                 this.value = opt.value
                 if (this.opts.onChange) {
@@ -97,8 +102,8 @@ export class RadioGroup extends FormInput {
   }
 
   setDisabled(disabled: boolean): void {
-    this.find(m => m instanceof Radio)
-      .map(m => m as Radio)
-      .forEach(m => m.setDisabled(disabled))
+    this.find<Radio>(m => m instanceof Radio).forEach(radio => {
+      radio.setDisabled(disabled || this.__optionDisabled.has(radio.getValue()))
+    })
   }
 }
