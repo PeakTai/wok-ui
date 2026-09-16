@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    // 与 vite.config.ts 的 alias 保持一致：'wok-ui' 直接指向仓库源码，
+    // 否则删掉 npm 依赖后 IDE 无法解析类型
+    "paths": {
+      "wok-ui": ["../lib/index.ts"]
+    }
+  },
+  "include": [
+    "env.d.ts",
+    "src/**/*.ts",
+    "vite-plugin-md/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

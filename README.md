@@ -78,6 +78,13 @@ npx skills add https://gitee.com/tai/wok-ui.git --all
 
 更多的使用方法，请[查看文档](https://gitee.com/tai/wok-ui/blob/master/documentation/zh-cn/index.md)。
 
+## 扩展组件库
+
+如果觉得 wok-ui 内置的组件太基础，需要更丰富的组件库，可以使用 wok-ui-ext 。它是 wok-ui 的扩展库，
+在 wok-ui 的基础上提供了一套覆盖常用组件、支持多主题的组件库。
+
+[查看 wok-ui-ext 文档与在线演示。](https://peaktai.github.io/wok-ui-ext)
+
 ## 为什么选择 wok-ui
 
 ### 学习成本低，接近原生 DOM

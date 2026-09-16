@@ -1,0 +1,61 @@
+// ===== PC 端头部 =====
+.docs-header-pc {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+
+  // 左侧：站点标题（标题基础样式见 ../style.less）
+  .docs-header-left {
+    display: flex;
+    align-items: center;
+  }
+
+  // 中间：搜索框
+  .docs-header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 32px;
+
+    .docs-search-trigger {
+      width: 100%;
+      max-width: 320px;
+      cursor: pointer;
+    }
+
+    // 限制 wok-ui 搜索框宽度
+    .wok-ui-input {
+      width: 100%;
+    }
+  }
+
+  // 右侧：主题/语言/GitHub 菜单
+  .docs-header-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    // 将右侧菜单推到最右边
+    margin-left: auto;
+
+    // 菜单项（图标 + 文字）
+    .docs-header-theme {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-secondary);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  // 移动端隐藏 PC 头部
+  @media (max-width: 767px) {
+    display: none;
+  }
+}

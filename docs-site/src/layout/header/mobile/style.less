@@ -1,0 +1,52 @@
+// ===== 移动端头部 =====
+.docs-header-mobile {
+  display: none;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+
+  // 左侧：站点标题（略小）
+  .docs-header-left {
+    display: flex;
+    align-items: center;
+  }
+
+  .docs-header-title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  // 右侧：图标按钮组
+  .docs-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    // 将右侧图标按钮推到最右边
+    margin-left: auto;
+
+    // 图标按钮：无边框、普通文字颜色、与 PC 菜单风格一致
+    .docs-header-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      flex-shrink: 0;
+
+      &:hover {
+        color: var(--color-primary);
+      }
+
+      .fas {
+        font-size: 16px;
+      }
+    }
+  }
+
+  // PC 端隐藏移动头部
+  @media (max-width: 767px) {
+    display: flex;
+  }
+}

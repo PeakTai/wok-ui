@@ -69,6 +69,13 @@ npx skills add peaktai/wok-ui --all
 
 For more usage details, please [refer to the documentation](./documentation/en/index.md).
 
+## Extension Library
+
+If the components built into wok-ui feel too basic and you need a richer component library, you can use wok-ui-ext.
+It is an extension library for wok-ui, providing a multi-theme component library that covers commonly used components.
+
+[View wok-ui-ext documentation and live demos.](https://peaktai.github.io/wok-ui-ext)
+
 ## Why wok-ui
 
 ### Low Learning Curve, Close to Native DOM

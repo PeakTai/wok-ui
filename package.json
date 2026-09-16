@@ -13,17 +13,12 @@
     "framework"
   ],
   "scripts": {
-    "dev": "vite --config vite.docs.config.ts",
-    "test": "vite --host --config vite.docs.config.ts",
-    "build-docs": "vite build --config vite.docs.config.ts",
-    "build": "tsc --noEmit && vite build --config vite.build.config.ts"
+    "build": "tsc --noEmit && vite build"
   },
   "files": [
     "types/",
     "dist/",
     "lib/",
-    "test/",
-    "documentation/",
     "skills/",
     "README.md",
     "README_EN.md"
