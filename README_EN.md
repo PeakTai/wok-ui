@@ -4,9 +4,7 @@
 
 wok-ui is a frontend UI component library with the following characteristics: simple, intuitive, low cognitive overhead; responsive design; zero third-party dependencies; TypeScript-based with complete type constraints.
 
-[View online demo.](https://peaktai.github.io/wok-ui/)
-
-[View full documentation.](./documentation/en/index.md)
+[View full documentation.](https://peaktai.github.io/wok-ui/)
 
 ## Quick Start
 
