@@ -127,7 +127,7 @@ export abstract class DocsLayout extends ResponsiveModule {
 
   /**
    * 切换语言：跳转到目标语言的同名页面，若不存在则跳转到首页。
-   * 使用 BASE_URL 拼接，兼容部署到子路径（如 GitHub Pages /wok-ui-ext/）。
+   * 使用 BASE_URL 拼接，兼容部署到子路径（如 GitHub Pages /wok-ui/）。
    */
   private switchLang(targetLang: string): void {
     const samePage = this.opts.pages.find(
@@ -203,7 +203,7 @@ export abstract class DocsLayout extends ResponsiveModule {
     return {
       tag: 'a',
       classNames: classes,
-      // BASE_URL 兼容子路径部署（如 GitHub Pages /wok-ui-ext/）
+      // BASE_URL 兼容子路径部署（如 GitHub Pages /wok-ui/）
       attrs: { href: import.meta.env.BASE_URL + p.path },
       children: p.icon
         ? [

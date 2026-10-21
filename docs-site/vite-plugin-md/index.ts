@@ -74,7 +74,7 @@ export function mdToPagePlugin(): Plugin {
   let outDir = ''
   /** 站点根目录（config 钩子时确定，用于计算页面到站点源码的相对导入） */
   let siteRoot = process.cwd()
-  /** 站点 base（如 /wok-ui-ext/），configResolved 时从 vite 配置读取 */
+  /** 站点 base（如 /wok-ui/），configResolved 时从 vite 配置读取 */
   let siteBase = '/'
   /** 各语言的搜索索引 JSON（构建期生成，dev/build 共用） */
   const searchIndexByLang = new Map<string, string>()
@@ -161,7 +161,7 @@ export function mdToPagePlugin(): Plugin {
         // 找到该页面对应的 JS chunk
         for (const [, chunk] of Object.entries(bundle)) {
           if (chunk.type === 'chunk' && chunk.name === entry.flatKey) {
-            // script src 使用以 base 开头的绝对路径（如 /wok-ui-ext/assets/xxx.js）
+            // script src 使用以 base 开头的绝对路径（如 /wok-ui/assets/xxx.js）
             // chunk.fileName 如 "assets/zh-CN_index-[hash].js"
             const scriptSrc = siteBase + chunk.fileName
 
@@ -205,9 +205,9 @@ export function mdToPagePlugin(): Plugin {
       // 避免静态托管时访问 / 返回 404
       const redirectHtml = `<!DOCTYPE html>
 <html lang="${DEFAULT_LANG}">
-<head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=${siteBase}${DEFAULT_LANG}/index.html"><title>wok-ui-ext</title></head>
+<head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=${siteBase}${DEFAULT_LANG}/index.html"><title>wok-ui</title></head>
 <body>
-<a href="${siteBase}${DEFAULT_LANG}/index.html">wok-ui-ext</a>
+<a href="${siteBase}${DEFAULT_LANG}/index.html">wok-ui</a>
 </body>
 </html>`
       fs.writeFileSync(path.join(outDir, 'index.html'), redirectHtml, 'utf-8')
@@ -249,7 +249,7 @@ export function mdToPagePlugin(): Plugin {
 
       server.middlewares.use((req, res, next) => {
         const url = new URL(req.url!, `http://${req.headers.host}`)
-        // dev/build 统一使用 base（如 /wok-ui-ext/）：
+        // dev/build 统一使用 base（如 /wok-ui/）：
         // 仅剥离 pathname 用于本中间件匹配；不改写 req.url，
         // 前缀剥离统一交给 Vite 的 baseMiddleware 处理（public/模块请求）
         const pathname = siteBase !== '/' && url.pathname.startsWith(siteBase)

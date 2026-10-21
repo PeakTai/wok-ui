@@ -34,9 +34,9 @@ export class PcHeader extends DivModule {
         {
           tag: 'a',
           classNames: 'docs-header-title',
-          // BASE_URL 兼容子路径部署（如 GitHub Pages /wok-ui-ext/）
+          // BASE_URL 兼容子路径部署（如 GitHub Pages /wok-ui/）
           attrs: { href: import.meta.env.BASE_URL + `${opts.lang}/index.html` },
-          innerText: 'wok-ui-ext'
+          innerText: 'wok-ui'
         }
       ]
     })

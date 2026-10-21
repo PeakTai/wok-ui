@@ -32,7 +32,7 @@ export interface PageEntry {
  * 生成 HTML 骨架。
  * @param entry       页面条目
  * @param scriptSrc   JS chunk 的路径（相对于 HTML 文件的位置）
- * @param base        站点 base（如 /wok-ui-ext/），用于静态资源绝对路径
+ * @param base        站点 base（如 /wok-ui/），用于静态资源绝对路径
  * @param stylesheets 该入口静态依赖的 CSS 产物路径列表（带 base 前缀）
  */
 export function htmlShell(

@@ -47,7 +47,7 @@ let engineCache: { lang: string; engine: Promise<SearchEngine> } | undefined
 
 /**
  * 懒加载指定语言的搜索索引（带缓存）。
- * 使用相对路径，兼容部署到子路径（如 GitHub Pages /wok-ui-ext/）。
+ * 使用相对路径，兼容部署到子路径（如 GitHub Pages /wok-ui/）。
  */
 async function getEngine(lang: string): Promise<SearchEngine> {
   if (engineCache && engineCache.lang === lang) return engineCache.engine
